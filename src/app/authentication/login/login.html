@@ -1,0 +1,91 @@
+<!-- login.component.html -->
+<div class="limiter">
+  <div class="container-login100">
+    <div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+      <!-- Left side image with tilt container -->
+      <div #tiltContainer class="login100-pic js-tilt" style="perspective: 1000px;margin-top: 50px;margin-left: 33px;">
+        <img src="assets/images/img-01.png" alt="IMG" style="transform-style: preserve-3d;" /> <!-- Assume image in assets -->
+      </div>
+
+      <!-- Right side form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login100-form validate-form flex-col-c p-l-20 p-r-20 p-t-50 p-b-50">
+        <span class="login100-form-title p-b-54">
+          <i class="pi pi-user" aria-hidden="true"></i> Member Login
+        </span>
+
+        <div class="wrap-input100 validate-input p-b-10" [class.alert-validate]="emailShowError" [attr.data-validate]="showEmail ? 'Email is required or invalid' : 'Mobile number is required or invalid'">
+            <!-- <input
+              pInputText
+              #inputField
+              id="emailOrMobile"
+              [type]="showEmail ? 'email' : 'tel'"
+              class="input100"
+              [formControlName]="showEmail ? 'email' : 'mobile'"
+              [placeholder]="showEmail ? 'Email' : 'Mobile Number'"
+              (focus)="emailShowError = false"
+              /> -->
+              <input
+                pInputText
+                #inputField
+                type="email"
+                class="input100"
+                formControlName="email"
+                [hidden]="!showEmail"
+                placeholder="Email"
+                (focus)="emailShowError = false"
+              />
+            <input
+                pInputText
+                #inputField
+                type="tel"
+                class="input100"
+                formControlName="mobile"
+                [hidden]="showEmail"
+                placeholder="Mobile Number"
+                (focus)="emailShowError = false"
+              />
+
+              <span class="focus-input100"></span>
+              <span class="symbol-input100" (click)="toggleEmailMobile()" style="cursor: pointer;">
+                  <i [ngClass]="showEmail ? 'pi pi-envelope' : 'pi pi-phone'" aria-hidden="true"></i>
+              </span>
+        </div>
+
+        <div class="wrap-input100 validate-input p-b-10" [class.alert-validate]="passwordShowError" data-validate="Password is required">
+          <input
+            pInputText
+            #inputField
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            class="input100"
+            formControlName="password"
+            placeholder="Password"
+            (focus)="passwordShowError = false"
+          />
+          <span class="focus-input100"></span>
+           <span class="symbol-input100" (click)="togglePasswordVisibility()" style="cursor: pointer;">
+                <i [ngClass]="showPassword ? 'pi pi-lock-open' : 'pi pi-lock'" aria-hidden="true"></i>
+            </span>
+        </div>
+        <!-- Login Button with PrimeNG -->
+        <div class="container-login100-form-btn p-t-10">
+          <button
+            pButton
+            type="submit"
+            class="login100-form-btn"
+            [disabled]="loginForm.invalid"
+          >
+            Login
+          </button>
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div class="text-center p-t-12">
+          <span class="txt1">Forgot</span>
+          <a class="txt1" href="#"> Password?</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
