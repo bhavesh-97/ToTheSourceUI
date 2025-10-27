@@ -29,7 +29,7 @@
                 #inputField
                 type="email"
                 class="input100"
-                formControlName="email"
+                formControlName="EmailID"
                 [hidden]="!showEmail"
                 placeholder="Email"
                 (focus)="emailShowError = false"
@@ -39,7 +39,7 @@
                 #inputField
                 type="tel"
                 class="input100"
-                formControlName="mobile"
+                formControlName="MobileNumber"
                 [hidden]="showEmail"
                 placeholder="Mobile Number"
                 (focus)="emailShowError = false"
@@ -58,7 +58,7 @@
             id="password"
             [type]="showPassword ? 'text' : 'password'"
             class="input100"
-            formControlName="password"
+            formControlName="Password"
             placeholder="Password"
             (focus)="passwordShowError = false"
           />

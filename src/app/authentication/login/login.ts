@@ -37,20 +37,19 @@ export class Login implements AfterViewInit {
 
   // Form field configurations
   private formFields: FormFieldConfig[] = [
-    { name: 'email', isMandatory: false, validationMessage: 'Please enter a valid email address.', events: [{ type: 'focusout', validationRule: ValidationRules.EmailID }] },
-    { name: 'mobile', isMandatory: false,validationMessage: 'Please enter a valid mobile number.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.MobileNoWithSeries }] },
-    { name: 'password', isMandatory: true, validationMessage: 'Please enter a valid password', events: [] },
+    { name: 'EmailID', isMandatory: false, validationMessage: 'Please enter a valid email address.', events: [{ type: 'focusout', validationRule: ValidationRules.EmailID }] },
+    { name: 'MobileNumber', isMandatory: false,validationMessage: 'Please enter a valid MobileNumber number.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.MobileNoWithSeries }] },
+    { name: 'Password', isMandatory: true, validationMessage: 'Please enter a valid Password', events: [] },
   ];
 
-  // get email() { return this.loginForm.get('email'); }
-  // get mobile() { return this.loginForm.get('mobile'); }
-  // get password() { return this.loginForm.get('password'); }
+  // get EmailID() { return this.loginForm.get('EmailID'); }
+  // get MobileNumber() { return this.loginForm.get('MobileNumber'); }
+  // get Password() { return this.loginForm.get('Password'); }
 
   constructor() {
     this.loginForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
   }
    toggleEmailMobile(): void {
-    
     this.showEmail = !this.showEmail;
     this.emailShowError = false;
     this.toggleFieldValidation();
@@ -59,7 +58,7 @@ export class Login implements AfterViewInit {
     this.showPassword = !this.showPassword;
   } 
   toggleFieldValidation() {
-  const fieldName = this.showEmail ? 'email' : 'mobile';
+  const fieldName = this.showEmail ? 'EmailID' : 'MobileNumber';
   const field = this.formFields.find(f => f.name === fieldName);
   const control = this.loginForm.get(fieldName);
   const element = this.inputElements.find(
@@ -152,13 +151,20 @@ export class Login implements AfterViewInit {
     }
   }
   onSubmit() {
-  const outcome = this.FormUtils.validateFormFields(this.formFields, this.loginForm, this.inputElements.toArray(), this.renderer);
+    const outcome = this.FormUtils.validateFormFields(this.formFields, this.loginForm, this.inputElements.toArray(), this.renderer);
     if (outcome.isError) {
       this.notificationService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-  const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUserLogin);
-  this.loginService.GetUserLogin(loginModel).subscribe({
+
+    const inactiveField = this.showEmail ? 'MobileNumber' : 'EmailID';
+
+    const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUserLogin);
+    
+    if (loginModel && Object.prototype.hasOwnProperty.call(loginModel, inactiveField)) {
+      loginModel[inactiveField] = '';
+    }
+    this.loginService.GetUserLogin(loginModel).subscribe({
       next: (res) => {
         if (res.isError) {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
