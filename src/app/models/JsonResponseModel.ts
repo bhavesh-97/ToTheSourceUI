@@ -6,4 +6,5 @@ export class JsonResponseModel {
   title: PopupMessageType = PopupMessageType.Error;
   type: PopupMessageType = PopupMessageType.Error;
   result?: any;
+  token? : string = '';
 }
