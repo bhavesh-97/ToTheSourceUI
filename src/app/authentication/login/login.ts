@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, inject, ElementRef,ViewChild, QueryList, ViewChildren,Renderer2 } from '@angular/core';
+import { Component, AfterViewInit, inject, ElementRef,ViewChild, QueryList, ViewChildren,Renderer2, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { gsap } from 'gsap';
@@ -32,48 +32,68 @@ export class Login implements AfterViewInit {
   emailShowError = false;
   passwordShowError = false;
   showPassword = false; 
-  showEmail = true;
+  showEmail = false;
 
 
   // Form field configurations
   private formFields: FormFieldConfig[] = [
     { name: 'EmailID', isMandatory: false, validationMessage: 'Please enter a valid email address.', events: [{ type: 'focusout', validationRule: ValidationRules.EmailID }] },
-    { name: 'MobileNumber', isMandatory: false,validationMessage: 'Please enter a valid MobileNumber number.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.MobileNoWithSeries }] },
+    { name: 'UserName', isMandatory: false,validationMessage: 'Please enter a valid User Name.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericWithSpecialCharacters }] },
     { name: 'Password', isMandatory: true, validationMessage: 'Please enter a valid Password', events: [] },
   ];
 
   // get EmailID() { return this.loginForm.get('EmailID'); }
-  // get MobileNumber() { return this.loginForm.get('MobileNumber'); }
+  // get UserName() { return this.loginForm.get('UserName'); }
   // get Password() { return this.loginForm.get('Password'); }
 
   constructor() {
     this.loginForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
+    console.log(this.loginForm.controls);
   }
-   toggleEmailMobile(): void {
+   toggleEmailUserName(): void {
     this.showEmail = !this.showEmail;
     this.emailShowError = false;
     this.toggleFieldValidation();
-  }
+   }
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   } 
-  toggleFieldValidation() {
-  const fieldName = this.showEmail ? 'EmailID' : 'MobileNumber';
-  const field = this.formFields.find(f => f.name === fieldName);
-  const control = this.loginForm.get(fieldName);
-  const element = this.inputElements.find(
-    (el) => el.nativeElement.getAttribute('formControlName') === fieldName
+ toggleFieldValidation() {
+  const activeFieldName = this.showEmail ? 'EmailID' : 'UserName';
+  const inactiveFieldName = this.showEmail ? 'UserName' : 'EmailID';
+
+  const activeControl = this.loginForm.get(activeFieldName);
+  const inactiveControl = this.loginForm.get(inactiveFieldName);
+
+  const activeField = this.formFields.find(f => f.name === activeFieldName);
+  const inactiveField = this.formFields.find(f => f.name === inactiveFieldName);
+
+  const activeElement = this.inputElements.find(
+    el => el.nativeElement.getAttribute('formControlName') === activeFieldName
   )?.nativeElement as HTMLInputElement | undefined;
 
-  if (field && control && element) {
-    control.markAsDirty();
-    control.markAsTouched();
-    control.updateValueAndValidity();
-    
-    this.FormUtils.updateValidationRule(element, field, true, this.renderer, control);
-    control.reset();
+  const inactiveElement = this.inputElements.find(
+    el => el.nativeElement.getAttribute('formControlName') === inactiveFieldName
+  )?.nativeElement as HTMLInputElement | undefined;
+
+  // Make the active field mandatory
+  if (activeField && activeControl && activeElement) {
+    this.FormUtils.updateValidationRule(activeElement, activeField, true, this.renderer, activeControl);
+    activeControl.markAsTouched();
+    activeControl.markAsDirty();
+    activeControl.updateValueAndValidity();
   }
+
+  // Make the inactive field always valid
+  if (inactiveField && inactiveControl && inactiveElement) {
+    this.FormUtils.updateValidationRule(inactiveElement, inactiveField, false, this.renderer, inactiveControl);
+    inactiveControl.setErrors(null);              
+    inactiveControl.markAsPristine();
+    inactiveControl.markAsUntouched();
+    inactiveControl.updateValueAndValidity({ emitEvent: false });
   }
+}
+
   ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.loginForm);
       this.toggleFieldValidation();
@@ -157,7 +177,7 @@ export class Login implements AfterViewInit {
       return;
     }  
 
-    const inactiveField = this.showEmail ? 'MobileNumber' : 'EmailID';
+    const inactiveField = this.showEmail ? 'UserName' : 'EmailID';
 
     const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUserLogin);
     

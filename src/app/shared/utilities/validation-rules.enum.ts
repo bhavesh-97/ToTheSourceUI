@@ -1,6 +1,9 @@
 
 export enum ValidationRules {
   AlphanumericOnly = 'AlphanumericOnly',
+  AlphanumericWithWhiteSpace = 'AlphanumericWithWhiteSpace',
+  AlphanumericWithSpecialCharacters = "AlphanumericWithSpecialCharacters",
+  AlphanumericWithWhiteSpaceAndSpecialCharacters = "AlphanumericWithWhiteSpaceAndSpecialCharacters",
   NumberOnly = 'NumberOnly',
   LettersOnly = 'LettersOnly',
   LettersWithWhiteSpace = 'LettersWithWhiteSpace',

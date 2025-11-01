@@ -183,9 +183,9 @@ input:focus {
   color: #666666;
   transition: all 0.4s;
 }
-/* Make envelope/phone icon clickable for email/mobile field */
+/* Make envelope/phone icon clickable for email/user name field */
 .wrap-input100[data-validate="Email is required or invalid"] .symbol-input100,
-.wrap-input100[data-validate="Mobile number is required or invalid"] .symbol-input100 {
+.wrap-input100[data-validate="User Name is required or invalid"] .symbol-input100 {
   pointer-events: auto;
   cursor: pointer;
   width: 40px; 

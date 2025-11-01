@@ -13,7 +13,7 @@
           <i class="pi pi-user" aria-hidden="true"></i> Member Login
         </span>
 
-        <div class="wrap-input100 validate-input p-b-10" [class.alert-validate]="emailShowError" [attr.data-validate]="showEmail ? 'Email is required or invalid' : 'Mobile number is required or invalid'">
+        <div class="wrap-input100 validate-input p-b-10" [class.alert-validate]="emailShowError" [attr.data-validate]="showEmail ? 'Email is required or invalid' : 'User Name is required or invalid'">
             <!-- <input
               pInputText
               #inputField
@@ -34,20 +34,20 @@
                 placeholder="Email"
                 (focus)="emailShowError = false"
               />
-            <input
+               <input
                 pInputText
                 #inputField
-                type="tel"
+                type="text"
                 class="input100"
-                formControlName="MobileNumber"
+                formControlName="UserName"
                 [hidden]="showEmail"
-                placeholder="Mobile Number"
+                placeholder="UserName"
                 (focus)="emailShowError = false"
               />
 
               <span class="focus-input100"></span>
-              <span class="symbol-input100" (click)="toggleEmailMobile()" style="cursor: pointer;">
-                  <i [ngClass]="showEmail ? 'pi pi-envelope' : 'pi pi-phone'" aria-hidden="true"></i>
+              <span class="symbol-input100" (click)="toggleEmailUserName()" style="cursor: pointer;">
+                  <i [ngClass]="showEmail ? 'pi pi-envelope' : 'pi pi-user'" aria-hidden="true"></i>
               </span>
         </div>
 

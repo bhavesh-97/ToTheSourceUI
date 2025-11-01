@@ -14,6 +14,9 @@ export class FormUtils {
   // Map validation rules to regex patterns
   public regexMap: Record<ValidationRules, RegExp> = {
     [ValidationRules.AlphanumericOnly]: /^[a-zA-Z0-9]*$/,                                  // e.g., abc123
+    [ValidationRules.AlphanumericWithWhiteSpace]: /^[a-zA-Z0-9\s]*$/,                      // e.g., abc 123
+    [ValidationRules.AlphanumericWithWhiteSpaceAndSpecialCharacters]: /^[a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?`~]*$/,   // e.g., abc 123 !@#$
+    [ValidationRules.AlphanumericWithSpecialCharacters]: /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?`~]*$/,   // e.g., abc123!@#$
     [ValidationRules.NumberOnly]: /^[0-9]*$/,                                              // e.g., 12345
     [ValidationRules.LettersOnly]: /^[a-zA-Z]*$/,                                          // e.g., abc
     [ValidationRules.LettersWithWhiteSpace]: /^[a-zA-Z\s]*$/,                              // e.g., John Doe
@@ -34,6 +37,9 @@ export class FormUtils {
     // Default error messages for validation rules
   private errorMessages: Record<ValidationRules, string> = {
     [ValidationRules.AlphanumericOnly]: 'Only alphanumeric characters are allowed.',
+    [ValidationRules.AlphanumericWithWhiteSpace]: 'Only alphanumeric characters and spaces are allowed.',
+    [ValidationRules.AlphanumericWithWhiteSpaceAndSpecialCharacters]: 'Only alphanumeric characters, spaces, and special characters are allowed.',
+    [ValidationRules.AlphanumericWithSpecialCharacters]: 'Only alphanumeric characters and special characters are allowed.',
     [ValidationRules.NumberOnly]: 'Only numbers are allowed.',
     [ValidationRules.LettersOnly]: 'Only letters are allowed.',
     [ValidationRules.LettersWithWhiteSpace]: 'Only letters and spaces are allowed.',
