@@ -48,7 +48,6 @@ export class Login implements AfterViewInit {
 
   constructor() {
     this.loginForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
-    console.log(this.loginForm.controls);
   }
    toggleEmailUserName(): void {
     this.showEmail = !this.showEmail;
@@ -186,6 +185,7 @@ export class Login implements AfterViewInit {
     }
     this.loginService.GetUserLogin(loginModel).subscribe({
       next: (res) => {
+        console.log(res);
         if (res.isError) {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
         } else {
