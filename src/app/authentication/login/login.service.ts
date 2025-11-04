@@ -5,12 +5,15 @@ import { MUserLogin } from '../../models/MUserLogin.js';
 import { Observable } from 'rxjs/internal/Observable';
 import { JsonResponseModel } from '../../models/JsonResponseModel';
 import { ENCRYPTION_CONTEXT } from '../../interceptors/encryption-interceptor';
+import { routes } from '../../app.routes';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
     private http = inject(HttpClient);
+    private router = inject(Router);
     private baseUrl = environment.CMSUrl;
 
 //     GetUserLogin(loginModel: MUserLogin,encryptPayload = false): Observable<JsonResponseModel> {
@@ -24,19 +27,18 @@ export class LoginService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
+      logout(): void {
+        localStorage.clear();
+        this.router.navigate(['login']);
+      }
+      storeToken(token: string): void {
+        localStorage.setItem('token', token);
+      }
 
-    // Generic POST
-    post<T>(body: any, encryptPayload = false): Observable<T> {
-      return this.http.post<T>(`${this.baseUrl}/Login/Login`, body);
-    }
-
-    // Generic PUT
-    put<T>(body: any): Observable<T> {
-      return this.http.put<T>(`${this.baseUrl}/Login/Login`, body);
-    }
-
-    // Generic DELETE
-    delete<T>(params?: any): Observable<T> {
-      return this.http.delete<T>(`${this.baseUrl}/Login/Login`, { params });
-    }
+      getToken(): string | null {
+        return localStorage.getItem('token');
+      }
+      isLoggedIn(): boolean {
+        return this.getToken() !== null;
+      }
 }

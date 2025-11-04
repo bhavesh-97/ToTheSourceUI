@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, inject, QueryList, ViewChildren } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
 import { CardModule } from 'primeng/card';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { LoginService } from '../../../authentication/login/login.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,7 +15,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 })
 export class Dashboard {
 @ViewChildren('progress') progressBars!: QueryList<ElementRef>;
-
+private loginService = inject(LoginService);
   metrics: Metric[] = [
     { title: 'Total Revenue', value: 125000, change: 12.5, icon: 'pi-dollar', color: '#10b981' },
     { title: 'Active Users', value: 4500, change: -3.2, icon: 'pi-users', color: '#3b82f6' },
@@ -47,7 +48,9 @@ export class Dashboard {
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' as const } }
   };
-
+  logout(){
+    this.loginService.logout();
+  }
   ngAfterViewInit() {
     const cards = document.querySelectorAll('.metric-card');
 

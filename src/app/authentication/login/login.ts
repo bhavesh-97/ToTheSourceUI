@@ -186,13 +186,13 @@ export class Login implements AfterViewInit {
     this.loginService.GetUserLogin(loginModel).subscribe({
       next: (res) => {
         console.log(res);
-        if (res.isError) {
+        if (!res.isError) {
+          this.loginForm.reset();
+          this.loginService.storeToken(res.token ?? '');
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
+          this.router.navigate(['/CMS/dashboard']);
         } else {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
-          
-        this.router.navigate(['/CMS/dashboard']);
-
         }
       },
       error: (err) => {

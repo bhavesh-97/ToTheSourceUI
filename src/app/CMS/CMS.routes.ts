@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../authentication/guards/auth-guard';
 
 export const CMSRoutes: Routes = [    
      {
@@ -12,6 +13,7 @@ export const CMSRoutes: Routes = [
      },
      {
             path: 'dashboard',
-            loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard)
+            loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard),
+            canActivate: [authGuard]
      },
 ];
