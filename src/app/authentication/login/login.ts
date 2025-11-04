@@ -10,6 +10,7 @@ import { NotificationService } from '../../services/notification.service.js';
 import { MUserLogin } from '../../models/MUserLogin.js';
 import { LoginService } from './login.service.js';
 import { PopupMessageType } from '../../models/PopupMessageType.js';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ export class Login implements AfterViewInit {
   private renderer = inject(Renderer2);
   private FormUtils = inject(FormUtils);
   private loginService = inject(LoginService);
-
+  private router = inject(Router);
+  
   loginForm: FormGroup;
   emailShowError = false;
   passwordShowError = false;
@@ -175,9 +177,7 @@ export class Login implements AfterViewInit {
       this.notificationService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-
     const inactiveField = this.showEmail ? 'UserName' : 'EmailID';
-
     const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUserLogin);
     
     if (loginModel && Object.prototype.hasOwnProperty.call(loginModel, inactiveField)) {
@@ -190,6 +190,9 @@ export class Login implements AfterViewInit {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
         } else {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
+          
+        this.router.navigate(['/CMS/dashboard']);
+
         }
       },
       error: (err) => {

@@ -1,1 +1,47 @@
-<p>dashboard works!</p>
+<div class="dashboard p-4">
+
+      <!-- ==================== METRIC CARDS ==================== -->
+      <section class="metrics-grid mb-6">
+        <ng-container *ngFor="let m of metrics; let i = index">
+          <p-card
+            [header]="m.title"
+            class="metric-card"
+            [style.--accent]="m.color">
+            <div class="flex items-center gap-3">
+              <i class="pi {{m.icon}} text-3xl" [style.color]="m.color"></i>
+              <div class="flex-1">
+                <h3 class="value text-2xl font-bold m-0">
+                  {{ m.value | currency:'USD':'symbol':'1.0-0' }}
+                </h3>
+                <div class="trend flex items-center gap-1 text-sm font-medium"
+                     [class.up]="m.change>0" [class.down]="m.change<0">
+                  <i class="pi"
+                     [class.pi-arrow-up]="m.change>0"
+                     [class.pi-arrow-down]="m.change<0"></i>
+                  <span>{{ m.change | number:'1.1-1' }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="progress-ct mt-3 h-2 bg-surface-200 rounded-full overflow-hidden">
+              <div class="progress h-full rounded-full bg-[var(--accent)]"
+                   #progress></div>
+            </div>
+          </p-card>
+        </ng-container>
+      </section>
+
+      <!-- ==================== CHARTS ==================== -->
+      <section class="charts-grid">
+        <div class="chart-wrapper">
+          <h3 class="mb-3">Revenue Trend</h3>
+          <p-chart type="line" [data]="lineData" [options]="chartOpts" height="300"></p-chart>
+        </div>
+
+        <div class="chart-wrapper">
+          <h3 class="mb-3">Sales by Category</h3>
+          <p-chart type="doughnut" [data]="pieData" [options]="chartOpts" height="300"></p-chart>
+        </div>
+      </section>
+
+    </div>
