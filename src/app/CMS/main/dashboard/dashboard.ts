@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, inject, QueryList, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -12,6 +12,11 @@ import { gsap } from 'gsap';
 import { DashboardService } from './dashboard.service';
 import { forkJoin } from 'rxjs';
 import Chart from 'chart.js/auto';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { LoginService } from '../../../authentication/login/login.service';
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, CardModule, ButtonModule, ChartModule,AvatarModule,ProgressBarModule,BadgeModule,TagModule,TableModule],
@@ -20,11 +25,13 @@ import Chart from 'chart.js/auto';
 })
 export class Dashboard implements AfterViewInit {
   private dashboardService = inject(DashboardService);
+  private loginservice = inject(LoginService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChildren('counter') counters!: QueryList<ElementRef>;
   @ViewChildren('sparkline') sparklineCanvases!: QueryList<ElementRef>;
   @ViewChildren('cardEl') cardEls!: QueryList<ElementRef>;
-
+  @ViewChild('cardsContainer', { static: false }) cardsContainer!: ElementRef;
   summaryCards: any[] = [];
   recentPosts: any[] = [];
   trafficData: any = {};
@@ -39,7 +46,6 @@ export class Dashboard implements AfterViewInit {
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' as const } }
   };
-
   ngOnInit() {
     this.loadAllData();
     setInterval(() => this.currentTime = new Date(), 1000);
@@ -80,6 +86,27 @@ export class Dashboard implements AfterViewInit {
     gsap.from('.summary-card', {
       y: 100, opacity: 0, duration: 1, stagger: 0.15, ease: 'elastic.out(1,0.5)',
       scrollTrigger: { trigger: '.summary-card', start: 'top 85%' }
+    });
+    const cards = document.querySelectorAll('.summary-card'); // Validate exists
+    if (cards.length === 0) {
+      console.warn('No .summary-card found – check HTML selector');
+      return;
+    }
+
+    // Cards animation
+    gsap.from(cards, {
+      y: 100,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.2,
+      ease: 'elastic.out(1, 0.5)',
+      scrollTrigger: {
+        trigger: this.cardsContainer.nativeElement, // Use ViewChild
+        start: 'top 80%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+        markers: false // Set true for debug
+      }
     });
   }
 
@@ -126,14 +153,17 @@ export class Dashboard implements AfterViewInit {
     });
   }
 
-  createNewPost() {
-    gsap.to(window, { duration: 0.8, scrollTo: 0 });
-    // Navigate to create post
-  }
+ createNewPost() {
+  gsap.to(window, {
+    duration: 1,
+    scrollTo: { y: 0, autoKill: true }, 
+    ease: 'power2.inOut'
+  });
+}
 
-  // logout() {
-  //   // logout
-  // }
+  logout() {
+    this.loginservice.logout();
+  }
 }
 export interface Metric {
   title: string;

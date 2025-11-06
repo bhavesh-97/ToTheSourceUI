@@ -12,8 +12,8 @@
         </div>
       </div>
       <div class="flex gap-3">
-        <p-button label="New Post" icon="pi pi-plus-circle" class="p-button-success p-button-rounded"></p-button>
-        <p-button label="Logout" icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-rounded"></p-button>
+        <p-button label="New Post" (click)="createNewPost()" icon="pi pi-plus-circle" class="p-button-success p-button-rounded"></p-button>
+        <p-button label="Logout" (click)="logout()" icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-rounded"></p-button>
       </div>
     </div>
   </header>
