@@ -1,11 +1,12 @@
 // token.interceptor.ts
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { LoginService } from '../authentication/login/login.service';
 import { NotificationService } from '../services/notification.service';
 import { PopupMessageType } from '../models/PopupMessageType';
+import { error } from 'console';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(LoginService);
@@ -21,11 +22,14 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   return next(req).pipe(
-    catchError(error => {
-      if (error.status === 401) {
-        notificationService.showMessage("Please login again", "Session Expired", PopupMessageType.SessionExpired);
-        authService.logout();
+    catchError((error: any) => {
+      debugger
+      if(error instanceof HttpErrorResponse) {
+        if (error.status === 401) {
+          notificationService.showMessage("Please login again", "Session Expired", PopupMessageType.SessionExpired);
+          authService.logout();
         // return handle401Error(req, next);
+        }
       }
       return throwError(() => error);
     })
