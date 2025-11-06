@@ -1,53 +1,132 @@
-<div class="dashboard p-4">
-      <div class="flex justify-between items-center mb-4 w-full">
-          <span>
-            <h2 class="text-2xl font-bold">Dashboard</h2>
-            <button pButton label="Logout" icon="pi pi-sign-out" (click)="logout()" class="ml-auto"></button>
-          </span>
+<div class="dashboard-master surface-ground">
+  <!-- Header -->
+  <header class="glass-header p-4 mb-6" #header>
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <i class="pi pi-sparkles text-5xl text-primary animate-pulse"></i>
+        <div>
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            CMS Dashboard
+          </h1>
+          <p class="text-600">Welcome back, <strong>{{ userName }}</strong></p>
+        </div>
       </div>
+      <div class="flex gap-3">
+        <p-button label="New Post" icon="pi pi-plus-circle" class="p-button-success p-button-rounded"></p-button>
+        <p-button label="Logout" icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-rounded"></p-button>
+      </div>
+    </div>
+  </header>
 
-      <!-- ==================== METRIC CARDS ==================== -->
-      <section class="metrics-grid mb-6">
-        <ng-container *ngFor="let m of metrics; let i = index">
-          <p-card
-            [header]="m.title"
-            class="metric-card"
-            [style.--accent]="m.color">
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" #cardsContainer>
+    <div 
+      class="summary-card glass-card cursor-pointer" 
+      *ngFor="let card of summaryCards; let i = index"
+      #cardEl>
+      <div class="p-6">
+        <div class="icon-circle" [style.background]="card.gradient">
+          <i [class]="card.icon + ' text-4xl text-white'"></i>
+        </div>
+        <p class="text-600 text-sm mt-4">{{ card.label }}</p>
+        <h3 class="text-3xl font-bold text-900 mt-2" #counter [attr.data-target]="card.value">
+          0
+        </h3>
+        <div class="flex items-center gap-2 mt-3">
+          <i [class]="card.trend > 0 ? 'pi pi-arrow-up text-green-600' : 'pi pi-arrow-down text-red-600'"></i>
+          <span [class.text-green-600]="card.trend > 0" [class.text-red-600]="card.trend < 0">
+            {{ card.trend }}%
+          </span>
+        </div>
+        <canvas #sparkline class="mt-4"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions + Recent Posts -->
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-8">
+    <div class="xl:col-span-3">
+      <p-card header="Quick Actions" class="glass-card h-full">
+        <div class="flex flex-column gap-3">
+          <button pButton 
+                  *ngFor="let action of quickActions" 
+                  [label]="action.label" 
+                  [icon]="action.icon" 
+                  class="w-full justify-start"
+                  (click)="action.action()">
+          </button>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="xl:col-span-9">
+      <p-card header="Recent Content">
+        <p-table [value]="recentPosts">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Status</th>
+              <th>Views</th>
+              <th>Date</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-post>
+            <tr>
+              <td><strong>{{ post.title }}</strong></td>
+              <td>{{ post.author }}</td>
+              <td>
+                <p-tag 
+                    [value]="post.status" 
+                    [severity]="post.status === 'Published' ? 'success' : 'warn'">
+                </p-tag>
+              </td>
+              <td>{{ post.views | number }}</td>
+              <td>{{ post.date | date:'short' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Traffic + Notifications -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div>
+      <p-card header="Traffic Overview">
+        <p-chart type="line" [data]="trafficData" [options]="chartOptions" height="300"></p-chart>
+      </p-card>
+    </div>
+    <div>
+      <p-card header="Notifications">
+        <div class="space-y-3">
+          <div *ngFor="let n of notifications" class="flex items-center justify-between p-3 border-round surface-100">
             <div class="flex items-center gap-3">
-              <i class="pi {{m.icon}} text-3xl" [style.color]="m.color"></i>
-              <div class="flex-1">
-                <h3 class="value text-2xl font-bold m-0">
-                  {{ m.value | currency:'USD':'symbol':'1.0-0' }}
-                </h3>
-                <div class="trend flex items-center gap-1 text-sm font-medium"
-                     [class.up]="m.change>0" [class.down]="m.change<0">
-                  <i class="pi"
-                     [class.pi-arrow-up]="m.change>0"
-                     [class.pi-arrow-down]="m.change<0"></i>
-                  <span>{{ m.change | number:'1.1-1' }}%</span>
-                </div>
+              <i [class]="n.icon" class="text-xl"></i>
+              <div>
+                <p class="font-medium m-0">{{ n.title }}</p>
+                <small class="text-500">{{ n.time }}</small>
               </div>
             </div>
-
-            <div class="progress-ct mt-3 h-2 bg-surface-200 rounded-full overflow-hidden">
-              <div class="progress h-full rounded-full bg-[var(--accent)]"
-                   #progress></div>
-            </div>
-          </p-card>
-        </ng-container>
-      </section>
-
-      <!-- ==================== CHARTS ==================== -->
-      <section class="charts-grid">
-        <div class="chart-wrapper">
-          <h3 class="mb-3">Revenue Trend</h3>
-          <p-chart type="line" [data]="lineData" [options]="chartOpts" height="300"></p-chart>
+            <p-badge [value]="n.count" severity="danger" *ngIf="n.count"></p-badge>
+          </div>
         </div>
-
-        <div class="chart-wrapper">
-          <h3 class="mb-3">Sales by Category</h3>
-          <p-chart type="doughnut" [data]="pieData" [options]="chartOpts" height="300"></p-chart>
-        </div>
-      </section>
-
+      </p-card>
     </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="mt-6">
+    <p-card header="Recent Activity">
+      <div class="space-y-4">
+        <div *ngFor="let act of activities" class="flex items-center gap-4">
+          <p-avatar [image]="act.avatar" shape="circle" size="large"></p-avatar>
+          <div>
+            <p class="m-0"><strong>{{ act.user }}</strong> {{ act.action }}</p>
+            <small class="text-500">{{ act.time }}</small>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>

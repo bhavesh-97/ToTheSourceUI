@@ -37,5 +37,43 @@ export class DashboardService {
       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
     );
   }
+  GetSummary(encryptPayload = false): Observable<JsonResponseModel> {
+    return this.http.get<JsonResponseModel>(
+      `${this.baseUrl}/Dashboard/summary`,
+      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+    );
+  }
+
+  // RECENT POSTS
+  GetRecentPosts(encryptPayload = false): Observable<JsonResponseModel> {
+    return this.http.get<JsonResponseModel>(
+      `${this.baseUrl}/Dashboard/recent-posts`,
+      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+    );
+  }
+
+  // TRAFFIC DATA
+  GetTrafficData(encryptPayload = false): Observable<JsonResponseModel> {
+    return this.http.get<JsonResponseModel>(
+      `${this.baseUrl}/Dashboard/traffic`,
+      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+    );
+  }
+
+  // NOTIFICATIONS
+  GetNotifications(encryptPayload = false): Observable<JsonResponseModel> {
+    return this.http.get<JsonResponseModel>(
+      `${this.baseUrl}/Dashboard/notifications`,
+      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+    );
+  }
+
+  // ACTIVITY FEED
+  GetActivities(encryptPayload = false): Observable<JsonResponseModel> {
+    return this.http.get<JsonResponseModel>(
+      `${this.baseUrl}/Dashboard/activities`,
+      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+    );
+  }
   }
 
