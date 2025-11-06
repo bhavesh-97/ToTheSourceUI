@@ -9,6 +9,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { LoadingInterceptor } from '../app/interceptors/loading.interceptor';
+import { tokenInterceptor } from './interceptors/token-interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync('animations'),
@@ -18,7 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
      provideHttpClient(
       withInterceptors([
-        encryptionInterceptor  
+        encryptionInterceptor,
+        tokenInterceptor
       ]),
       withInterceptorsFromDi()
     ),

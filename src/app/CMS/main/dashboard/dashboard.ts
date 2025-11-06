@@ -36,7 +36,9 @@ export class Dashboard {
   }
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    setTimeout(() => {
+      this.loadDashboardData();
+    }, 0);
   }
 
   logout() {
