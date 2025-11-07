@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, NgZone, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -27,11 +27,13 @@ export class Dashboard implements AfterViewInit {
   private dashboardService = inject(DashboardService);
   private loginservice = inject(LoginService);
   private cdr = inject(ChangeDetectorRef);
-
+  private zone = inject(NgZone);
+  
   @ViewChildren('counter') counters!: QueryList<ElementRef>;
   @ViewChildren('sparkline') sparklineCanvases!: QueryList<ElementRef>;
   @ViewChildren('cardEl') cardEls!: QueryList<ElementRef>;
   @ViewChild('cardsContainer', { static: false }) cardsContainer!: ElementRef;
+  
   summaryCards: any[] = [];
   recentPosts: any[] = [];
   trafficData: any = {};
@@ -48,7 +50,10 @@ export class Dashboard implements AfterViewInit {
   };
   ngOnInit() {
     this.loadAllData();
-    setInterval(() => this.currentTime = new Date(), 1000);
+    setInterval(() => {
+            this.currentTime = new Date();
+            this.cdr.detectChanges();
+          }, 1000);
 
     this.quickActions = [
       { label: 'Create New Post', icon: 'pi pi-plus', action: () => this.createNewPost() },
@@ -59,24 +64,27 @@ export class Dashboard implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.initGSAP(), 300);
+    this.zone.runOutsideAngular(() => {
+      setTimeout(() => this.initGSAP(), 300);
+    });
   }
 
   loadAllData() {
     forkJoin({
-      summary: this.dashboardService.GetSummary(true),
+      summary: this.dashboardService.GetSummary(),
       posts: this.dashboardService.GetRecentPosts(),
       traffic: this.dashboardService.GetTrafficData(),
       notifications: this.dashboardService.GetNotifications(),
       activities: this.dashboardService.GetActivities(),
-      pie: this.dashboardService.GetPieChartData()
+      pie: this.dashboardService.GetPieChartData(true)
     }).subscribe(res => {
       this.summaryCards = res.summary.result.cards;
       this.recentPosts = res.posts.result;
       this.trafficData = res.traffic.result;
       this.notifications = res.notifications.result;
       this.activities = res.activities.result;
-
+      
+      this.cdr.detectChanges();
       setTimeout(() => this.animateCountersAndSparklines(), 600);
     });
   }

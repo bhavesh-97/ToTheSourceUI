@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -7,30 +7,37 @@ import { BehaviorSubject } from 'rxjs';
 export class LoaderService {
   private activeRequests = 0; 
   private loadingSubject = new BehaviorSubject<boolean>(false);
+  private zone = inject(NgZone);
   readonly loading$ = this.loadingSubject.asObservable();
 
-  show(): void {
-    this.loadingSubject.next(true);
+    show(): void {
+    this.zone.runOutsideAngular(() => {
+      Promise.resolve().then(() => this.loadingSubject.next(true));
+    });
   }
 
   hide(): void {
-    this.loadingSubject.next(false);
+    this.zone.runOutsideAngular(() => {
+      Promise.resolve().then(() => this.loadingSubject.next(false));
+    });
   }
 
-  /** Called automatically by interceptor */
-  startRequest(): void {
+   startRequest(): void {
     this.activeRequests++;
     if (this.activeRequests === 1) {
-      this.loadingSubject.next(true);
+      this.zone.runOutsideAngular(() => {
+        Promise.resolve().then(() => this.loadingSubject.next(true));
+      });
     }
   }
 
-  /** Called automatically by interceptor */
   endRequest(): void {
     this.activeRequests--;
     if (this.activeRequests <= 0) {
       this.activeRequests = 0;
-      this.loadingSubject.next(false);
+      this.zone.runOutsideAngular(() => {
+        Promise.resolve().then(() => this.loadingSubject.next(false));
+      });
     }
   }
 }

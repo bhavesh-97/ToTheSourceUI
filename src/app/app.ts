@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { LoaderService } from '../app/services/loader.service';
@@ -13,12 +13,16 @@ export class App implements OnInit{
   protected readonly title = signal('ToTheSourceUI');
   public LoaderService = inject(LoaderService);
   loading$ = this.LoaderService.loading$;
+  private cdr = inject(ChangeDetectorRef);
   
   ngOnInit(): void {
     // Call setFavicon on initialization
     this.setFavicon('../assets/images/product/Tothesourceicon.png','64x64');
   }
-
+  
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
+  }
  setFavicon(iconUrl: string, size: string = '32x32') {
   let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
 
