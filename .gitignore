@@ -363,3 +363,6 @@ FodyWeavers.xsd
 
 # Angular build and cache
 .angular/cache/
+
+# Ignore all Angular cache and build artifacts
+.angular/
