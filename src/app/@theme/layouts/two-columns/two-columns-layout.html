@@ -1,0 +1,49 @@
+<div class="layout-container">
+
+  <!-- PrimeNG Toolbar Header -->
+  <p-toolbar styleClass="shadow-lg border-0">
+    <div class="p-toolbar-group-start">
+      <button pButton icon="pi pi-bars" class="p-button-text p-button-rounded" 
+              (click)="toggleSidebar()"></button>
+      <img src="./assets/images/product/Locomate Logo.svg" alt="Logo" height="40" class="ms-3">
+    </div>
+
+    <div class="p-toolbar-group-end">
+      <button pButton icon="pi pi-bell" class="p-button-text p-button-rounded me-2"></button>
+      <p-avatar image="./assets/images/avatar.png" shape="circle" size="large"></p-avatar>
+    </div>
+  </p-toolbar>
+
+  <!-- GSAP Animated Sidebar -->
+  <div #sidebarBackdrop class="sidebar-backdrop" (click)="hideSidebar()"></div>
+
+    <p-drawer
+        #drawer
+        [visible]="sidebarVisible()"
+        [showCloseIcon]="false"
+        [modal]="true"
+        [baseZIndex]="1000"
+        position="left"
+        styleClass="custom-sidebar"
+      >
+        <div class="sidebar-header">
+            <h4 class="text-white fw-bold">Locomate</h4>
+        </div>
+      <p-menu [model]="menuItems" styleClass="w-100 border-0"></p-menu>
+  </p-drawer>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="layout-footer">
+    <div class="container-fluid text-center py-3">
+      <p class="mb-0 text-muted">
+        © 2025 ToTheSource • Powered by <strong>To The Source</strong>
+      </p>
+    </div>
+  </footer>
+
+</div>

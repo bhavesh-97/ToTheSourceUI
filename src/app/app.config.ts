@@ -10,6 +10,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { LoadingInterceptor } from '../app/interceptors/loading.interceptor';
 import { tokenInterceptor } from './interceptors/token-interceptor';
+import { THEME_PROVIDERS } from './@theme/theme.imports';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync('animations'),
@@ -43,7 +44,8 @@ export const appConfig: ApplicationConfig = {
         progressBar: true, 
         tapToDismiss: true,
         toastClass: 'ngx-toastr toast-animate',
-    })
+    }),
+    ...THEME_PROVIDERS
   ]
 };
 

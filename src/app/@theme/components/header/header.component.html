@@ -1,0 +1,109 @@
+<!-- src/app/@theme/components/header/header.component.html -->
+<header class="header-premium">
+  <div class="container-fluid px-4 py-3">
+    <div class="d-flex align-items-center justify-content-between gap-4">
+
+      <!-- Left: Logo + Toggle -->
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-link text-white d-lg-none" (click)="toggleSidebar()">
+          <i class="pi pi-bars fs-3"></i>
+        </button>
+        <a href="#" class="logo">
+          <img src="./assets/images/product/Locomate Logo.svg" alt="Locomate" height="44" />
+        </a>
+      </div>
+
+      <!-- Center: Search + Clock -->
+      <div class="flex-grow-1 d-flex align-items-center justify-content-center gap-4 max-w-600">
+
+        <p-autoComplete
+          [(ngModel)]="searchQuery"
+          [suggestions]="filteredItems()"
+          (completeMethod)="filterSearch($event)"
+          (onSelect)="navigateTo($event)"
+          field="text"
+          placeholder="Search anything..."
+          styleClass="header-search"
+          [dropdown]="true"
+          [forceSelection]="false">
+          <ng-template let-item pTemplate="item">
+            <div class="p-3 hover-item">
+              <i class="pi pi-search me-2"></i>{{ item.text }}
+            </div>
+          </ng-template>
+        </p-autoComplete>
+
+        <div class="text-white fw-bold bg-primary px-4 py-2 rounded-pill shadow-sm">
+          {{ currentTime }}
+        </div>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="d-flex align-items-center gap-3">
+
+        <!-- Notifications -->
+        <div class="position-relative">
+          <button pButton icon="pi pi-bell" class="p-button-text text-white blink-bell"
+                  (click)="notificationMenu.toggle($event)" pTooltip="Notifications"></button>
+          <p-badge [value]="notificationCount()" severity="danger"
+                   class="position-absolute top-0 start-100 translate-middle"></p-badge>
+        </div>
+
+        <!-- User Menu -->
+        <p-menu #userMenuRef [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
+        <button pButton class="p-button-text" (click)="userMenuRef.toggle($event)">
+          <p-avatar [image]="user().picture" size="large" shape="circle"></p-avatar>
+          <span class="text-white ms-2 d-none d-md-inline">{{ user().name }}</span>
+          <i class="pi pi-angle-down text-white ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <p-menu #notificationMenu [model]="[]" [popup]="true" styleClass="notification-panel">
+    <ng-template pTemplate="header">
+      <div class="p-4 border-bottom">
+        <h6 class="mb-0">Recent Notifications</h6>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="item">
+      <div class="p-3" *ngFor="let n of notifications">
+        <div class="d-flex align-items-center">
+          <i [class]="'pi ' + n.icon + ' fs-5 me-3'"></i>
+          <div>
+            <div class="fw-bold">{{ n.title }}</div>
+            <small class="text-muted">{{ n.time }}</small>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </p-menu>
+</header>
+
+<!-- Dialogs -->
+<p-dialog header="Change Password" [(ngModel)]="changePasswordVisible" [modal]="true" 
+          [style]="{width: '420px'}" (onShow)="onDialogShow('password')" class="password-dialog">
+  <div class="space-y-4">
+    <input pInputText placeholder="Old Password" type="password" class="w-100" />
+    <input pInputText placeholder="New Password" type="password" class="w-100" />
+    <input pInputText placeholder="Confirm Password" type="password" class="w-100" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Save" icon="pi pi-check"></p-button>
+    <p-button label="Cancel" severity="secondary" (onClick)="changePasswordVisible.set(false)"></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Preferences" [(visible)]="preferencesVisible" [modal]="true"
+          [style]="{width: '420px'}" (onShow)="onDialogShow('pref')" class="pref-dialog">
+  <div class="space-y-4">
+    <label>Theme</label>
+      <p-select [options]="themes" [(ngModel)]="selectedTheme" optionLabel="name" optionValue="value"
+                (onChange)="changeTheme(selectedTheme)" styleClass="w-100"></p-select>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Save" icon="pi pi-check"></p-button>
+    <p-button label="Cancel" severity="secondary" (onClick)="preferencesVisible.set(false)"></p-button>
+  </ng-template>
+</p-dialog>

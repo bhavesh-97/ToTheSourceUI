@@ -1,0 +1,201 @@
+
+@import '../styles/variable.scss';
+
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+
+
+@mixin amnexproduct-gadget($point) {
+  @if $point==large-gadget {
+    @media (max-width: 1600px) {
+      @content;
+    }
+  }
+
+  @else if $point==medium-gadget {
+    @media (max-width: 1250px) {
+      @content;
+    }
+  }
+
+  @else if $point==mobile-gadget {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+}
+
+
+.product_login {
+  height: 100vh;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+}
+
+.width-box {
+  width: 75vw;
+  margin: auto;
+  font-family: Roboto;
+  font-size: clamp(0.85rem, 0.85vw, 0.85rem);
+
+  @include amnexproduct-gadget(mobile-gadget) {
+    font-size: clamp(0.85rem, 0.85vw, 0.85rem);
+  }
+
+  .amnexproduct-w {
+    width: 44vw;
+  }
+
+  .amnexproduct-title {
+    line-height: 18px;
+    margin-bottom: 24px;
+
+  }
+
+  .min-widthbox {
+    max-width: 380px;
+    padding: 15px;
+    width: 100%;
+
+    @include amnexproduct-gadget(mobile-gadget) {
+      width: 100%;
+      margin-right: 0px;
+    }
+
+    .card {
+      margin-bottom: 0;
+      border-bottom: unset;
+      box-shadow: unset;
+      background: transparent;
+      border: unset;
+
+      .client-icon {
+        display: block;
+        max-width: 200px;
+        margin: 0 auto 12vh auto;
+      }
+
+      label {
+        font-weight: 500;
+        color: $colortheme_textdefault;
+        margin-bottom: 0;
+      }
+
+      .amnexproduct_innertitle {
+        color: $colortheme_textdefault;
+      }
+
+      .custom-control-label {
+        cursor: pointer;
+        line-height: 25px;
+      }
+
+      .text-unline-dashed {
+        text-decoration: none;
+        color: $colortheme_blue_default;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+
+      .custom-control-input:checked~.custom-control-label::before {
+        color: $colortheme_textdefault;
+        border-color: $colortheme_blue_default;
+        background-color: $colortheme_blue_default;
+      }
+
+      
+
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px $colortheme_whitedefault inset !important;
+      }
+
+
+      .btn {
+        color: $colortheme_whitedefault;
+        font-size: 1.1rem;
+        cursor: pointer;
+      }
+
+      .btn-cancel {
+        background: transparent;
+        color: $colortheme_textdefault;
+      }
+
+      .btn-primary {
+        background-color: $colortheme_blue_default;
+        border: unset;
+        font-weight: 500;
+
+        &:hover {
+          box-shadow: unset;
+          outline: unset;
+
+        }
+
+        &:focus {
+          box-shadow: unset;
+          outline: unset;
+        }
+
+      }
+
+      .k-textbox {
+        border-color: $colortheme_nextprevbutton;
+        border-radius: 4px;
+        height: calc(16px + 15px + 2px);
+      }
+
+    }
+
+    .amnex-devlopbymt {
+      margin-top: 12vh;
+    }
+
+    .text-blue {
+      color: $colortheme_blue_default;
+    }
+
+
+  }
+
+}
+
+.amnexproduct_version {
+  position: fixed;
+  bottom: 0;
+  left: 15px;
+  font-weight: 400;
+  font-size: clamp(0.85rem, 0.85vw, 0.85rem);
+}
+
+.k-textbox::selection,
+.k-textbox .k-input::selection {
+  color: $colortheme_whitedefault;
+  background-color: $colortheme_blue_default;
+}
+
+.k-checkbox:checked {
+  border-color: $colortheme_blue_default;
+  color: $colortheme_textdefault;
+  background-color: $colortheme_blue_default;
+}
+
+
+.productheight_inner{
+  height: 240px;
+}

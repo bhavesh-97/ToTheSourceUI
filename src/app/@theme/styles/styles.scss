@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap');
+
+// themes - our custom or/and out of the box themes
+@import 'themes';
+
+// framework component themes (styles tied to theme variables)
+@import '@nebular/theme/styles/globals';
+@import '@nebular/auth/styles/globals';
+
+// loading progress bar theme
+@import './pace.theme';
+
+@import './layout';
+@import './overrides';
+
+// install the framework and custom global styles
+@include nb-install() {
+
+  // framework global styles
+  @include nb-theme-global();
+  @include nb-auth-global();
+
+  @include ngx-layout();
+  // loading progress bar
+  @include ngx-pace-theme();
+
+  @include nb-overrides();
+}
+
+;
+
+@import './variable.scss';
+
+.nb-theme-default {
+
+  font-family: Roboto;
+  font-weight: 300;
+
+  @import './kendo_common.scss';
+
+}
+
+.nb-theme-dark {
+
+  $colortheme_default: linear-gradient(45deg, #B3B3FF, #FF8C8C);
+  $colortheme_textdefault: #333333;
+  $colortheme_blue_default: #FF8C8C;
+  $colortheme_green_default: #B3B3FF;
+  $colortheme_skylight_default: #EEEDEF;
+  $colortheme_whitedefault: #fff;
+  $colortheme_nextprevbutton: #cbd6e7;
+  $colortheme-bordertextbox: #dcdde0;
+  $colortheme-darkgrey: #666666;
+  $colortheme-lighttab: #EEEDEF;
+  $colortheme-menusidetoggle: linear-gradient(180deg, #B3B3FF, #FF8C8C);
+  $colortheme-darkblue: #FF8C8C;
+  $colortheme_tooltipred: #FF3101;
+  $colortheme_switchbutton: #f37064;
+  $colottheme-switchbuttonactive: #79df94;
+  $colortheme-lightblue: #FFD9D9;
+
+  color: $colortheme_textdefault;
+
+  font-family: Roboto;
+  font-weight: 300;
+
+  @import './kendo_common.scss';
+}
+
+.nb-theme-cosmic{
+  $colortheme_default: linear-gradient(45deg, #33CCFF, #CC66FF);
+  $colortheme_textdefault: #333333;
+  $colortheme_blue_default: #CC66FF;
+  $colortheme_green_default: #33CCFF;
+  $colortheme_skylight_default: #EEEDEF;
+  $colortheme_whitedefault: #fff;
+  $colortheme_nextprevbutton: #cbd6e7;
+  $colortheme-bordertextbox: #dcdde0;
+  $colortheme-darkgrey: #666666;
+  $colortheme-lighttab: #EEEDEF;
+  $colortheme-menusidetoggle: linear-gradient(180deg, #B3B3FF, #CC66FF);
+  $colortheme-darkblue: #CC66FF;
+  $colortheme_tooltipred: #FF3101;
+  $colortheme_switchbutton: #f37064;
+  $colottheme-switchbuttonactive: #79df94;
+  $colortheme-lightblue: #f2d9ff;
+
+  color: $colortheme_textdefault;
+
+  font-family: Roboto;
+  font-weight: 300;
+
+  @import './kendo_common.scss';
+}
+
+.nb-theme-corporate{
+  $colortheme_default: linear-gradient(45deg, #99CCFF, #6633CC);
+  $colortheme_textdefault: #333333;
+  $colortheme_blue_default: #6633CC;
+  $colortheme_green_default: #33CCFF;
+  $colortheme_skylight_default: #EEEDEF;
+  $colortheme_whitedefault: #fff;
+  $colortheme_nextprevbutton: #cbd6e7;
+  $colortheme-bordertextbox: #dcdde0;
+  $colortheme-darkgrey: #666666;
+  $colortheme-lighttab: #EEEDEF;
+  $colortheme-menusidetoggle: linear-gradient(180deg, #99CCFF, #6633CC);
+  $colortheme-darkblue: #6633CC;
+  $colortheme_tooltipred: #FF3101;
+  $colortheme_switchbutton: #f37064;
+  $colottheme-switchbuttonactive: #79df94;
+  $colortheme-lightblue: #d9ccf2;
+
+  color: $colortheme_textdefault;
+
+  font-family: Roboto;
+  font-weight: 300;
+
+  @import './kendo_common.scss';
+}

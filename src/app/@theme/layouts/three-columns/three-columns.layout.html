@@ -1,0 +1,69 @@
+<div class="three-col-layout">
+
+  <!-- Header -->
+  <p-toolbar styleClass="header-toolbar shadow-lg">
+    <div class="p-toolbar-group-start">
+      <button pButton icon="pi pi-bars" class="p-button-rounded p-button-text" 
+              (click)="toggleSidebar()"></button>
+      <img src="./assets/images/product/Locomate Logo.svg" alt="Logo" height="40" class="ms-3">
+    </div>
+    <div class="p-toolbar-group-end">
+      <button pButton icon="pi pi-bell" class="p-button-text me-2" pTooltip="Notifications"></button>
+      <p-avatar image="./assets/images/avatar.png" shape="circle" size="large"></p-avatar>
+    </div>
+  </p-toolbar>
+
+  <!-- GSAP Animated Sidebar -->
+  <div #backdrop class="sidebar-backdrop" (click)="hideSidebar()"></div>
+
+<p-drawer #drawer [visible]="sidebarVisible()" position="left" [showCloseIcon]="false" [modal]="true"
+  [closeOnEscape]="false" styleClass="custom-sidebar" >
+  <div class="p-4 border-bottom">
+    <h5 class="text-white mb-0">Locomate DMS</h5>
+  </div>
+
+  <p-menu [model]="menuItems" styleClass="sidebar-menu"></p-menu>
+</p-drawer>
+
+
+  <!-- Main 3-Column Grid -->
+  <div class="content-grid">
+
+    <!-- Left Small Column -->
+    <aside class="left-panel">
+      <p-panel header="Quick Stats" styleClass="h-100">
+        <div class="d-flex flex-column gap-3">
+          <div><strong>Active Users:</strong> 1,284</div>
+          <div><strong>Alerts Today:</strong> 12</div>
+          <div><strong>Uptime:</strong> 99.9%</div>
+        </div>
+      </p-panel>
+    </aside>
+
+    <!-- Center Main Content -->
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Right Small Column -->
+    <aside class="right-panel">
+      <p-panel header="Recent Activity" styleClass="h-100">
+        <div class="activity-item" *ngFor="let act of activities">
+          <div class="fw-bold">{{ act.user }}</div>
+          <small class="text-muted">{{ act.action }}</small>
+          <small class="d-block text-muted">{{ act.time }}</small>
+        </div>
+      </p-panel>
+    </aside>
+  </div>
+
+  <!-- Footer -->
+  <footer class="layout-footer">
+    <div class="container-fluid text-center py-3">
+      <p class="mb-0 text-white">
+        © 2025 ToTheSource • Powered by <strong>To The Source</strong>
+      </p>
+    </div>
+  </footer>
+
+</div>
