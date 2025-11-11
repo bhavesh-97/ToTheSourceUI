@@ -47,7 +47,9 @@ ngAfterViewInit() {
     gsap.set(this.backdrop.nativeElement, { opacity: 0, display: 'none' });
   }
 }
-
+toggleDark() {
+  document.documentElement.classList.toggle('dark');
+}
   toggleSidebar() {
     if (this.sidebarVisible()) {
       this.hideSidebar();

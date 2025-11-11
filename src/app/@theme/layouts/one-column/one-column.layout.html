@@ -1,49 +1,41 @@
 <div class="one-col-layout">
 
-  <!-- Our Premium Header -->
+  <!-- Fixed Header -->
   <ngx-header (toggleSidebar)="toggleSidebar()"></ngx-header>
 
-  <!-- GSAP Animated Sidebar -->
+  <!-- GSAP-controlled Backdrop -->
   <div #backdrop class="sidebar-backdrop" (click)="hideSidebar()"></div>
 
-<p-drawer
-  #drawer
-  [visible]="sidebarVisible()"
-  [showCloseIcon]="false"
-  [modal]="true"
-  [closeOnEscape]="false"
-  position="left"
-  styleClass="custom-sidebar p-sidebar-lg"
-  [style.width.px]="sidebarCompacted() ? 70 : 280"
->
-  <!-- Header -->
-  <div class="sidebar-header d-flex align-items-center justify-content-between p-3">
-    <div class="d-flex align-items-center gap-3">
-      <img src="./assets/images/product/Locomate Logo.svg" height="36" alt="Logo" />
-      <span
-        class="text-white fw-bold fs-5"
-        [class.d-none]="sidebarCompacted()"
-        >Locomate</span
-      >
-    </div>
-  </div>
-  <p-menu [model]="menuItems" styleClass="sidebar-menu"></p-menu>
+  <!-- PrimeNG Drawer (GSAP-animated) -->
+  <p-drawer #drawer
+            [visible]="sidebarVisible()"
+            [showCloseIcon]="false"
+            [modal]="true"
+            [closeOnEscape]="false"
+            position="left"
+            styleClass="custom-sidebar"
+            [style.--sidebar-width]="sidebarWidth() + 'px'">
+    <!-- Sidebar Header -->
+    <ng-template pTemplate="header">
+      <div class="sidebar-header p-3 d-flex align-items-center gap-3">
+        <img src="assets/images/product/To the Source.png" height="36" alt="Logo">
+        <span class="text-white fw-bold fs-5" [class.d-none]="sidebarCompacted()">To The Source</span>
+      </div>
+    </ng-template>
 
-  <div class="sidebar-footer p-3 border-top">
-    <a
-      href="https://www.tothesource.com"
-      target="_blank"
-      class="d-block text-center"
-    >
-      <img
-        src="./assets/images/product/Powered by AMNEX.svg"
-        height="28"
-        class="img-fluid"
-        alt="Powered by tothesource"
-      />
-    </a>
-  </div>
-</p-drawer>
+    <!-- Menu -->
+    <p-menu [model]="menuItems" styleClass="sidebar-menu flex-grow-1"></p-menu>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer">
+      <div class="sidebar-footer p-3 text-center border-top">
+        <a href="https://www.tothesource.com" target="_blank">
+          <img src="assets/images/product/To the Source.png"
+               height="28" class="img-fluid" alt="Powered by tothesource">
+        </a>
+      </div>
+    </ng-template>
+  </p-drawer>
 
   <!-- Main Content -->
   <main class="main-content">

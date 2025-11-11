@@ -1,58 +1,185 @@
+/* -------------------------------------------------
+   1. VARIABLES – easy to tweak brand colours
+   ------------------------------------------------- */
+:root {
+  --tts-primary:   #1e40af;   /* deep blue – brand accent */
+  --tts-primary-light: #3b82f6;
+  --tts-bg:        #f8fafc;   /* light page background */
+  --tts-sidebar:   #111827;   /* dark sidebar */
+  --tts-sidebar-hover: #1f2937;
+  --tts-text:      #1f2937;
+  --tts-muted:     #6b7280;
+  --tts-border:    #e5e7eb;
+  --tts-shadow:    0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* Dark-mode (optional – toggle .dark on <html>) */
+.dark {
+  --tts-bg:        #0f172a;
+  --tts-sidebar:   #1e293b;
+  --tts-sidebar-hover: #334155;
+  --tts-text:     #e2e8f0;
+  --tts-muted:    #94a3b8;
+  --tts-border:   #334155;
+}
+
+/* -------------------------------------------------
+   2. GLOBAL RESET & HELPERS
+   ------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--tts-bg);
+  color: var(--tts-text);
+}
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* -------------------------------------------------
+   3. LAYOUT CONTAINER
+   ------------------------------------------------- */
 .layout-container {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  background: #f8fafc;
-  margin-left: 0;
-  transition: margin-left 0.4s ease;
+/* -------------------------------------------------
+   4. TOOLBAR (PrimeNG)
+   ------------------------------------------------- */
+.p-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--tts-border);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--tts-shadow);
+  z-index: 1100;
 }
 
-.layout-footer {
-  background: #1e293b;
-  color: white;
-  font-size: 0.9rem;
+/* Mobile – make toolbar compact */
+@media (max-width: 576px) {
+  .p-toolbar { padding: 0.5rem; }
 }
 
-// Custom Sidebar
-::ng-deep .custom-sidebar {
-  width: 280px !important;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  border: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-
-  .p-sidebar-content {
-    padding: 0;
-  }
-
-  .sidebar-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
+/* Buttons inside toolbar */
+.p-toolbar .p-button-text {
+  color: var(--tts-text);
+}
+.p-toolbar .p-button-text:hover {
+  background: rgba(0,0,0,.05);
 }
 
-::ng-deep .p-menu {
-  background: transparent;
-  border: none;
-
-  .p-menuitem-link {
-    color: rgba(255,255,255,0.8) !important;
-    &:hover {
-      background: rgba(255,255,255,0.1) !important;
-      border-radius: 8px;
-      margin: 0 0.5rem;
-    }
-  }
-}
-
+/* -------------------------------------------------
+   5. SIDEBAR (GSAP + PrimeNG Drawer)
+   ------------------------------------------------- */
 .sidebar-backdrop {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  inset: 0;
+  background: rgba(0,0,0,.45);
   z-index: 999;
-  backdrop-filter: blur(5px);
+  display: none;               /* GSAP toggles */
+}
+
+/* Drawer container – PrimeNG adds .p-drawer */
+.custom-sidebar {
+  width: 280px !important;     /* fixed width on large screens */
+  background: var(--tts-sidebar);
+  border-right: none;
+  box-shadow: var(--tts-shadow);
+  overflow-y: auto;
+}
+
+/* Responsive drawer width */
+@media (max-width: 768px) {
+  .custom-sidebar { width: 260px !important; }
+}
+@media (max-width: 576px) {
+  .custom-sidebar { width: 100vw !important; }
+}
+
+/* Header inside drawer */
+.sidebar-header {
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.sidebar-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+/* PrimeNG Menu – full width, no border */
+.custom-sidebar .p-menu {
+  background: transparent;
+  padding: 0.5rem 0;
+}
+.custom-sidebar .p-menu .p-menuitem-link {
+  color: #e2e8f0;
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+}
+.custom-sidebar .p-menu .p-menuitem-link:hover {
+  background: var(--tts-sidebar-hover);
+}
+.custom-sidebar .p-menu .p-menuitem-icon {
+  color: var(--tts-primary-light);
+}
+
+/* Active route highlight */
+.custom-sidebar .p-menu .p-menuitem-link-active {
+  background: var(--tts-primary);
+  color: #fff;
+}
+.custom-sidebar .p-menu .p-menuitem-link-active .p-menuitem-icon {
+  color: #fff;
+}
+
+/* -------------------------------------------------
+   6. MAIN CONTENT
+   ------------------------------------------------- */
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: var(--tts-bg);
+}
+
+/* Tablet & mobile padding */
+@media (max-width: 992px) { .main-content { padding: 1rem; } }
+@media (max-width: 576px) { .main-content { padding: 0.75rem; } }
+
+/* -------------------------------------------------
+   7. FOOTER
+   ------------------------------------------------- */
+.layout-footer {
+  background: #fff;
+  border-top: 1px solid var(--tts-border);
+  color: var(--tts-muted);
+  font-size: .875rem;
+}
+.layout-footer strong { color: var(--tts-primary); }
+
+/* Dark mode footer */
+.dark .layout-footer { background: var(--tts-sidebar); }
+
+/* -------------------------------------------------
+   8. UTILITY CLASSES (Bootstrap-like)
+   ------------------------------------------------- */
+.text-primary { color: var(--tts-primary) !important; }
+.bg-primary  { background-color: var(--tts-primary) !important; }
+.shadow-lg   { box-shadow: var(--tts-shadow) !important; }
+
+/* Focus visibility for accessibility */
+button:focus-visible,
+.p-button:focus-visible,
+.p-menuitem-link:focus-visible {
+  outline: 2px solid var(--tts-primary-light);
+  outline-offset: 2px;
 }

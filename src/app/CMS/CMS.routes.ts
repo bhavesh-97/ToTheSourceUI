@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../authentication/guards/auth-guard';
-import { ThreeColumnsLayoutComponent } from '../@theme/layouts';
+import { OneColumnLayoutComponent, ThreeColumnsLayoutComponent, TwoColumnsLayoutComponent } from '../@theme/layouts';
 
 export const CMSRoutes: Routes = [    
      {
@@ -19,7 +19,7 @@ export const CMSRoutes: Routes = [
      },
      {
     path: 'main',
-    component: ThreeColumnsLayoutComponent,
+    component: TwoColumnsLayoutComponent,
 //     canActivate: [() => inject(AuthService).isLoggedIn()],
     children: [
       {

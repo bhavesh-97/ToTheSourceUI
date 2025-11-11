@@ -1,55 +1,115 @@
+/* -------------------------------------------------
+   1. Global layout & CSS variables
+   ------------------------------------------------- */
 .one-col-layout {
+  --sidebar-compact: 70px;
+  --sidebar-expanded: 280px;
+  --sidebar-bg-start: #1e3a8a;
+  --sidebar-bg-end: #1e40af;
+  --sidebar-text: rgba(255,255,255,.95);
+  --sidebar-hover: rgba(255,255,255,.15);
+  --sidebar-footer-bg: rgba(0,0,0,.2);
+
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f8fafc;
 }
 
+/* -------------------------------------------------
+   2. Header – fixed, full-width
+   ------------------------------------------------- */
+ngx-header {
+  position: sticky;
+  top: 0;
+  z-index: 1100;               // above drawer
+}
+
+/* -------------------------------------------------
+   3. Main content – respects compact sidebar
+   ------------------------------------------------- */
 .main-content {
   flex: 1;
   padding: 2rem;
-  margin-left: 70px; // for compacted sidebar
-  transition: margin-left 0.4s ease;
+  margin-left: var(--sidebar-compact);
+  transition: margin-left 0.35s ease;
+
+  /* When sidebar is expanded */
+  .one-col-layout.sidebar-expanded & {
+    margin-left: var(--sidebar-expanded);
+  }
 }
 
-// Sidebar
+/* -------------------------------------------------
+   4. Drawer (PrimeNG) – GSAP only moves x
+   ------------------------------------------------- */
 ::ng-deep .custom-sidebar {
-  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+  background: linear-gradient(180deg,
+              var(--sidebar-bg-start) 0%,
+              var(--sidebar-bg-end) 100%);
   border: none;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  width: var(--sidebar-expanded) !important;   // initial width
   overflow: hidden;
-}
 
-::ng-deep .sidebar-menu {
-  background: transparent;
-  border: none;
-  .p-menuitem-link {
-    color: rgba(255,255,255,0.9) !important;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    margin: 0.25rem 0.5rem;
-    &:hover {
-      background: rgba(255,255,255,0.15) !important;
-    }
-    .p-menuitem-text {
-      opacity: 1 !important;
+  /* Compact mode – hide text */
+  &.p-sidebar-lg.p-component {
+    &.compact {
+      width: var(--sidebar-compact) !important;
+      .sidebar-header span,
+      .p-menuitem-text { display: none; }
     }
   }
 }
 
-.sidebar-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.2);
+/* -------------------------------------------------
+   5. Menu styling (PrimeNG)
+   ------------------------------------------------- */
+::ng-deep .sidebar-menu {
+  background: transparent;
+  border: none;
+
+  .p-menuitem-link {
+    color: var(--sidebar-text) !important;
+    padding: .75rem 1rem;
+    border-radius: .5rem;
+    margin: .25rem .5rem;
+
+    &:hover { background: var(--sidebar-hover) !important; }
+  }
 }
 
-// Backdrop
+/* -------------------------------------------------
+   6. Footer
+   ------------------------------------------------- */
+.sidebar-footer {
+  background: var(--sidebar-footer-bg);
+}
+
+/* -------------------------------------------------
+   7. Backdrop (GSAP autoAlpha)
+   ------------------------------------------------- */
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,.6);
   backdrop-filter: blur(8px);
   z-index: 999;
+}
+
+/* -------------------------------------------------
+   8. Responsive breakpoints (Bootstrap)
+   ------------------------------------------------- */
+@media (max-width: 992px) {
+  .main-content { margin-left: 0 !important; }
+  ::ng-deep .custom-sidebar { width: var(--sidebar-expanded) !important; }
+}
+
+/* -------------------------------------------------
+   9. Dark-Mode / Theme switch (optional)
+   ------------------------------------------------- */
+[data-theme="dark"] {
+  --sidebar-bg-start: #0d1b2a;
+  --sidebar-bg-end: #1b263b;
+  --sidebar-text: rgba(255,255,255,.9);
 }

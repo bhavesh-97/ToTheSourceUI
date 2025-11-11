@@ -28,11 +28,16 @@ import { HeaderComponent } from '../../components/header/header.component';
   styleUrls: ['./one-column.layout.scss'],
 })
 export class OneColumnLayoutComponent implements AfterViewInit {
-  @ViewChild('sidebar') sidebar!: ElementRef;
-  @ViewChild('backdrop') backdrop!: ElementRef;
+  @ViewChild('drawer', { static: true }) drawerEl!: ElementRef<HTMLElement>;
+  @ViewChild('backdrop', { static: true }) backdropEl!: ElementRef<HTMLElement>;
 
+  /** Reactive state */
   sidebarVisible = signal(false);
-  sidebarCompacted = signal(true); // compacted = narrow mode
+  sidebarCompacted = signal(true);
+
+  /** CSS-driven sizes */
+  sidebarWidth = signal(280);          // expanded
+  readonly compactWidth = 70;
 
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'pi pi-home', routerLink: '/' },
@@ -42,15 +47,20 @@ export class OneColumnLayoutComponent implements AfterViewInit {
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
   ];
 
+  /** ---------------------------------------------------- */
   ngAfterViewInit() {
-    // Initial state: compacted sidebar (narrow)
-    gsap.set(this.sidebar.nativeElement, { width: 70 });
-    gsap.set(this.backdrop.nativeElement, { opacity: 0, display: 'none' });
+    const sidebar = this.drawerEl.nativeElement;
+    const backdrop = this.backdropEl.nativeElement;
+
+    // Initial hidden state
+    gsap.set(sidebar, { x: -this.sidebarWidth() });
+    gsap.set(backdrop, { autoAlpha: 0 });
   }
 
+  /** ---------------------------------------------------- */
   toggleSidebar() {
-    if (this.sidebarVisible()) {
-      this.hideSidebar();
+    if (!this.sidebarVisible()) {
+      this.showSidebar();
     } else if (this.sidebarCompacted()) {
       this.expandSidebar();
     } else {
@@ -58,42 +68,57 @@ export class OneColumnLayoutComponent implements AfterViewInit {
     }
   }
 
-  expandSidebar() {
-    this.sidebarCompacted.set(false);
-    gsap.to(this.sidebar.nativeElement, {
-      width: 280,
-      duration: 0.4,
-      ease: 'power3.out',
-    });
-  }
-
-  compactSidebar() {
-    this.sidebarCompacted.set(true);
-    gsap.to(this.sidebar.nativeElement, {
-      width: 70,
-      duration: 0.4,
-      ease: 'power3.in',
-    });
-  }
-
+  /** Show (slide-in) */
   showSidebar() {
     this.sidebarVisible.set(true);
     this.sidebarCompacted.set(false);
-    gsap.to(this.sidebar.nativeElement, { x: 0, duration: 0.5, ease: 'power4.out' });
-    gsap.to(this.backdrop.nativeElement, { opacity: 1, display: 'block', duration: 0.4 });
+    this.sidebarWidth.set(280);
+
+    gsap.to(this.drawerEl.nativeElement, {
+      x: 0,
+      duration: 0.45,
+      ease: 'power3.out',
+    });
+    gsap.to(this.backdropEl.nativeElement, {
+      autoAlpha: 1,
+      duration: 0.3,
+    });
   }
 
+  /** Hide (slide-out) */
   hideSidebar() {
-    gsap.to(this.sidebar.nativeElement, {
-      x: -320,
-      duration: 0.4,
+    gsap.to(this.drawerEl.nativeElement, {
+      x: -this.sidebarWidth(),
+      duration: 0.35,
       ease: 'power3.in',
       onComplete: () => this.sidebarVisible.set(false),
     });
-    gsap.to(this.backdrop.nativeElement, {
-      opacity: 0,
-      duration: 0.3,
-      onComplete: () => void (this.backdrop.nativeElement.style.display = 'none'),
+    gsap.to(this.backdropEl.nativeElement, {
+      autoAlpha: 0,
+      duration: 0.25,
+    });
+  }
+
+  /** Expand (wide) */
+  expandSidebar() {
+    this.sidebarCompacted.set(false);
+    this.sidebarWidth.set(280);
+    this.animateWidth(280);
+  }
+
+  /** Compact (narrow) */
+  compactSidebar() {
+    this.sidebarCompacted.set(true);
+    this.sidebarWidth.set(this.compactWidth);
+    this.animateWidth(this.compactWidth);
+  }
+
+  /** Internal width animation (GSAP) */
+  private animateWidth(target: number) {
+    gsap.to(this.drawerEl.nativeElement, {
+      width: target,
+      duration: 0.35,
+      ease: 'power2.inOut',
     });
   }
 }

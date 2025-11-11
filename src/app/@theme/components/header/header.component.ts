@@ -39,7 +39,7 @@ import { MenuItem } from 'primeng/api';
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  //private sidebarService = inject(NbSidebarService);
+  private sidebarService = inject(NbSidebarService);
   private themeService = inject(NbThemeService);
   private layoutService = inject(LayoutService);
   private authService = inject(LoginService);
@@ -124,7 +124,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleSidebar() {
-   // this.sidebarService.toggle(true, 'menu-sidebar');
+    this.sidebarService.toggle(true, 'menu-sidebar');
     this.layoutService.changeLayoutSize();
   }
 
