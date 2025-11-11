@@ -19,3 +19,5 @@ export const environment = {
 export const encryptionKey = CryptoJS.enc.Utf8.parse('4090909090909020');
 export const encryptionIv = CryptoJS.enc.Utf8.parse('4090909090909020');
 
+
+export const ExportExcelLogoCellMerge: string = "A1:A3";

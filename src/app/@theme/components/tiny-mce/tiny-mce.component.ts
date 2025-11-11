@@ -95,9 +95,6 @@ export class TinyMCEComponent implements AfterViewInit, OnDestroy {
         'bullist numlist outdent indent | link image media table | ' +
         'code fullscreen | help',
 
-      // LOCAL ASSETS – CRITICAL FOR VITE
-      skin_url: `${base}assets/tinymce/skins/ui/oxide`,
-      content_css: `${base}assets/tinymce/skins/ui/oxide/content.css`,
 
       // Fix Angular routing
       relative_urls: false,

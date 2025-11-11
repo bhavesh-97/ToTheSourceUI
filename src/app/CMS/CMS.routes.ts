@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../authentication/guards/auth-guard';
+import { ThreeColumnsLayoutComponent } from '../@theme/layouts';
 
 export const CMSRoutes: Routes = [    
      {
@@ -16,4 +17,17 @@ export const CMSRoutes: Routes = [
             loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard),
             canActivate: [authGuard]
      },
+     {
+    path: 'main',
+    component: ThreeColumnsLayoutComponent,
+//     canActivate: [() => inject(AuthService).isLoggedIn()],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./main/dashboard/dashboard')
+          .then(m => m.Dashboard),
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
 ];

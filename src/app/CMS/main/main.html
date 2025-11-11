@@ -2,3 +2,30 @@
     <nb-menu [items]="menu" autoCollapse="true"></nb-menu>
     <router-outlet></router-outlet>
   </ngx-one-column-layout> -->
+  <!-- src/app/cms/main/main.html -->
+<!-- src/app/cms/main/main.html -->
+<p-card class="h-100 shadow-4">
+  <ng-template pTemplate="header">
+    <div class="flex align-items-center justify-content-between p-3 border-bottom">
+      <h3 class="m-0">CMS Dashboard</h3>
+      <!-- optional theme switcher (Nebular) -->
+      <button pButton
+              label="Cosmic"
+              class="p-button-sm p-button-outlined"
+              (click)="changeTheme('cosmic')"></button>
+    </div>
+  </ng-template>
+
+  <div class="p-4">
+    <h4 class="mt-0">Welcome to Locomate CMS</h4>
+    <p class="text-600">Select a module from the left menu.</p>
+
+    <!-- Nebular menu (your SVG icons) -->
+    <nb-menu [items]="menuItems" class="w-full"></nb-menu>
+
+    <!-- Child routes appear here -->
+    <div class="mt-4">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</p-card>

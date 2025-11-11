@@ -7,7 +7,7 @@ import { FormUtils } from '../../shared/utilities/form-utils.ts.js';
 import { FormFieldConfig } from '../../Interfaces/FormFieldConfig.js';
 import { ValidationRules } from '../../shared/utilities/validation-rules.enum.js';
 import { NotificationService } from '../../services/notification.service.js';
-import { MUserLogin } from '../../models/MUserLogin.js';
+import { MUser } from '../../models/MUser.js';
 import { LoginService } from './login.service.js';
 import { PopupMessageType } from '../../models/PopupMessageType.js';
 import { Router } from '@angular/router';
@@ -178,7 +178,7 @@ export class Login implements AfterViewInit {
       return;
     }  
     const inactiveField = this.showEmail ? 'UserName' : 'EmailID';
-    const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUserLogin);
+    const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUser);
     
     if (loginModel && Object.prototype.hasOwnProperty.call(loginModel, inactiveField)) {
       loginModel[inactiveField] = '';
@@ -190,7 +190,9 @@ export class Login implements AfterViewInit {
           this.loginForm.reset();
           this.loginService.storeToken(res.token ?? '');
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
-          this.router.navigate(['/CMS/dashboard']);
+   //       this.router.navigate(['/CMS/dashboard']);
+           this.router.navigate(['/CMS/main']);
+   
         } else {
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
         }

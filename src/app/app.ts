@@ -1,8 +1,11 @@
 import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { LoaderService } from '../app/services/loader.service';
 import { AsyncPipe } from '@angular/common';
+import { AnalyticsService, SeoService } from './@core/utils';
+import { NbSidebarService } from '@nebular/theme';
+import { filter } from 'rxjs';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet,ButtonModule,AsyncPipe],
@@ -14,10 +17,22 @@ export class App implements OnInit{
   public LoaderService = inject(LoaderService);
   loading$ = this.LoaderService.loading$;
   private cdr = inject(ChangeDetectorRef);
-  
+  private sidebarService = inject(NbSidebarService);
+  private router = inject(Router);
+  private analytics = inject(AnalyticsService);
+  private seoService = inject(SeoService);
+
   ngOnInit(): void {
     // Call setFavicon on initialization
     this.setFavicon('../assets/images/product/Tothesourceicon.png','64x64');
+    this.analytics.trackPageViews();
+    this.seoService.trackCanonicalChanges();
+
+    this.router.events
+        .pipe(filter(event => event instanceof NavigationEnd))  
+        .subscribe((event: NavigationEnd) => {
+          this.sidebarService.toggle(true, 'menu-sidebar');
+      });
   }
   
   ngAfterViewInit() {

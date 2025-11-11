@@ -39,11 +39,14 @@ export class TwoColumnsLayoutComponent implements AfterViewInit {
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
   ];
 
-  ngAfterViewInit() {
-    // GSAP Sidebar Animation
+ngAfterViewInit() {
+  if (this.sidebar?.nativeElement) {
     gsap.set(this.sidebar.nativeElement, { x: -300 });
+  }
+  if (this.backdrop?.nativeElement) {
     gsap.set(this.backdrop.nativeElement, { opacity: 0, display: 'none' });
   }
+}
 
   toggleSidebar() {
     if (this.sidebarVisible()) {

@@ -50,10 +50,14 @@ export class ThreeColumnsLayoutComponent implements AfterViewInit {
     { user: 'Vikram Rao', action: 'Resolved ticket #TRK-892', time: '20 min ago' },
   ];
 
-  ngAfterViewInit() {
-    gsap.set(this.sidebar.nativeElement, { x: -320 });
+ngAfterViewInit() {
+  if (this.sidebar?.nativeElement) {
+    gsap.set(this.sidebar.nativeElement, { x: -300 });
+  }
+  if (this.backdrop?.nativeElement) {
     gsap.set(this.backdrop.nativeElement, { opacity: 0, display: 'none' });
   }
+}
 
   toggleSidebar() {
     this.sidebarVisible() ? this.hideSidebar() : this.showSidebar();
