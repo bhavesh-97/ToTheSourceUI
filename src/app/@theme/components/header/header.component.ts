@@ -21,7 +21,7 @@ import { SelectModule } from 'primeng/select';
 import { MenuItem } from 'primeng/api';
 
 @Component({
-  selector: 'ngx-header',
+  selector: 'app-header',
   standalone: true,
   imports: [
     CommonModule,

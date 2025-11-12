@@ -11,7 +11,7 @@ import { CardModule } from 'primeng/card';
   templateUrl: './main.html',
   styleUrl: './main.css'
 })
-export class Main {
+export class MainComponent {
 //  public menu: any = [];
   private iconsLibrary = inject(NbIconLibraries);
   private readonly themeService = inject(NbThemeService);
