@@ -366,3 +366,8 @@ FodyWeavers.xsd
 
 # Ignore all Angular cache and build artifacts
 .angular/
+**/.angular/
+.angular/cache/
+.angular/write/
+.angular/**/write/
+.angular/**/deps/
