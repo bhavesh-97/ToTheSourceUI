@@ -1,80 +1,72 @@
+// src/app/CMS/main/main.component.ts
+import { Component, ViewChild, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { NbMenuModule, NbIconLibraries, NbMenuItem, NbThemeService } from '@nebular/theme';
-import { RouterOutlet } from "@angular/router";
-import { MenuModule } from 'primeng/menu';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
+import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
+import { gsap } from 'gsap';
+import { HeaderComponent } from '../../@theme/components/header/header.component';
+import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
+
 @Component({
   selector: 'app-main',
-  imports: [CommonModule, NbMenuModule, RouterOutlet,CardModule,ButtonModule,MenuModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    HeaderComponent,
+    SidebarComponent,
+  ],
   templateUrl: './main.html',
   styleUrl: './main.css'
 })
-export class MainComponent {
-//  public menu: any = [];
-  private iconsLibrary = inject(NbIconLibraries);
-  private readonly themeService = inject(NbThemeService);
+export class MainComponent implements AfterViewInit, OnDestroy {
+  @ViewChild(SidebarComponent) sidebar!: SidebarComponent;
 
-  changeTheme(name: 'default' | 'cosmic' | 'corporate' | 'dark') {
-    this.themeService.changeTheme(name);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  isLoading = true;
+  breadcrumb = ['Home', 'Account', 'Settings'];
+
+  ngAfterViewInit() {
+    this.simulateLoading();
+    this.setupGSAP();
   }
-   menuItems: NbMenuItem[] = [
-    {
-      title: 'General Configuration',
-      icon: { icon: 'GeneralConfiguration', pack: 'myicon' },
-      link: '/cms/general',
-    },
-    {
-      title: 'System Configuration',
-      icon: { icon: 'general', pack: 'myicon' },
-      link: '/cms/system',
-    },
-    {
-      title: 'Dispatch Management',
-      icon: { icon: 'DispatchManagement', pack: 'myicon' },
-      expanded: true,
-      children: [
-        {
-          title: 'Trip Generation',
-          icon: { icon: 'TripGeneration', pack: 'myicon' },
-          link: '/cms/trip',
-        },
-        {
-          title: 'Monthly Roster',
-          icon: { icon: 'MonthlyRostergeneration', pack: 'myicon' },
-          link: '/cms/roster',
-        },
-        {
-          title: 'Time Chart',
-          icon: { icon: 'TimeChartGeneration', pack: 'myicon' },
-          link: '/cms/timechart',
-        },
-      ],
-    },
-    {
-      title: 'Reports',
-      icon: { icon: 'Reports', pack: 'myicon' },
-      link: '/cms/reports',
-    },
-    {
-      title: 'Log Sheet',
-      icon: { icon: 'logsheet', pack: 'myicon' },
-      link: '/cms/logsheet',
-    },
-  ];
 
-  ngOnInit(): void {
-    // Register the SVG pack **once** (constructor also works, ngOnInit is safer)
-    this.iconsLibrary.registerSvgPack('myicon', {
-      GeneralConfiguration: '/assets/images/menu/pns/GeneralConfiguration.svg',
-      general: '/assets/images/menu/pns/SystemConfiguration.svg',
-      DispatchManagement: '/assets/images/menu/pns/DispatchManagement.svg',
-      TripGeneration: '/assets/images/menu/pns/TripGeneration.svg',
-      MonthlyRostergeneration: '/assets/images/menu/pns/MonthlyRostergeneration.svg',
-      TimeChartGeneration: '/assets/images/menu/pns/TimeChartGeneration.svg',
-      Reports: '/assets/images/menu/pns/Reports.svg',
-      logsheet: '/assets/images/menu/pns/logsheetmanagement.svg',
+  ngOnDestroy() {
+    this.tl?.kill();
+  }
+
+  private tl: any;
+
+  // Fixed: toggleSidebar method
+  toggleSidebar() {
+    this.sidebar.toggle();
+  }
+
+  private simulateLoading() {
+    setTimeout(() => {
+      this.isLoading = false;
+      this.animateContent();
+    }, 800);
+  }
+
+  private setupGSAP() {
+    gsap.from('.sticky-header', {
+      y: -20,
+      opacity: 0,
+      duration: 0.5,
+      ease: 'power2.out',
+      delay: 0.2,
+    });
+  }
+
+  private animateContent() {
+    this.tl = gsap.from('.page-content > *', {
+      opacity: 0,
+      y: 20,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power2.out',
     });
   }
 }

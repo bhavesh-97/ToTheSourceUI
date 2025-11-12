@@ -1,190 +1,138 @@
 // src/app/@theme/components/header/header.component.ts
-import { Component, inject, signal, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';        // CORRECT IMPORT
-import { CommonModule } from '@angular/common';      // Only for pipes, ngIf, etc.
+import { Component, inject, signal, ViewChild, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { NbSidebarService, NbThemeService } from '@nebular/theme';
 import { gsap } from 'gsap';
-import { LayoutService } from '../../../@core/utils/layout.service';
 
-// PrimeNG Modules
+// PrimeNG
+import { MenuModule } from 'primeng/menu';
+import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { MenuModule } from 'primeng/menu';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { TooltipModule } from 'primeng/tooltip';
-import { LoginService } from '../../../authentication/login/login.service';
-import { SelectModule } from 'primeng/select';
 import { MenuItem } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,          
+    FormsModule,
+    MenuModule,
+    ButtonModule,
     AvatarModule,
     BadgeModule,
-    ButtonModule,
-    DialogModule,
-    SelectModule, 
-    MenuModule,
-    AutoCompleteModule,
     TooltipModule,
+    InputTextModule,
+    SelectModule,
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnInit, OnDestroy {
-  private sidebarService = inject(NbSidebarService);
-  private themeService = inject(NbThemeService);
-  private layoutService = inject(LayoutService);
-  private authService = inject(LoginService);
+export class HeaderComponent implements AfterViewInit, OnDestroy {
   private router = inject(Router);
-
+  @Output() sidebarToggle = new EventEmitter<void>();
+  @Output() hamburgerClick = new EventEmitter<void>();
+  @ViewChild('teamMenu') teamMenu: any;
   @ViewChild('userMenu') userMenu: any;
   @ViewChild('notificationMenu') notificationMenu: any;
 
-  // TWO-WAY BINDING → Must be normal variables (NOT signals)
-  searchQuery: string = '';
-  selectedTheme: string = 'dark';
+  searchQuery = signal('');
+  notificationCount = signal(5);
+  selectedTeam = signal({ name: 'MetronicTeam', value: 'metronic' });
+  teams = signal([
+    { name: 'MetronicTeam', value: 'metronic' },
+    { name: 'Keenthemes', value: 'keen' },
+    { name: 'Personal', value: 'personal' },
+  ]);
 
-  // One-way data → Use signals
-  notificationCount = signal(8);
-  changePasswordVisible = signal(false);
-  preferencesVisible = signal(false);
-  filteredItems = signal<any[]>([]);
-  searchData = signal<any[]>([]);
-  user = signal<any>({ name: 'Admin', picture: './assets/images/avatar.png' });
-  userMenuItems: MenuItem[] = [
-    { label: 'Profile', icon: 'pi pi-user', command: () => this.openProfile() },
-    { label: 'Settings', icon: 'pi pi-cog', command: () => this.openPreferences() },
+  user = signal({ name: 'Admin', avatar: '../../../../assets/images/bhavesh.jpg' });
+
+  teamMenuItems: MenuItem[] = [
+    { label: 'MetronicTeam', command: () => this.selectTeam('metronic') },
+    { label: 'Keenthemes', command: () => this.selectTeam('keen') },
+    { label: 'Personal', command: () => this.selectTeam('personal') },
     { separator: true },
-    { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    { label: 'Create New Team', icon: 'pi pi-plus' },
   ];
-    notifications = [
-    { title: 'Server restarted', icon: 'pi pi-info-circle', time: '2 mins ago' },
-    { title: 'New message received', icon: 'pi pi-envelope', time: '10 mins ago' },
-    { title: 'Backup completed', icon: 'pi pi-check', time: '1 hour ago' },
+
+  userMenuItems: MenuItem[] = [
+    { label: 'Profile', icon: 'pi pi-user', command: () => this.router.navigate(['/profile']) },
+    { label: 'Settings', icon: 'pi pi-cog', command: () => this.router.navigate(['/settings']) },
+    { separator: true },
+    { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() },
   ];
-    themes = [
-    { name: 'Light', value: 'light' },
-    { name: 'Dark', value: 'dark' },
-    { name: 'Corporate', value: 'corporate' },
-  ];
-  // Clock
-  currentTime: string = '';
 
-  private blinkTl: any;
+  notifications = signal([
+    { title: 'New user registered', time: '2 mins ago', icon: 'pi pi-user-plus' },
+    { title: 'Server load high', time: '10 mins ago', icon: 'pi pi-exclamation-triangle' },
+    { title: 'Backup completed', time: '1 hour ago', icon: 'pi pi-check-circle' },
+  ]);
 
-  ngOnInit() {
-    this.loadUser();
-    this.startClock();
-    this.buildSearchData();
-    this.startBlinkAnimation();
+  private bellTl: any;
 
-    this.themeService.onThemeChange().subscribe(({ name }) => {
-      this.selectedTheme = name;
-    });
+  ngAfterViewInit() {
+    this.startBellAnimation();
   }
 
   ngOnDestroy() {
-    this.blinkTl?.kill();
+    this.bellTl?.kill();
   }
 
-  private loadUser() {
-    // const userData = this.authService.currentUserValue;
-    // if (userData) {
-    //   this.user.set({
-    //     name: userData.userName || 'User',
-    //     picture: userData.picture || './assets/images/avatar.png',
-    //   });
-    // }
+  selectTeam(value: string) {
+    const team = this.teams().find(t => t.value === value);
+    if (team) this.selectedTeam.set(team);
   }
 
-  private buildSearchData() {
-    // const userData = this.authService.currentUserValue;
-    const items: any[] = [];
-
-    const traverse = (nodes: any[]) => {
-      nodes.forEach(node => {
-        if (node.children?.length > 0) {
-          traverse(node.children);
-        } else if (node.link) {
-          items.push({ text: node.title, value: node.link });
-        }
-      });
-    };
-
-    // userData?.pnsMenu?.forEach((menu: any) => traverse([menu]));
-    this.searchData.set(items);
-  }
-
-  toggleSidebar() {
-    this.sidebarService.toggle(true, 'menu-sidebar');
-    this.layoutService.changeLayoutSize();
-  }
-
-  filterSearch(event: any) {
-    const query = event.query.toLowerCase();
-    this.filteredItems.set(
-      this.searchData().filter(item =>
-        item.text.toLowerCase().includes(query)
-      ).slice(0, 10)
-    );
-  }
-
-  navigateTo(item: any) {
-    this.router.navigate([item.value]);
-    this.searchQuery = '';
-  }
-
-  changeTheme(theme: string) {
-    this.themeService.changeTheme(theme);
-  }
-  openProfile() {
-    this.router.navigate(['/profile']);
-  }
-  openPreferences() {
-    this.themeService.changeTheme(this.selectedTheme);
-  }
   logout() {
-    this.authService.logout();
+    // this.authService.logout();
     this.router.navigate(['/login']);
   }
 
-  private startClock() {
-    setInterval(() => {
-      const now = new Date();
-      this.currentTime = now.toLocaleString('en-IN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
-    }, 1000);
-  }
+private startBellAnimation() {
+  const container = document.querySelector('.blink-bell-container') as HTMLElement;
+  const mainBell = container.querySelector('.bell-main') as HTMLElement;
+  const ringBell = container.querySelector('.bell-ring') as HTMLElement;
 
-  private startBlinkAnimation() {
-    this.blinkTl = gsap.to('.blink-bell', {
-      scale: 1.4,
-      duration: 0.6,
-      repeat: -1,
-      yoyo: true,
-      ease: 'power2.inOut',
-    });
-  }
+  // Kill previous timeline
+  this.bellTl?.kill();
 
-  onDialogShow(pass: string) {
-    gsap.fromTo('.p-dialog', 
-      { scale: 0.8, opacity: 0 }, 
-      { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' }
+  // Create swing + pulse effect
+  this.bellTl = gsap.timeline({ 
+    repeat: -1, 
+    repeatDelay: 3,
+    defaults: { ease: 'none' }
+  });
+
+  // Bell swing
+  this.bellTl
+    .to(mainBell, { rotation: 18, duration: 0.12 })
+    .to(mainBell, { rotation: -14, duration: 0.12 })
+    .to(mainBell, { rotation: 10, duration: 0.1 })
+    .to(mainBell, { rotation: -6, duration: 0.1 })
+    .to(mainBell, { rotation: 4, duration: 0.08 })
+    .to(mainBell, { rotation: 0, duration: 0.08 }, "+=0.1")
+
+    // Ring wave effect
+    .fromTo(ringBell, 
+      { 
+        scale: 0.8, 
+        opacity: 0.8, 
+        rotation: -20,
+        color: '#5d78ff'
+      },
+      { 
+        scale: 1.8, 
+        opacity: 0, 
+        rotation: 20,
+        duration: 0.7,
+        ease: 'power2.out'
+      },
+      "-=0.8"
     );
-  }
+}
 }

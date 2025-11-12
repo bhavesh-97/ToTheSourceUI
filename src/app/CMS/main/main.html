@@ -4,28 +4,19 @@
   </ngx-one-column-layout> -->
   <!-- src/app/cms/main/main.html -->
 <!-- src/app/cms/main/main.html -->
-<p-card class="h-100 shadow-4">
-  <ng-template pTemplate="header">
-    <div class="flex align-items-center justify-content-between p-3 border-bottom">
-      <h3 class="m-0">CMS Dashboard</h3>
-      <!-- optional theme switcher (Nebular) -->
-      <button pButton
-              label="Cosmic"
-              class="p-button-sm p-button-outlined"
-              (click)="changeTheme('cosmic')"></button>
+<!-- src/app/@theme/layout/main-layout.component.html -->
+<div class="layout-wrapper">
+
+<app-sidebar #sidebar></app-sidebar>
+<app-header (sidebarToggle)="sidebar.toggle()"></app-header>
+
+  <!-- Main Content Card (Fixed Size + All Corners Curved + Scrollbar) -->
+  <main class="main-content">
+    <div class="content-card">
+      <div class="content-inner">
+        <router-outlet></router-outlet>
+      </div>
     </div>
-  </ng-template>
+  </main>
 
-  <div class="p-4">
-    <h4 class="mt-0">Welcome to To The Source CMS</h4>
-    <p class="text-600">Select a module from the left menu.</p>
-
-    <!-- Nebular menu (your SVG icons) -->
-    <nb-menu [items]="menuItems" class="w-full"></nb-menu>
-
-    <!-- Child routes appear here -->
-    <div class="mt-4">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
-</p-card>
+</div>

@@ -11,10 +11,11 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptor
 import { LoadingInterceptor } from '../app/interceptors/loading.interceptor';
 import { tokenInterceptor } from './interceptors/token-interceptor';
 import { provideNebular } from './@theme/theme.imports';
+import { NbMenuModule } from '@nebular/theme';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync('animations'),
-    importProvidersFrom(BrowserAnimationsModule),
+    importProvidersFrom(BrowserAnimationsModule,NbMenuModule.forRoot() ),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
