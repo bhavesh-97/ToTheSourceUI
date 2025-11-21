@@ -22,7 +22,11 @@
       <!-- CENTER: Icons -->
       <div class="d-flex align-items-center gap-3">
         <button pButton icon="pi pi-search" class="p-button-text text-muted" pTooltip="Search"></button>
-        <button pButton icon="pi pi-bell" class="p-button-text text-muted" pTooltip="Notifications"></button>
+        <!-- <button pButton icon="pi pi-bell" class="p-button-text text-muted" pTooltip="Notifications"></button> -->
+        <div class="blink-bell-container">
+            <button pButton icon="pi pi-bell" class="p-button-text text-muted bell-main"pTooltip="Notifications"></button>
+            <span class="bell-ring"></span>
+        </div>
         <button pButton icon="pi pi-comment" class="p-button-text text-muted" pTooltip="Messages"></button>
         <button pButton icon="pi pi-th-large" class="p-button-text text-muted" pTooltip="Apps"></button>
         <button pButton icon="pi pi-question-circle" class="p-button-text text-muted" pTooltip="Help"></button>

@@ -75,10 +75,9 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
 
   private bellTl: any;
 
-  ngAfterViewInit() {
-    this.startBellAnimation();
-  }
-
+ngAfterViewInit() {
+  setTimeout(() => this.startBellAnimation(), 50);
+}
   ngOnDestroy() {
     this.bellTl?.kill();
   }
@@ -94,21 +93,30 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
   }
 
 private startBellAnimation() {
-  const container = document.querySelector('.blink-bell-container') as HTMLElement;
-  const mainBell = container.querySelector('.bell-main') as HTMLElement;
-  const ringBell = container.querySelector('.bell-ring') as HTMLElement;
+  const container = document.querySelector('.blink-bell-container') as HTMLElement | null;
+
+  if (!container) {
+    console.warn('Blink bell container not found.');
+    return;
+  }
+
+  const mainBell = container.querySelector('.bell-main') as HTMLElement | null;
+  const ringBell = container.querySelector('.bell-ring') as HTMLElement | null;
+
+  if (!mainBell || !ringBell) {
+    console.warn('Bell elements not found.');
+    return;
+  }
 
   // Kill previous timeline
   this.bellTl?.kill();
 
-  // Create swing + pulse effect
-  this.bellTl = gsap.timeline({ 
-    repeat: -1, 
+  this.bellTl = gsap.timeline({
+    repeat: -1,
     repeatDelay: 3,
     defaults: { ease: 'none' }
   });
 
-  // Bell swing
   this.bellTl
     .to(mainBell, { rotation: 18, duration: 0.12 })
     .to(mainBell, { rotation: -14, duration: 0.12 })
@@ -116,18 +124,17 @@ private startBellAnimation() {
     .to(mainBell, { rotation: -6, duration: 0.1 })
     .to(mainBell, { rotation: 4, duration: 0.08 })
     .to(mainBell, { rotation: 0, duration: 0.08 }, "+=0.1")
-
-    // Ring wave effect
-    .fromTo(ringBell, 
-      { 
-        scale: 0.8, 
-        opacity: 0.8, 
+    .fromTo(
+      ringBell,
+      {
+        scale: 0.8,
+        opacity: 0.8,
         rotation: -20,
         color: '#5d78ff'
       },
-      { 
-        scale: 1.8, 
-        opacity: 0, 
+      {
+        scale: 1.8,
+        opacity: 0,
         rotation: 20,
         duration: 0.7,
         ease: 'power2.out'
@@ -135,4 +142,5 @@ private startBellAnimation() {
       "-=0.8"
     );
 }
+
 }

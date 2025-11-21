@@ -166,3 +166,25 @@
 .badge-notification {
   animation: badgeBounce 0.6s ease-out;
 }
+.blink-bell-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bell-main {
+  position: relative;
+  z-index: 2;
+}
+
+.bell-ring {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(93, 120, 255, 0.3);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
