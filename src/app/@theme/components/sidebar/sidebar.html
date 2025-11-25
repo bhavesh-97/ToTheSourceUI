@@ -1,18 +1,49 @@
 <aside class="sidebar" [class.mini]="isMini()">
-  <div class="logo">BERRY</div>
+  <!-- LOGO + SUBTLE TOGGLE (click to open/close) -->
+  <div class="logo-area" (click)="toggleMini()">
+    <div class="logo">
+      <img src="assets/images/product/To the Source.png" alt="To The Source" class="logo-img">
+    </div>
 
+    <!-- Very Subtle Toggle Icon (just like your image) -->
+    <div class="toggle-icon">
+      <i class="pi" 
+         [class.pi-angle-left]="!isMini()" 
+         [class.pi-angle-right]="isMini()"></i>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
   <nav class="nav">
-    <a routerLink="/dashboard" routerLinkActive="active">
-      <i class="pi pi-home"></i> <span>Dashboard</span>
+    <a routerLink="/main/dashboard" routerLinkActive="active">
+      <i class="pi pi-home"></i>
+      <span>Dashboard</span>
     </a>
-    <a routerLink="/analytics" routerLinkActive="active">
-      <i class="pi pi-chart-line"></i> <span>Analytics</span>
+    <a routerLink="/main/analytics" routerLinkActive="active">
+      <i class="pi pi-chart-line"></i>
+      <span>Analytics</span>
     </a>
-    <a routerLink="/users" routerLinkActive="active">
-      <i class="pi pi-users"></i> <span>Users</span>
+    <a routerLink="/main/users" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Users</span>
     </a>
-    <a routerLink="/settings" routerLinkActive="active">
-      <i class="pi pi-cog"></i> <span>Settings</span>
+    <a routerLink="/main/settings" routerLinkActive="active">
+      <i class="pi pi-cog"></i>
+      <span>Settings</span>
     </a>
   </nav>
+
+  <!-- UPGRADE CARD (exactly like your image) -->
+  <div class="upgrade-card" [class.hidden]="isMini()">
+    <div class="icon">
+      <i class="pi pi-chart-line"></i>
+    </div>
+    <div class="content">
+      <h4>Get Extra<br><strong>Space</strong></h4>
+      <p>28/33 GB</p>
+      <div class="progress">
+        <div class="fill" style="width: 85%"></div>
+      </div>
+    </div>
+  </div>
 </aside>

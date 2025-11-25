@@ -49,17 +49,17 @@ export class SidebarComponent {
     this.sidebarEl = this.el.nativeElement.querySelector('.sidebar');
 
     // Hover expand when mini
-    this.sidebarEl.addEventListener('mouseenter', () => {
-      if (this._isMini()) {
-        gsap.to(this.sidebarEl, { width: 280, duration: 0.4, ease: 'power3.out' });
-      }
-    });
+    // this.sidebarEl.addEventListener('mouseenter', () => {
+    //   if (this._isMini()) {
+    //     gsap.to(this.sidebarEl, { width: 280, duration: 0.4, ease: 'power3.out' });
+    //   }
+    // });
 
-    this.sidebarEl.addEventListener('mouseleave', () => {
-      if (this._isMini()) {
-        gsap.to(this.sidebarEl, { width: 72, duration: 0.4, ease: 'power3.out' });
-      }
-    });
+    // this.sidebarEl.addEventListener('mouseleave', () => {
+    //   if (this._isMini()) {
+    //     gsap.to(this.sidebarEl, { width: 72, duration: 0.4, ease: 'power3.out' });
+    //   }
+    // });
   }
 
   toggleMini() {
