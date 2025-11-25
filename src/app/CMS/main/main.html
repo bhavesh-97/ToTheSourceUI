@@ -1,22 +1,19 @@
-  <!-- <ngx-one-column-layout>
-    <nb-menu [items]="menu" autoCollapse="true"></nb-menu>
-    <router-outlet></router-outlet>
-  </ngx-one-column-layout> -->
-  <!-- src/app/cms/main/main.html -->
-<!-- src/app/cms/main/main.html -->
-<!-- src/app/@theme/layout/main-layout.component.html -->
-<div class="layout-wrapper">
+<div class="berry-wrapper">
+  <!-- Full Height Sidebar (ON TOP) -->
+  <app-sidebar #sidebar></app-sidebar>
 
-<app-sidebar #sidebar></app-sidebar>
-<app-header (sidebarToggle)="sidebar.toggle()"></app-header>
+  <!-- Header + Main Content -->
+  <div class="main-area">
+    <app-header (toggleSidebar)="sidebar.toggleMini()"></app-header>
 
-  <!-- Main Content Card (Fixed Size + All Corners Curved + Scrollbar) -->
-  <main class="main-content">
-    <div class="content-card">
+    <main class="main-content" 
+          [class.mini]="sidebar.isMini()"
+          [style.border-top-left-radius.px]="sidebar.isMini() ? 0 : 32">
       <div class="content-inner">
+        <!-- <app-breadcrumbs></app-breadcrumbs> -->
         <router-outlet></router-outlet>
+        <app-footer></app-footer>
       </div>
-    </div>
-  </main>
-
+    </main>
+  </div>
 </div>

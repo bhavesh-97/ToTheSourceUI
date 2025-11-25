@@ -1,124 +1,45 @@
-/* src/app/@theme/layout/main-layout.component.scss */
-.layout-wrapper {
+.berry-wrapper {
+  position: relative;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #f5f5f5;
-  font-family: 'Inter', sans-serif;
+  background: #f4f6f8;
+  font-family: 'Public Sans', sans-serif;
 }
 
-/* Main Content Area */
-.main-content {
-  flex: 1;
+.main-area {
   margin-left: 280px;
-  padding: 2rem;
-  transition: margin-left 0.4s ease;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-
-  @media (max-width: 992px) {
-    margin-left: 0 !important;
-    padding: 1rem;
-  }
-
-  .sidebar-open & {
-    @media (max-width: 992px) {
-      margin-left: 280px;
-    }
-  }
+  transition: margin-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Fixed-Size Card with All 4 Curved Corners */
-.content-card {
-  width: 100%;
-  max-width: 1200px;
-  min-height: calc(100vh - 140px);
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+.main-area.mini {
+  margin-left: 72px;
+}
+
+.main-content {
+  background: #eef2f6;
+  min-height: 100vh;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
+  z-index: 1;
+}
+
+.main-content.mini {
+  border-top-left-radius: 0;
+}
+
+.content-inner {
+  padding: 32px;
+  padding-top: 100px; /* Space for fixed header */
+  min-height: calc(100vh - 70px);
   display: flex;
   flex-direction: column;
-
-  /* All 4 Corners Curved Effect */
-  &::before,
-  &::after,
-  .corner-tr,
-  .corner-bl {
-    content: '';
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    background: transparent;
-    z-index: 1;
-  }
-
-  /* Top-Left */
-  &::before {
-    top: 0;
-    left: 0;
-    border-bottom-right-radius: 80px;
-    box-shadow: 30px 30px 0 30px #fff;
-  }
-
-  /* Top-Right */
-  .corner-tr {
-    top: 0;
-    right: 0;
-    border-bottom-left-radius: 80px;
-    box-shadow: -30px 30px 0 30px #fff;
-  }
-
-  /* Bottom-Left */
-  .corner-bl {
-    bottom: 0;
-    left: 0;
-    border-top-right-radius: 80px;
-    box-shadow: 30px -30px 0 30px #fff;
-  }
-
-  /* Bottom-Right */
-  &::after {
-    bottom: 0;
-    right: 0;
-    border-top-left-radius: 80px;
-    box-shadow: -30px -30px 0 30px #fff;
-  }
+  gap: 24px;
 }
 
-/* Scrollable Content */
-.content-inner {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-  position: relative;
-  z-index: 2;
-
-  /* Custom Scrollbar */
-  &::-webkit-scrollbar {
-    width: 10px;
+/* Responsive */
+@media (max-width: 900px) {
+  .main-area, .main-area.mini {
+    margin-left: 0 !important;
   }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    margin: 1rem 0;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c5c9d6;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #a1a5b7;
-    background-clip: content-box;
-  }
-
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #c5c9d6 transparent;
+  .main-content { border-radius: 0 !important; }
+  .content-inner { padding: 20px; padding-top: 90px; }
 }

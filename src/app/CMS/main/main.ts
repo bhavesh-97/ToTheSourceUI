@@ -1,10 +1,12 @@
 // src/app/CMS/main/main.component.ts
-import { Component, ViewChild, AfterViewInit, OnDestroy, inject } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { gsap } from 'gsap';
 import { HeaderComponent } from '../../@theme/components/header/header.component';
 import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
+import { FooterComponent } from '../../@theme/components';
+import { Breadcrumbs } from '../../@theme/components/breadcrumbs/breadcrumbs';
 
 @Component({
   selector: 'app-main',
@@ -14,59 +16,38 @@ import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
     RouterOutlet,
     HeaderComponent,
     SidebarComponent,
+    FooterComponent,
+    Breadcrumbs
   ],
   templateUrl: './main.html',
   styleUrl: './main.css'
 })
-export class MainComponent implements AfterViewInit, OnDestroy {
-  @ViewChild(SidebarComponent) sidebar!: SidebarComponent;
-
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-
-  isLoading = true;
-  breadcrumb = ['Home', 'Account', 'Settings'];
+export class MainComponent{
+ isDark = signal(false);
 
   ngAfterViewInit() {
-    this.simulateLoading();
-    this.setupGSAP();
+    // Load Particles.js
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+    script.onload = () => {
+      (window as any).particlesJS('particles-js', {
+        particles: {
+          number: { value: 60 },
+          color: { value: '#a78bfa' },
+          shape: { type: 'circle' },
+          opacity: { value: 0.4, random: true },
+          size: { value: 3, random: true },
+          line_linked: { enable: true, distance: 150, color: '#a78bfa', opacity: 0.2, width: 1 },
+          move: { enable: true, speed: 1.5 }
+        },
+        interactivity: { events: { onhover: { enable: true, mode: 'repulse' } } },
+        retina_detect: true
+      });
+    };
+    document.body.appendChild(script);
   }
 
-  ngOnDestroy() {
-    this.tl?.kill();
-  }
-
-  private tl: any;
-
-  // Fixed: toggleSidebar method
-  toggleSidebar() {
-    this.sidebar.toggle();
-  }
-
-  private simulateLoading() {
-    setTimeout(() => {
-      this.isLoading = false;
-      this.animateContent();
-    }, 800);
-  }
-
-  private setupGSAP() {
-    gsap.from('.sticky-header', {
-      y: -20,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.out',
-      delay: 0.2,
-    });
-  }
-
-  private animateContent() {
-    this.tl = gsap.from('.page-content > *', {
-      opacity: 0,
-      y: 20,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: 'power2.out',
-    });
+  toggleDark() {
+    this.isDark.update(v => !v);
   }
 }
