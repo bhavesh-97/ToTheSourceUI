@@ -6,7 +6,6 @@ import { gsap } from 'gsap';
 import { HeaderComponent } from '../../@theme/components/header/header.component';
 import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
 import { FooterComponent } from '../../@theme/components';
-import { Breadcrumbs } from '../../@theme/components/breadcrumbs/breadcrumbs';
 
 @Component({
   selector: 'app-main',
@@ -16,8 +15,7 @@ import { Breadcrumbs } from '../../@theme/components/breadcrumbs/breadcrumbs';
     RouterOutlet,
     HeaderComponent,
     SidebarComponent,
-    FooterComponent,
-    Breadcrumbs
+    FooterComponent
   ],
   templateUrl: './main.html',
   styleUrl: './main.css'
