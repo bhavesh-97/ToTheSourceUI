@@ -1,9 +1,10 @@
 .sidebar {
   position: fixed;
-  top: 70px; left: 0; bottom: 0;
+  top: 100px; left: 0; bottom: 0;
   width: 280px;
-  background: white;
-  box-shadow: 8px 0 30px rgba(0,0,0,0.08);
+  height: 100vh !important;
+  background: transparent;
+  /* box-shadow: 8px 0 30px rgba(0,0,0,0.08); */
   padding: 40px 0 32px;
   transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
   z-index: 1000;
