@@ -1,12 +1,8 @@
-// src/app/@theme/components/header/header.component.ts
 import { Component, inject, signal, ViewChild, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { gsap } from 'gsap';
-
-// PrimeNG
 import { MenuModule } from 'primeng/menu';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';

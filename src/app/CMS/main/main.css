@@ -28,14 +28,13 @@
 
 .content-inner {
   padding: 32px;
-  padding-top: 100px; /* Space for fixed header */
+  padding-top: 100px; 
   min-height: calc(100vh - 70px);
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .main-area, .main-area.mini {
     margin-left: 0 !important;

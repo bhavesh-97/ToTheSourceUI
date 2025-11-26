@@ -22,29 +22,6 @@ import { FooterComponent } from '../../@theme/components';
 })
 export class MainComponent{
  isDark = signal(false);
-
-  ngAfterViewInit() {
-    // Load Particles.js
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
-    script.onload = () => {
-      (window as any).particlesJS('particles-js', {
-        particles: {
-          number: { value: 60 },
-          color: { value: '#a78bfa' },
-          shape: { type: 'circle' },
-          opacity: { value: 0.4, random: true },
-          size: { value: 3, random: true },
-          line_linked: { enable: true, distance: 150, color: '#a78bfa', opacity: 0.2, width: 1 },
-          move: { enable: true, speed: 1.5 }
-        },
-        interactivity: { events: { onhover: { enable: true, mode: 'repulse' } } },
-        retina_detect: true
-      });
-    };
-    document.body.appendChild(script);
-  }
-
   toggleDark() {
     this.isDark.update(v => !v);
   }

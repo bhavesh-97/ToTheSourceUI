@@ -1,4 +1,3 @@
-// src/app/@theme/components/sidebar/sidebar.component.ts
 import {
   Component,
   ViewChild,
@@ -65,7 +64,6 @@ export class SidebarComponent {
   toggleMini() {
     this._isMini.update(v => !v);
 
-    // GSAP animation for header + content move
     const target = this._isMini() ? 72 : 280;
     gsap.to('.main-area', {
       marginLeft: target,
