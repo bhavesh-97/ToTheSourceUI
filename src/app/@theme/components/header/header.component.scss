@@ -118,13 +118,21 @@
     left: 14px;
     font-size: 16px;
   }
-
+  .icon-btn .badge {
+      top: 0px;
+      right: 8px;
+      font-size: 10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+    }
   .menu-btn,
   .icon-btn {
     width: 40px;
     height: 40px;
     border-radius: 12px;
     font-size: 17px;
+    color: #7c4dff;
   }
 
   .avatar {

@@ -94,7 +94,7 @@
 }
 @media (max-width: 900px) {
   .sidebar {
-    top: 80px !important;
+    top: 71px !important;
     left: -260px;
     width: 260px !important;
     height: 100vh !important;

@@ -73,15 +73,16 @@ export class SidebarComponent {
   // }
 toggleMini() {
   const isMobile = window.innerWidth <= 900;
-
+  const mainArea = document.querySelector('.main-area');
   if (isMobile) {
     const sidebar = document.querySelector('.sidebar');
-    const mainArea = document.querySelector('.main-area');
     sidebar?.classList.toggle('open');
     mainArea?.classList.toggle('blurred');
     return;
   }
-
+  else{
+    mainArea?.classList.toggle('open');
+  }
   this._isMini.update(v => !v);
 
   const target = this._isMini() ? 72 : 280;
