@@ -4,10 +4,7 @@
   <div class="main-area">
     <main class="main-content" 
           [class.mini]="sidebar.isMini()"
-          [style.border-top-left-radius.px]="sidebar.isMini() ? 0 : 32"
-          [style.border-top-right-radius.px]="sidebar.isMini() ? 0 : 32"
-          [style.border-bottom-left-radius.px]="sidebar.isMini() ? 0 : 32"
-          [style.border-bottom-right-radius.px]="sidebar.isMini() ? 0 : 32">
+          [style.border-radius.px]="sidebar.isMini() ? 0 : 32">
       <div class="content-inner">
         <router-outlet></router-outlet>
         <app-footer></app-footer>
