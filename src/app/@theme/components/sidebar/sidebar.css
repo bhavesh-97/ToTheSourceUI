@@ -49,6 +49,17 @@
   i { font-size: 20px; width: 44px; text-align: center; color: #94a3b8; }
   &.active i, &:hover i { color: #7c4dff; }
 }
+.child-menu {
+  padding-left: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.parent-menu > a.has-children {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .upgrade-card {
   margin: 0 28px 20px;

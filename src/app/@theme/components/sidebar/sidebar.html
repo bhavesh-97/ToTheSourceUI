@@ -1,33 +1,31 @@
 <aside class="sidebar" [class.mini]="isMini()">
   <nav class="nav">
-    <a routerLink="/main/dashboard" routerLinkActive="active">
-      <i class="pi pi-home"></i>
-      <span>Dashboard</span>
-    </a>
-    <a routerLink="/main/analytics" routerLinkActive="active">
-      <i class="pi pi-chart-line"></i>
-      <span>Analytics</span>
-    </a>
-    <a routerLink="/main/users" routerLinkActive="active">
-      <i class="pi pi-users"></i>
-      <span>Users</span>
-    </a>
-    <a routerLink="/main/settings" routerLinkActive="active">
-      <i class="pi pi-cog"></i>
-      <span>Settings</span>
-    </a>
-  </nav>
+    <ng-container *ngFor="let item of menuItems">
+      <a *ngIf="item.children.length === 0"
+         [routerLink]="item.route"
+         routerLinkActive="active">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+      <div *ngIf="item.children.length > 0" class="parent-menu">
+        <a (click)="toggleChild(item.label)" class="has-children">
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+          <i class="pi" [ngClass]="opened[item.label] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+        </a>
+        <div class="child-menu" *ngIf="opened[item.label]">
+          <a *ngFor="let child of item.children"
+             [routerLink]="child.route"
+             routerLinkActive="active">
 
-  <!-- <div class="upgrade-card" [class.hidden]="isMini()">
-    <div class="icon">
-      <i class="pi pi-chart-line"></i>
-    </div>
-    <div class="content">
-      <h4>Get Extra<br><strong>Space</strong></h4>
-      <p>28/33 GB</p>
-      <div class="progress">
-        <div class="fill" style="width: 85%"></div>
+            <i [class]="child.icon"></i>
+            <span>{{ child.label }}</span>
+          </a>
+        </div>
+
       </div>
-    </div>
-  </div> -->
+
+    </ng-container>
+
+  </nav>
 </aside>
