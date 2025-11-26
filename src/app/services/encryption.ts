@@ -72,7 +72,6 @@ export class Encryption {
             return '';
         }
         try {
-          debugger;
             const decodedText = this.decodeSpecialCharacters(value);
             const decryptBase64Text = this.decodeBase64String(decodedText)
             const decryptDecodedText = this.frontDecrypt(decryptBase64Text);

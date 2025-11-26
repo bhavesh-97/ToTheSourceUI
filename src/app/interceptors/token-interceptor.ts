@@ -23,7 +23,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: any) => {
-      debugger
       if(error instanceof HttpErrorResponse) {
         if (error.status === 401) {
           notificationService.showMessage("Please login again", "Session Expired", PopupMessageType.SessionExpired);
