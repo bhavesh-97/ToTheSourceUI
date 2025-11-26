@@ -61,16 +61,37 @@ export class SidebarComponent {
     // });
   }
 
-  toggleMini() {
-    this._isMini.update(v => !v);
+  // toggleMini() {
+  //   this._isMini.update(v => !v);
+  //   debugger;
+  //   const target = this._isMini() ? 72 : 280;
+  //   gsap.to('.main-area', {
+  //     marginLeft: target,
+  //     duration: 0.5,
+  //     ease: 'power3.inOut'
+  //   });
+  // }
+toggleMini() {
+  const isMobile = window.innerWidth <= 900;
 
-    const target = this._isMini() ? 72 : 280;
-    gsap.to('.main-area', {
-      marginLeft: target,
-      duration: 0.5,
-      ease: 'power3.inOut'
-    });
+  if (isMobile) {
+    const sidebar = document.querySelector('.sidebar');
+    const mainArea = document.querySelector('.main-area');
+    sidebar?.classList.toggle('open');
+    mainArea?.classList.toggle('blurred');
+    return;
   }
+
+  this._isMini.update(v => !v);
+
+  const target = this._isMini() ? 72 : 280;
+
+  gsap.to('.main-area', {
+    marginLeft: target,
+    duration: 0.5,
+    ease: 'power3.inOut'
+  });
+}
 
   isMini(): boolean {
     return this._isMini();

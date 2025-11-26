@@ -1,8 +1,8 @@
 .header-content {
-  padding: 0 32px;           /* ← change from 28px to 32px (or keep your value) */
-  width: 100vw;              /* ← ADD THIS */
-  margin-left: calc(-50vw + 50%);  /* ← ADD THIS – pulls it to left edge */
-  background: transparent;   /* keep your transparent */
+  padding: 0 32px;  
+  width: 100vw;     
+  margin-left: calc(-50vw + 50%); 
+  background: transparent;   
 }
 .header-content {
   height: 100px;
@@ -90,4 +90,86 @@
   height: 100px;
   max-width: 160px;
   object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .header-content {
+    padding: 0 16px;
+    height: 80px;
+    width: 100%;
+    margin-left: 0;      
+    justify-content: space-between;
+    gap: 12px;
+    background: #ffffff;   
+  }
+
+  .search-wrapper {
+    max-width: none;
+    flex: 1;
+  }
+
+  .search-wrapper input {
+    height: 42px;
+    padding: 0 44px;
+    font-size: 14px;
+  }
+
+  .search-wrapper i {
+    left: 14px;
+    font-size: 16px;
+  }
+
+  .menu-btn,
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 17px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logo-img {
+    height: 70px;
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-content {
+    padding: 0 12px;
+    height: 72px;
+  }
+
+  .search-wrapper {
+    display: none;
+  }
+
+  .menu-btn,
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-content {
+    padding: 0 10px;
+    gap: 10px;
+  }
+
+  .logo-img {
+    max-width: 90px;
+    height: 60px;
+  }
 }

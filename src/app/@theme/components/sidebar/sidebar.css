@@ -1,6 +1,8 @@
 .sidebar {
   position: fixed;
-  top: 100px; left: 0; bottom: 0;
+  top: 100px; 
+  left: -16px;
+  bottom: 0;
   width: 280px;
   height: 100vh !important;
   background: transparent;
@@ -88,5 +90,42 @@
       background: #7c4dff;
       border-radius: 3px;
     }
+  }
+}
+@media (max-width: 900px) {
+  .sidebar {
+    top: 80px !important;
+    left: -260px;
+    width: 260px !important;
+    height: 100vh !important;
+    padding: 100px 0 32px;
+    background: #ffffff;
+    /* box-shadow: 4px 0 20px rgba(0,0,0,0.15); */
+    overflow-y: auto;
+    transition: left 0.35s ease;
+    z-index: 2000;
+  }
+
+  .sidebar.open {
+    left: 0 !important;
+  }
+
+  .sidebar.mini {
+    width: 260px !important;
+  }
+  .sidebar.mini .logo-area {
+  justify-content: center;
+  padding: 0 12px;
+}
+  .nav a {
+    padding: 14px 24px;
+    font-size: 15px;
+  }
+  .nav a i {
+    width: 36px;
+    font-size: 18px;
+  }
+  .upgrade-card {
+    display: none !important;
   }
 }
