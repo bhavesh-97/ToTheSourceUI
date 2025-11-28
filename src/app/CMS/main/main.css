@@ -60,11 +60,18 @@
     background: #7c4dff;
   }         
 }
-
+.router-outlet {
+  flex: 1;
+  background-color: transparent;
+}
 @media (max-width: 900px) {
   .main-area, .main-area.mini {
     margin-left: 0 !important;
   }
   .main-content { border-radius: 0 !important; }
   .content-inner { padding: 20px; padding-top: 90px; }
+
+  .sidebar.open ~ .main-area .main-content {
+    filter: blur(1px);
+  }
 }

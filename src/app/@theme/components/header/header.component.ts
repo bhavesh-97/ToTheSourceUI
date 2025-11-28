@@ -11,6 +11,7 @@ import { MenuItem } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { SearchInputComponent } from '../search-input/search-input.component';
 
 @Component({
   selector: 'app-header',
@@ -24,7 +25,7 @@ import { SelectModule } from 'primeng/select';
     BadgeModule,
     TooltipModule,
     InputTextModule,
-    SelectModule,
+    SelectModule
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],

@@ -6,7 +6,9 @@
           [class.mini]="sidebar.isMini()"
           [style.border-radius.px]="sidebar.isMini() ? 0 : 32">
       <div class="content-inner">
-        <router-outlet></router-outlet>
+        <div class="router-outlet">
+            <router-outlet></router-outlet>
+        </div>
         <app-footer></app-footer>
       </div>
     </main>
