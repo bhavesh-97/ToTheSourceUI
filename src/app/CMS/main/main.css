@@ -30,6 +30,11 @@
 .main-content.mini {
   border-top-left-radius: 0;
 }
+.main-area.blurred {
+  filter: blur(4px);
+  pointer-events: none;
+  transition: filter 0.3s ease;
+}
 
 .content-inner {
   padding: 32px;

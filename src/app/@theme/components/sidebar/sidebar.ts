@@ -39,6 +39,7 @@ interface MenuItemExt extends MenuItem {
   styleUrls: ['./sidebar.css'],
 })
 export class SidebarComponent {
+
   private _isMini = signal(false);
   private sidebarEl!: HTMLElement;
 
@@ -46,25 +47,24 @@ export class SidebarComponent {
 
   ngAfterViewInit() {
     this.sidebarEl = this.el.nativeElement.querySelector('.sidebar');
-
-    // Hover expand when mini
-    // this.sidebarEl.addEventListener('mouseenter', () => {
-    //   if (this._isMini()) {
-    //     gsap.to(this.sidebarEl, { width: 280, duration: 0.4, ease: 'power3.out' });
-    //   }
-    // });
-
-    // this.sidebarEl.addEventListener('mouseleave', () => {
-    //   if (this._isMini()) {
-    //     gsap.to(this.sidebarEl, { width: 72, duration: 0.4, ease: 'power3.out' });
-    //   }
-    // });
   }
 
   toggleMini() {
-    this._isMini.update(v => !v);
+    const isMobile = window.innerWidth <= 900;
+    const mainArea = document.querySelector('.main-area');
 
+    if (isMobile) {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar?.classList.toggle('open');
+      mainArea?.classList.toggle('blurred');
+      return;
+    } else {
+      mainArea?.classList.toggle('open');
+    }
+
+    this._isMini.update(v => !v);
     const target = this._isMini() ? 72 : 280;
+
     gsap.to('.main-area', {
       marginLeft: target,
       duration: 0.5,
@@ -74,5 +74,51 @@ export class SidebarComponent {
 
   isMini(): boolean {
     return this._isMini();
+  }
+
+  menuItems = [
+    {
+      icon: 'pi pi-home',
+      label: 'Dashboard',
+      route: '/main/dashboard',
+      children: []
+    },
+    {
+      icon: 'pi pi-chart-line',
+      label: 'Analytics',
+      route: '/main/analytics',
+      children: []
+    },
+    {
+      icon: 'pi pi-users',
+      label: 'Users',
+      route: null,
+      children: [
+        {
+          icon: 'pi pi-list',
+          label: 'User List',
+          route: '/main/users/list',
+          children: []
+        },
+        {
+          icon: 'pi pi-id-card',
+          label: 'Roles',
+          route: '/main/users/roles',
+          children: []
+        }
+      ]
+    },
+    {
+      icon: 'pi pi-cog',
+      label: 'Settings',
+      route: '/main/settings',
+      children: []
+    }
+  ];
+
+  opened: Record<string, boolean> = {};
+
+  toggleChild(label: string) {
+    this.opened[label] = !this.opened[label];
   }
 }
