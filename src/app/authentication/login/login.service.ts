@@ -187,30 +187,30 @@ export class LoginService {
   };
 
     //#region Login/Logout Service Methods
-    GetUserLogin(loginModel: MUser, encryptPayload = false): Observable<JsonResponseModel> {
+      GetUserLogin(loginModel: MUser, encryptPayload = false): Observable<JsonResponseModel> {
         // return this.http.post<JsonResponseModel>(`${this.baseUrl}/Login/Login`,loginModel,                    
         //                                               { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         //     );
         // demo Json
-        return of(this.demoLoginResponse).pipe(delay(500));
-    }
-    isLoggedIn(): boolean {
-        return this.getToken() !== null;
-    }
-    logout(): void {
-      localStorage.clear();
-      this.router.navigate(['login']);
-    }
+          return of(this.demoLoginResponse).pipe(delay(500));
+      }
+      isLoggedIn(): boolean {
+          return this.getToken() !== null;
+      }
+      logout(): void {
+        localStorage.clear();
+        this.router.navigate(['login']);
+      }
     //#endregion
 
     //#region Session Management
 
-      storeUser(user: any) {
+      storeUserInfo(user: MUser) {
         const json = JSON.stringify(user);
         const encrypted = this.encryption.frontEncryptEncode(json);
         localStorage.setItem('user', encrypted);
       }
-      getUser() {
+      getUserInfo(): MUser | null {
         const encrypted = localStorage.getItem('user');
         if (!encrypted) return null;
         return JSON.parse(this.encryption.frontDecryptDecode(encrypted));

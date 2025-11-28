@@ -18,9 +18,38 @@
       <i class="pi pi-bell"></i>
       <span class="badge">3</span>
     </button>
-    <!-- <button class="icon-btn">
-      <i class="pi pi-cog"></i>
-    </button> -->
-    <img src="../../../../assets/images/bhavesh.jpg" class="avatar" alt="User" />
+
+    <!-- Profile -->
+    <div class="profile-wrapper" *ngIf="user">
+      <img 
+        [src]="user.ProfileImage || 'assets/images/default-avatar.png'" 
+        class="avatar" 
+        alt="{{ user.FullName }}" 
+        (click)="toggleProfileDropdown()">
+
+      <div class="profile-dropdown" *ngIf="showProfileDropdown">
+        <div class="profile-header">
+          <img [src]="user.ProfileImage || 'assets/images/default-avatar.png'" class="avatar-small" />
+          <div class="profile-info">
+            <span class="name">{{ user.FullName }}</span>
+            <span class="email">{{ user.EmailID }}</span>
+          </div>
+          <span class="role">{{ user.RoleName || 'Pro' }}</span>
+        </div>
+
+        <ul class="profile-menu">
+          <li><i class="pi pi-user"></i> Public Profile</li>
+          <li><i class="pi pi-id-card"></i> My Profile</li>
+          <li><i class="pi pi-cog"></i> My Account</li>
+          <li><i class="pi pi-globe"></i> Language: English</li>
+          <li>
+            <i class="pi pi-moon"></i>
+            Dark Mode
+            <input type="checkbox" />
+          </li>
+          <li (click)="logout()"><i class="pi pi-sign-out"></i> Log out</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

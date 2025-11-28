@@ -1,4 +1,5 @@
 // user-login.model.ts
+import { MenuItem } from 'primeng/api';
 import { MCommonEntitiesMaster } from './MCommonEntitiesMaster';
 
 export class MUser {
@@ -9,15 +10,13 @@ export class MUser {
   public EmailID: string = '';
   public Password: string = '';
   public IsPasswordReset: boolean = false;
+  public ProfileImage: string = '';        
+  public RoleName: string = '';            
+  public profilemenuList: MenuItem[] = [];    
   public token?: string;
   public refreshToken?: string;
-  public userMenu: any;
-  public menuList: any;
-  public realmId: string | undefined;
   public standardDateFormat: any;
   public standardDateOnlyFormat: any;
   public logid: string | undefined;
-  public idamUserId: string | undefined;
-  public realmName: string | undefined;
   public MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }
