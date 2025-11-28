@@ -12,6 +12,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { SearchInputComponent } from '../search-input/search-input.component';
+import { LoginService } from '../../../authentication/login/login.service';
 
 @Component({
   selector: 'app-header',
@@ -32,4 +33,5 @@ import { SearchInputComponent } from '../search-input/search-input.component';
 })
 export class HeaderComponent {
  @Output() toggleSidebar = new EventEmitter<void>();
+  private loginService = inject(LoginService);
 }

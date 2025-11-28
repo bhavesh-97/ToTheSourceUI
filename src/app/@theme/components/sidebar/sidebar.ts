@@ -21,6 +21,8 @@ import { ButtonModule } from 'primeng/button';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { filter } from 'rxjs/operators';
+import { LoginService } from '../../../authentication/login/login.service';
+import { MUserMenuIDAM } from '../../../models/usermenuidem';
 
 interface MenuItemExt extends MenuItem {
   route?: string;
@@ -42,9 +44,14 @@ export class SidebarComponent {
 
   private _isMini = signal(false);
   private sidebarEl!: HTMLElement;
+  private loginService = inject(LoginService);
+  private el = inject(ElementRef);
+  menuItems: MUserMenuIDAM[] = [];
+  opened: Record<string, boolean> = {};
 
-  constructor(private el: ElementRef) {}
-
+  ngOnInit(): void {
+      this.menuItems = this.loginService.getMenuList(); 
+  }
   ngAfterViewInit() {
     this.sidebarEl = this.el.nativeElement.querySelector('.sidebar');
   }
@@ -61,14 +68,27 @@ export class SidebarComponent {
     } else {
       mainArea?.classList.toggle('open');
     }
-
     this._isMini.update(v => !v);
-    const target = this._isMini() ? 72 : 280;
-
-    gsap.to('.main-area', {
-      marginLeft: target,
-      duration: 0.5,
+    if (this._isMini()) {
+        this.opened = {};
+      }
+    const sidebarWidth = this._isMini() ? 72 : 280;
+    gsap.to(this.sidebarEl, {
+      width: sidebarWidth,
+      duration: 0.4,
       ease: 'power3.inOut'
+    });
+
+    gsap.to(mainArea, {
+      marginLeft: sidebarWidth,
+      duration: 0.4,
+      ease: 'power3.inOut'
+    });
+     Object.keys(this.opened).forEach(label => {
+      const menuEl = this.sidebarEl.querySelector(`.child-menu[data-label="${label}"]`);
+      if (menuEl) {
+        gsap.to(menuEl, { autoAlpha: this.opened[label] ? 1 : 0, duration: 0.3 });
+      }
     });
   }
 
@@ -76,49 +96,22 @@ export class SidebarComponent {
     return this._isMini();
   }
 
-  menuItems = [
-    {
-      icon: 'pi pi-home',
-      label: 'Dashboard',
-      route: '/main/dashboard',
-      children: []
-    },
-    {
-      icon: 'pi pi-chart-line',
-      label: 'Analytics',
-      route: '/main/analytics',
-      children: []
-    },
-    {
-      icon: 'pi pi-users',
-      label: 'Users',
-      route: null,
-      children: [
-        {
-          icon: 'pi pi-list',
-          label: 'User List',
-          route: '/main/users/list',
-          children: []
-        },
-        {
-          icon: 'pi pi-id-card',
-          label: 'Roles',
-          route: '/main/users/roles',
-          children: []
-        }
-      ]
-    },
-    {
-      icon: 'pi pi-cog',
-      label: 'Settings',
-      route: '/main/settings',
-      children: []
-    }
-  ];
-
-  opened: Record<string, boolean> = {};
-
-  toggleChild(label: string) {
-    this.opened[label] = !this.opened[label];
+  // toggleChild(label: string) {
+  //   this.opened[label] = !this.opened[label];
+  // }
+  toggleChild(label: string, hasChildren: boolean) {
+  if (this._isMini() && hasChildren) {
+    this.toggleMini(); 
   }
+  this.opened[label] = !this.opened[label];
+  const menuEl = this.sidebarEl.querySelector(`.child-menu[data-label="${label}"]`) as HTMLElement;
+  if (menuEl) {
+      gsap.to(menuEl, {
+        height: this.opened[label] ? 'auto' : 0,
+        opacity: this.opened[label] ? 1 : 0,
+        duration: 0.3,
+        ease: 'power3.inOut'
+      });
+   }
+}
 }

@@ -2,30 +2,27 @@
   <nav class="nav">
     <ng-container *ngFor="let item of menuItems">
       <a *ngIf="item.children.length === 0"
-         [routerLink]="item.route"
+         [routerLink]="item.link"
          routerLinkActive="active">
         <i [class]="item.icon"></i>
-        <span>{{ item.label }}</span>
+        <span>{{ item.title }}</span>
       </a>
       <div *ngIf="item.children.length > 0" class="parent-menu">
-        <a (click)="toggleChild(item.label)" class="has-children">
+        <a (click)="toggleChild(item.title, item.children.length > 0)" class="has-children">
           <i [class]="item.icon"></i>
-          <span>{{ item.label }}</span>
-          <i class="pi" [ngClass]="opened[item.label] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+          <span>{{ item.title }}</span>
+          <i class="pi" [ngClass]="opened[item.title] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
         </a>
-        <div class="child-menu" *ngIf="opened[item.label]">
+        <div class="child-menu" *ngIf="opened[item.title]">
           <a *ngFor="let child of item.children"
-             [routerLink]="child.route"
+             [routerLink]="child.link"
              routerLinkActive="active">
-
             <i [class]="child.icon"></i>
-            <span>{{ child.label }}</span>
+            <span>{{ child.title }}</span>
           </a>
         </div>
-
       </div>
 
     </ng-container>
-
   </nav>
 </aside>
