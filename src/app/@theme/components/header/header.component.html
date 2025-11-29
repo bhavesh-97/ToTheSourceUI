@@ -1,5 +1,4 @@
 <div class="header-content">
-  <!-- Left group: Logo + Sidebar toggle -->
   <div class="left-group">
     <div class="logo-area">
       <img src="assets/images/product/To the Source.png" alt="To The Source" class="logo-img">
@@ -9,14 +8,10 @@
       <i class="pi pi-bars"></i>
     </button>
   </div>
-
-  <!-- Search -->
   <div class="search-wrapper">
     <i class="pi pi-search"></i>
     <input type="text" placeholder="Search anything..." />
   </div>
-
-  <!-- Right group: Notifications + Profile -->
   <div class="right-group">
     <button class="icon-btn">
       <i class="pi pi-bell"></i>
@@ -30,14 +25,12 @@
         alt="{{ user.FullName }}"
         (click)="toggleProfileDropdown()"
       />
-
-      <!-- Profile Dropdown -->
       <div class="profile-dropdown" *ngIf="showProfileDropdown" id="profileMenu">
         <div class="profile-header">
           <img [src]="user.ProfileImage" class="avatar-small" />
-          <div class="profile-info">
-            <span class="name">{{ user.FullName }}</span>
-            <span class="role">{{ user.RoleName }}</span>
+          <div class="profile-info row">
+            <span class="name col-md-12">{{ user.FullName }}</span>
+            <span class="role col-md-12">{{ user.RoleName }}</span>
           </div>
         </div>
 
@@ -49,8 +42,6 @@
               <span class="menu-label">{{ item['label'] }}</span>
               <small *ngIf="item['value']" class="menu-value">{{ item['value'] }}</small>
             </div>
-
-            <!-- Dark mode toggle -->
              <p-toggleButton 
               *ngIf="item['toggle']"
               [onLabel]="'Dark'" 
@@ -61,7 +52,6 @@
               (onChange)="toggleDarkMode()"
               styleClass="p-button-text p-button-sm">
             </p-toggleButton>
-            <!-- Full row click -->
             <button 
               *ngIf="!item['toggle']" 
               class="menu-click" 
