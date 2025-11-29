@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewChild, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, inject, signal, ViewChild, AfterViewInit, OnDestroy, Output, EventEmitter, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { BadgeModule } from 'primeng/badge';
 import { MenuItem } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 import { SelectModule } from 'primeng/select';
 import { SearchInputComponent } from '../search-input/search-input.component';
 import { LoginService } from '../../../authentication/login/login.service';
@@ -27,42 +28,82 @@ import { MUser } from '../../../models/MUser';
     BadgeModule,
     TooltipModule,
     InputTextModule,
+    ToggleButtonModule,
     SelectModule
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent {
- @Output() toggleSidebar = new EventEmitter<void>();
- private loginService = inject(LoginService);
+export class HeaderComponent implements OnInit {
 
+  @Output() toggleSidebar = new EventEmitter<void>();
+  private loginService = inject(LoginService);
+  isDarkMode = document.body.classList.contains('dark');
   user: MUser | null = null;
   showProfileDropdown = false;
 
   ngOnInit(): void {
-    debugger;
-    this.user = this.loginService.getUserInfo(); 
+    this.user = this.loginService.getUserInfo();
+
+    this.isDarkMode = localStorage.getItem("darkMode") === "1";
+    if (this.isDarkMode) document.body.classList.add("dark");
   }
 
   toggleProfileDropdown() {
     this.showProfileDropdown = !this.showProfileDropdown;
+    setTimeout(() => {
+      const dropdown = document.getElementById("profileMenu");
+      if (!dropdown) return;
 
-    const dropdownEl = document.querySelector('.profile-dropdown') as HTMLElement;
-    if (!dropdownEl) return;
+      if (this.showProfileDropdown) {
+        gsap.fromTo(dropdown, 
+          { opacity: 0, y: -10, scale: 0.92 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.28, ease: "power3.out" }
+        );
+        gsap.from(dropdown.querySelectorAll(".menu-item"), {
+          opacity: 0,
+          x: -8,
+          duration: 0.18,
+          stagger: 0.04,
+          ease: "power1.out"
+        });
+      }
+    }, 10);
+  }
 
-    // GSAP animation
-    if (this.showProfileDropdown) {
-      gsap.fromTo(
-        dropdownEl,
-        { opacity: 0, y: -10, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.25, ease: 'power3.out', pointerEvents: 'auto' }
-      );
-    } else {
-      gsap.to(dropdownEl, { opacity: 0, y: -10, scale: 0.95, duration: 0.2, ease: 'power3.in', pointerEvents: 'none' });
+  @HostListener('document:click', ['$event'])
+  closeOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".profile-wrapper") && this.showProfileDropdown) {
+      this.showProfileDropdown = false;
     }
   }
 
-  logout() {
-    this.loginService.logout(); // Implement logout logic
+  onMenuAction(action: string) {
+    switch (action) {
+      case 'publicProfile': this.openPublicProfile(); break;
+      case 'myProfile': this.openMyProfile(); break;
+      case 'myAccount': this.openMyAccount(); break;
+      case 'changeLanguage': this.changeLanguage(); break;
+      case 'toggleDarkMode': this.toggleDarkMode(); break;
+      case 'logout': this.logout(); break;
+    }
   }
+
+  toggleDarkMode() {
+    this.isDarkMode = document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", this.isDarkMode ? "1" : "0");
+    gsap.fromTo("body", { opacity: 0.85 }, { opacity: 1, duration: 0.25 });
+  }
+
+  getIconClass(icon: string) {
+    if (!icon) return '';
+    return icon.startsWith('pi ') || icon.startsWith('fa ') || icon.startsWith('bi ') ? icon : icon;
+  }
+
+  logout() { this.loginService.logout(); }
+  openPublicProfile() {}
+  openMyProfile() {}
+  openMyAccount() {}
+  changeLanguage() {}
 }

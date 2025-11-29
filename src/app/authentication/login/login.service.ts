@@ -28,11 +28,21 @@ export class LoginService {
         token: "demo-jwt-token-123456",
         result: {
           user: {
-            id: 1,
-            username: "admin",
-            email: "admin@example.com",
-            avatar: "assets/images/bhavesh.jpg",
-            roles: ["Admin"]
+            UserID: 1,
+            UserName: "admin",
+            FullName: "Bhavesh Vaghela",
+            Email: "admin@example.com",
+            ProfileImage: "assets/images/bhavesh.jpg",
+            Roles: ["Admin"],
+            RoleName: "Admin",
+            ProfileMenuList: [
+                    { "icon": "pi pi-user", "label": "Public Profile", "action": "publicProfile" },
+                    { "icon": "pi pi-id-card", "label": "My Profile", "action": "myProfile" },
+                    { "icon": "pi pi-cog", "label": "My Account", "action": "myAccount" },
+                    { "icon": "pi pi-globe", "label": "Language", "value": "English", "action": "changeLanguage" },
+                    { "icon": "pi pi-moon", "label": "Dark Mode", "toggle": true, "action": "toggleDarkMode" },
+                    { "icon": "pi pi-sign-out", "label": "Log out", "action": "logout" }
+                ]
           },
           menu: [
             {

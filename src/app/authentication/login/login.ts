@@ -187,6 +187,7 @@ export class Login implements AfterViewInit {
       next: (res) => {
         console.log(res);
         if (!res.isError) {
+          debugger;
           this.loginForm.reset();
           this.loginService.storeToken(res.token ?? '');
           this.loginService.storeUserInfo(res.result.user ?? new MUser());

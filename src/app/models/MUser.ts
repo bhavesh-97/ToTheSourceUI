@@ -12,7 +12,7 @@ export class MUser {
   public IsPasswordReset: boolean = false;
   public ProfileImage: string = '';        
   public RoleName: string = '';            
-  public profilemenuList: MenuItem[] = [];    
+  public ProfileMenuList: MenuItem[] = [];    
   public token?: string;
   public refreshToken?: string;
   public standardDateFormat: any;

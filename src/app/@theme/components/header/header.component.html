@@ -1,53 +1,73 @@
 <div class="header-content">
+  <!-- Left group: Logo + Sidebar toggle -->
   <div class="left-group">
     <div class="logo-area">
       <img src="assets/images/product/To the Source.png" alt="To The Source" class="logo-img">
     </div>
+
     <button class="menu-btn" (click)="toggleSidebar.emit()">
       <i class="pi pi-bars"></i>
     </button>
   </div>
 
+  <!-- Search -->
   <div class="search-wrapper">
     <i class="pi pi-search"></i>
     <input type="text" placeholder="Search anything..." />
   </div>
 
+  <!-- Right group: Notifications + Profile -->
   <div class="right-group">
     <button class="icon-btn">
       <i class="pi pi-bell"></i>
       <span class="badge">3</span>
     </button>
 
-    <!-- Profile -->
     <div class="profile-wrapper" *ngIf="user">
       <img 
         [src]="user.ProfileImage || 'assets/images/default-avatar.png'" 
         class="avatar" 
-        alt="{{ user.FullName }}" 
-        (click)="toggleProfileDropdown()">
+        alt="{{ user.FullName }}"
+        (click)="toggleProfileDropdown()"
+      />
 
-      <div class="profile-dropdown" *ngIf="showProfileDropdown">
+      <!-- Profile Dropdown -->
+      <div class="profile-dropdown" *ngIf="showProfileDropdown" id="profileMenu">
         <div class="profile-header">
-          <img [src]="user.ProfileImage || 'assets/images/default-avatar.png'" class="avatar-small" />
+          <img [src]="user.ProfileImage" class="avatar-small" />
           <div class="profile-info">
             <span class="name">{{ user.FullName }}</span>
-            <span class="email">{{ user.EmailID }}</span>
+            <span class="role">{{ user.RoleName }}</span>
           </div>
-          <span class="role">{{ user.RoleName || 'Pro' }}</span>
         </div>
 
-        <ul class="profile-menu">
-          <li><i class="pi pi-user"></i> Public Profile</li>
-          <li><i class="pi pi-id-card"></i> My Profile</li>
-          <li><i class="pi pi-cog"></i> My Account</li>
-          <li><i class="pi pi-globe"></i> Language: English</li>
-          <li>
-            <i class="pi pi-moon"></i>
-            Dark Mode
-            <input type="checkbox" />
+        <ul class="menu-list">
+          <li *ngFor="let item of user.ProfileMenuList" class="menu-item">
+            <i *ngIf="item['icon']" [ngClass]="getIconClass(item['icon'])" class="menu-icon"></i>
+
+            <div class="menu-text">
+              <span class="menu-label">{{ item['label'] }}</span>
+              <small *ngIf="item['value']" class="menu-value">{{ item['value'] }}</small>
+            </div>
+
+            <!-- Dark mode toggle -->
+             <p-toggleButton 
+              *ngIf="item['toggle']"
+              [onLabel]="'Dark'" 
+              [offLabel]="'Light'"
+              [onIcon]="'pi pi-moon'" 
+              [offIcon]="'pi pi-sun'"
+              [(ngModel)]="isDarkMode"
+              (onChange)="toggleDarkMode()"
+              styleClass="p-button-text p-button-sm">
+            </p-toggleButton>
+            <!-- Full row click -->
+            <button 
+              *ngIf="!item['toggle']" 
+              class="menu-click" 
+              (click)="onMenuAction(item['action'])">
+            </button>
           </li>
-          <li (click)="logout()"><i class="pi pi-sign-out"></i> Log out</li>
         </ul>
       </div>
     </div>
