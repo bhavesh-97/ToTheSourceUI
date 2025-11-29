@@ -1,0 +1,79 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-black text-white">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+      <h1 class="text-6xl font-black bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
+        GSAP x THREE.JS MASTER
+      </h1>
+      <input pInputText [(ngModel)]="searchTerm" (input)="searchTerm" placeholder="Search animations..." class="w-96" />
+    </div>
+  </header>
+
+  <!-- TIMELINE SCRUBBER -->
+  <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-white/10 backdrop-blur-xl rounded-full px-8 py-4 flex items-center gap-6">
+    <span class="text-sm">Timeline Scrubber</span>
+    <div class="w-96 h-2 bg-white/20 rounded-full overflow-hidden">
+      <div class="h-full bg-gradient-to-r from-violet-500 to-pink-500 w-1/3"></div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto p-8">
+
+    <!-- LEFT: CONTROL PANEL -->
+    <div class="space-y-6">
+      <button pButton label="Add Animation" icon="pi pi-plus" class="w-full p-4 text-lg"></button>
+      <p-table [value]="filteredAnimations" class="text-sm">
+        <ng-template pTemplate="body" let-anim>
+          <tr class="hover:bg-white/5 cursor-move" [attr.data-id]="anim.id">
+            <td class="py-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i class="pi pi-grip-vertical"></i>
+                <span>{{ anim.name }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button pButton icon="pi pi-eye" class="p-button-rounded p-button-outlined"></button>
+                <button pButton icon="pi pi-copy" class="p-button-rounded"></button>
+                <button pButton icon="pi pi-clone" class="p-button-rounded"></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- CENTER: LIVE PREVIEW -->
+    <div class="lg:col-span-3 space-y-32">
+
+      <!-- 3D CANVAS -->
+      <section class="h-screen flex items-center justify-center bg-black/50 rounded-3xl overflow-hidden">
+        <canvas #threeCanvas id="three-canvas" class="w-full h-full"></canvas>
+      </section>
+
+      <!-- HERO -->
+      <section class="min-h-screen flex items-center justify-center">
+        <h1 class="hero-title text-9xl font-black bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
+          GSAP x THREE.JS
+        </h1>
+      </section>
+
+      <!-- CARDS -->
+      <section class="grid grid-cols-3 gap-12">
+        <div class="feature-card p-20 bg-white/10 backdrop-blur-xl rounded-3xl text-center border border-white/20">
+          <h3 class="text-3xl font-bold">3D Floating</h3>
+        </div>
+        <div class="feature-card p-20 bg-white/10 backdrop-blur-xl rounded-3xl text-center border border-white/20">Card 2</div>
+        <div class="feature-card p-20 bg-white/10 backdrop-blur-xl rounded-3xl text-center border border-white/20">Card 3</div>
+      </section>
+
+      <!-- PARALLAX -->
+      <section class="relative h-screen pin-section">
+        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920" class="parallax-img w-full h-full object-cover absolute inset-0">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent flex items-end p-24">
+          <h2 class="text-9xl font-black">PINNED & PARALLAX</h2>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

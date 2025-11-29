@@ -28,6 +28,11 @@ export const CMSRoutes: Routes = [
         loadComponent: () => import('./main/dashboard/dashboard')
           .then(m => m.Dashboard),
       },
+      {
+        path: 'gsap',
+        loadComponent: () => import('./main/gsap-master/gsap-master')
+          .then(m => m.GsapMaster),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

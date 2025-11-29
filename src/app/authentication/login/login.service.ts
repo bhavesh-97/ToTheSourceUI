@@ -51,15 +51,15 @@ export class LoginService {
               menuID: 100,
               title: "Dashboard",
               isParentMenu: true,
-          parentMenuID: 0,
-          link: "/main/dashboard",
-          icon: "pi pi-home",
-          permissions: {
-            CanInsert: false,
-            CanUpdate: false,
-            CanDelete: false,
-            CanView: true
-          },
+              parentMenuID: 0,
+              link: "/CMS/main/dashboard",
+              icon: "pi pi-home",
+              permissions: {
+                  CanInsert: false,
+                  CanUpdate: false,
+                  CanDelete: false,
+                  CanView: true
+            },
           children: []
         },
         {
@@ -130,6 +130,21 @@ export class LoginService {
             CanView: true
           },
           children: [
+            {
+              menuID: 301,
+              title: "GSAP Master",
+              isParentMenu: false,
+              parentMenuID: 300,
+              link: "/CMS/main/gsap",
+              icon: "fa fa-flag",
+              permissions: {
+                CanInsert: true,
+                CanUpdate: true,
+                CanDelete: false,
+                CanView: true
+              },
+              children: []
+            },
             {
               menuID: 301,
               title: "Blog",
