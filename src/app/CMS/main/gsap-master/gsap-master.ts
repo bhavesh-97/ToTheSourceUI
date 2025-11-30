@@ -67,7 +67,7 @@ export interface GsapConfig {
   templateUrl: './gsap-master.html',
   styleUrl: './gsap-master.css'
 })
-export class GsapConfigPageComponent implements OnInit, AfterViewInit, OnDestroy {
+export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewContainer') previewContainer!: ElementRef<HTMLDivElement>;
 
   private gsapConfigService = inject(GsapMasterService);
@@ -90,11 +90,6 @@ export class GsapConfigPageComponent implements OnInit, AfterViewInit, OnDestroy
   private changeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
 
-  // Helper for deep cloning GSAP vars (to avoid mutation/circular refs)
-  private deepClone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
-  }
-
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
 
@@ -108,7 +103,9 @@ export class GsapConfigPageComponent implements OnInit, AfterViewInit, OnDestroy
       }
     });
   }
-
+private deepClone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)); // Or use structuredClone(obj) for modern browsers
+}
   ngOnInit() {
     this.projectCode = 'test-project'; // Default for testing
     this.loadConfig(); // Auto-load mock data
@@ -172,77 +169,74 @@ export class GsapConfigPageComponent implements OnInit, AfterViewInit, OnDestroy
     const safeConfig = this.deepClone(this.config);
     this.configJson = JSON.stringify(safeConfig, null, 2);
   }
+applyConfig() {
+  debugger;
+  if (!this.config || !this.previewContainer) return;
 
-  applyConfig() {
-    this.syncFormsToJson(); // Ensure JSON is up-to-date (with clone)
-    if (!this.config || !this.previewContainer) return;
+  // Kill first to clear any lingering refs
+  gsap.killTweensOf('*');
+  ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
-    // Kill existing animations first
-    gsap.killTweensOf('*');
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    ScrollTrigger.refresh();
+  // Clone config for safety before any GSAP use
+  const safeConfig = this.deepClone(this.config);
+  this.syncFormsToJson(); // Now safe; uses cloned data
 
-    const global = this.config.global;
-    gsap.defaults({ duration: global.defaults.duration, ease: global.defaults.ease });
+  const global = safeConfig.global;
+  gsap.defaults({ duration: global.defaults.duration, ease: global.defaults.ease }); // New obj, no mutation risk
 
-    this.config.rules.forEach(rule => {
-      if (rule.status !== 'published') return;
-      const elements = this.previewContainer.nativeElement.querySelectorAll(rule.selector);
-      if (elements.length === 0) {
-        console.warn(`No elements found for selector: ${rule.selector}`);
-        return;
-      }
+  safeConfig.rules.forEach(rule => {
+    if (rule.status !== 'published') return;
+    const elements = this.previewContainer.nativeElement.querySelectorAll(rule.selector);
+    if (elements.length === 0) return;
 
-      // Deep clone vars to prevent GSAP from mutating original config objects
-      const clonedFrom = this.deepClone(rule.from || {});
-      const clonedTo = this.deepClone(rule.to || {});
-      const clonedStagger = this.deepClone(rule.stagger || {});
-      const clonedScrollTrigger = this.deepClone(rule.scrollTrigger || {});
-      const clonedDefaults = this.deepClone(rule.defaults || {});
+    // Full clone of all vars
+    const clonedFrom = this.deepClone(rule.from || {});
+    const clonedTo = this.deepClone(rule.to || {});
+    const clonedStagger = this.deepClone(rule.stagger || {});
+    const clonedScrollTrigger = this.deepClone(rule.scrollTrigger || {});
+    const clonedDefaults = this.deepClone(rule.defaults || {});
 
-      if (rule.type === 'tween') {
-        gsap.fromTo(elements, clonedFrom, {
-          ...clonedTo,
-          ...clonedStagger,
-          ...clonedScrollTrigger,
-          onComplete: () => this.executeCallback('onFadeUpComplete')
-        });
-      } else if (rule.type === 'timeline') {
-        const tl = gsap.timeline({
-          ...clonedScrollTrigger,
-          defaults: clonedDefaults
-        });
-        if (rule.sequence) {
-          rule.sequence
-            .sort((a, b) => a.order - b.order)
-            .forEach(step => {
-              const stepElements = this.previewContainer.nativeElement.querySelectorAll(step.selector);
-              if (stepElements.length > 0) {
-                const clonedStepFrom = this.deepClone(step.from || {});
-                const clonedStepTo = this.deepClone(step.to || {});
-                tl.fromTo(stepElements, clonedStepFrom, clonedStepTo, '<0.1');
-              }
-            });
-        }
-      }
-    });
-
-    // Execute callbacks (cloned to be safe)
-    if (this.config.callbacks) {
-      this.config.callbacks.forEach(cb => {
-        if (cb.script) {
-          try {
-            eval(cb.script);
-          } catch (e) {
-            console.error('Callback error:', e);
-          }
-        }
+    if (rule.type === 'tween') {
+      gsap.fromTo(elements, clonedFrom, {
+        ...this.deepClone(clonedTo), // Spread + clone for final vars obj
+        ...this.deepClone(clonedStagger),
+        ...this.deepClone(clonedScrollTrigger),
+        onComplete: () => this.executeCallback('onFadeUpComplete')
       });
+    } else if (rule.type === 'timeline') {
+      const tlVars = this.deepClone(clonedScrollTrigger);
+      const tl = gsap.timeline({
+        ...tlVars,
+        defaults: this.deepClone(clonedDefaults)
+      });
+      if (rule.sequence) {
+        rule.sequence
+          .sort((a, b) => a.order - b.order)
+          .forEach(step => {
+            const stepElements = this.previewContainer.nativeElement.querySelectorAll(step.selector);
+            if (stepElements.length > 0) {
+              const clonedStepFrom = this.deepClone(step.from || {});
+              const clonedStepTo = this.deepClone(step.to || {});
+              tl.fromTo(stepElements, clonedStepFrom, clonedStepTo, '<0.1');
+            }
+          });
+      }
     }
+  });
 
-    // Refresh ScrollTrigger after all animations are set
-    ScrollTrigger.refresh();
-  }
+  // Cloned callbacks for eval safety
+  safeConfig.callbacks.forEach(cb => {
+    if (cb.script) {
+      try {
+        eval(cb.script);
+      } catch (e) {
+        console.error('Callback error:', e);
+      }
+    }
+  });
+
+  ScrollTrigger.refresh();
+}
 
   saveConfig() {
     this.syncFormsToJson();
