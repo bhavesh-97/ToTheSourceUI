@@ -34,7 +34,8 @@ public MOCK_CONFIG: GsapConfig = {
       scrollTrigger: { enabled: true, start: 'top 85%' },
       version: 1,
       status: 'published',
-      sequence: []
+      sequence: undefined,
+      styles: { background: 'blue', color: 'white' }
     },
     {
       id: 'masterTimeline',
@@ -55,15 +56,18 @@ public MOCK_CONFIG: GsapConfig = {
           selector: '.tl-item-1',
           from: { opacity: 0, y: 40 },
           to: { opacity: 1, y: 0 },
-          order: 1
+          order: 1,
+          styles: { background: 'green' }
         },
         {
           selector: '.tl-item-2',
           from: { opacity: 0, y: 40 },
           to: { opacity: 1, y: 0 },
-          order: 2
+          order: 2,
+          styles: { background: 'red' }
         }
-      ]
+      ],
+      styles: {}
     }
   ],
   callbacks: [

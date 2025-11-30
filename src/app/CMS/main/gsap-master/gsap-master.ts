@@ -8,18 +8,18 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Subject, timer } from 'rxjs';
-import { takeUntil, debounceTime } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { GsapMasterService } from './gsap-master.service';
 
-// Define types based on provided JSON structure
-export interface GsapGlobal {
-  defaults: { duration: number; ease: string };
-  registerPlugins: string[];
-  autoInit: boolean;
-  meta: { version: string; description: string };
-  version: number;
-  status: string;
+// Enhanced interfaces
+export interface GsapSequenceStep {
+  selector: string;
+  from?: Record<string, any>;
+  to?: Record<string, any>;
+  order: number;
+  timeline?: GsapRule; // Nested timeline support (recursive)
+  styles?: Record<string, string>; // Inline styles for preview
 }
 
 export interface GsapRule {
@@ -34,17 +34,22 @@ export interface GsapRule {
   scrollTrigger?: Record<string, any>;
   version: number;
   status: string;
-  sequence?: Array<{
-    selector: string;
-    from: Record<string, any>;
-    to: Record<string, any>;
-    order: number;
-  }>;
+  sequence?: GsapSequenceStep[];
+  styles?: Record<string, string>; // Global styles for rule elements
 }
 
 export interface GsapCallback {
   name: string;
   script: string;
+}
+
+export interface GsapGlobal {
+  defaults: { duration: number; ease: string };
+  registerPlugins: string[];
+  autoInit: boolean;
+  meta: { version: string; description: string };
+  version: number;
+  status: string;
 }
 
 export interface GsapConfig {
@@ -84,18 +89,38 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   editingRule: GsapRule = {} as GsapRule;
   editingRuleFromJson = '';
   editingRuleToJson = '';
+  editingRuleStylesJson = '{}';
   editingCallback: GsapCallback = { name: '', script: '' };
 
   // Auto-apply with debounce
   private changeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
 
+private deepClone<T>(obj: T): T {
+  try {
+    return structuredClone(obj); 
+  } catch (e) {
+    return JSON.parse(JSON.stringify(obj)); 
+  }
+}
+
+  // Selector best practices validator
+  private validateSelectorBestPractice(selector: string): string | null {
+    if (selector.includes('*')) return 'Avoid universal selector (*); use specific classes/IDs for performance.';
+    if (selector.split(' ').length > 3) return 'Deep selectors (>3 levels) may impact performance; consider flatter structure.';
+    return null;
+  }
+
+  getSelectorWarning(selector: string): string | null {
+    return this.validateSelectorBestPractice(selector);
+  }
+
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
 
     // Debounce changes: Apply config 500ms after last change
     this.changeSubject.pipe(
-      debounceTime(500),
+      debounceTime(800),
       takeUntil(this.destroy$)
     ).subscribe(() => {
       if (this.config) {
@@ -103,9 +128,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-private deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj)); // Or use structuredClone(obj) for modern browsers
-}
+
   ngOnInit() {
     this.projectCode = 'test-project'; // Default for testing
     this.loadConfig(); // Auto-load mock data
@@ -146,7 +169,6 @@ private deepClone<T>(obj: T): T {
   // Sync form changes back to JSON (call on save or apply)
   private syncJsonToForms() {
     if (!this.config) return;
-    // Use deep clone to avoid circular refs from previous GSAP runs
     const safeConfig = this.deepClone(this.config);
     this.configJson = JSON.stringify(safeConfig, null, 2);
   }
@@ -154,7 +176,7 @@ private deepClone<T>(obj: T): T {
   onJsonChange(event: any) {
     try {
       const parsed = JSON.parse(event.target.value);
-      this.config = { ...this.config, ...parsed };
+      this.config = this.deepClone(parsed); // Clone to avoid future mutations
       this.syncFormsToJson(); // Update structured forms if needed
       this.changeSubject.next(); // Auto-apply
     } catch (e) {
@@ -163,69 +185,93 @@ private deepClone<T>(obj: T): T {
   }
 
   // Sync structured forms to JSON
-  private syncFormsToJson() {
-    if (!this.config) return;
-    // Use deep clone to avoid circular refs from previous GSAP runs
-    const safeConfig = this.deepClone(this.config);
-    this.configJson = JSON.stringify(safeConfig, null, 2);
-  }
+private syncFormsToJson() {
+  if (!this.config) return;
+  // Avoid deep clone for JSON tab if not needed; use replacer to skip circular
+  const safeConfig = JSON.parse(JSON.stringify(this.config, (key, value) => {
+    if (value && typeof value === 'object' && '_gsap' in value) return undefined; // Skip GSAP internals
+    return value;
+  }));
+  this.configJson = JSON.stringify(safeConfig, null, 2);
+}
+  // Handle nested timelines recursively
+  private applyNestedTimeline(tl: gsap.core.Timeline, steps: GsapSequenceStep[], container: HTMLElement, parentSelector?: string) {
+  steps
+    .sort((a, b) => a.order - b.order)
+    .forEach(step => {
+      const fullSelector = parentSelector ? `${parentSelector} ${step.selector}` : step.selector;
+      const elements = container.querySelectorAll(fullSelector);
+      if (elements.length === 0) return;
+
+      // Apply styles first (best practice: style before animate)
+      if (step.styles) {
+        gsap.set(elements, this.deepClone(step.styles));
+      }
+
+      if (step['timeline']) {
+        // Handle nested timeline: Create new timeline and add to parent
+        const nestedTl = gsap.timeline({ /* inherit options if needed, e.g., tl.vars */ });
+        tl.add(nestedTl, '<'); // Add at current position; adjust as needed (e.g., 0 for start)
+        this.applyNestedTimeline(nestedTl, step['timeline'].sequence || [], container, fullSelector);
+      } else {
+        // Standard step
+        const clonedFrom = this.deepClone(step.from || {});
+        const clonedTo = this.deepClone(step.to || {});
+        tl.fromTo(elements, clonedFrom, clonedTo, '<0.1');
+      }
+    });
+}
+
 applyConfig() {
-  debugger;
   if (!this.config || !this.previewContainer) return;
 
-  // Kill first to clear any lingering refs
-  gsap.killTweensOf('*');
-  ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+  const container = this.previewContainer.nativeElement;
 
-  // Clone config for safety before any GSAP use
-  const safeConfig = this.deepClone(this.config);
-  this.syncFormsToJson(); // Now safe; uses cloned data
+  // Single kill batch for perf
+  gsap.killTweensOf(container.querySelectorAll('*'));
+  ScrollTrigger.getAll().forEach(trigger => trigger.kill(false, true)); // Fast kill: no refresh
+
+  const safeConfig = { ...this.config }; // Shallow clone top-level
 
   const global = safeConfig.global;
-  gsap.defaults({ duration: global.defaults.duration, ease: global.defaults.ease }); // New obj, no mutation risk
+  gsap.defaults({ duration: global.defaults.duration, ease: global.defaults.ease });
+
+  let refreshNeeded = false; // Batch refresh
 
   safeConfig.rules.forEach(rule => {
     if (rule.status !== 'published') return;
-    const elements = this.previewContainer.nativeElement.querySelectorAll(rule.selector);
+    const elements = container.querySelectorAll(rule.selector);
     if (elements.length === 0) return;
 
-    // Full clone of all vars
-    const clonedFrom = this.deepClone(rule.from || {});
-    const clonedTo = this.deepClone(rule.to || {});
-    const clonedStagger = this.deepClone(rule.stagger || {});
-    const clonedScrollTrigger = this.deepClone(rule.scrollTrigger || {});
-    const clonedDefaults = this.deepClone(rule.defaults || {});
+    // Selector warning (non-blocking)
+    const warning = this.validateSelectorBestPractice(rule.selector);
+    if (warning) console.warn(`Selector best practice: ${warning}`);
+
+    // Styles (shallow)
+    if (rule.styles) {
+      gsap.set(elements, { ...rule.styles });
+    }
 
     if (rule.type === 'tween') {
-      gsap.fromTo(elements, clonedFrom, {
-        ...this.deepClone(clonedTo), // Spread + clone for final vars obj
-        ...this.deepClone(clonedStagger),
-        ...this.deepClone(clonedScrollTrigger),
-        onComplete: () => this.executeCallback('onFadeUpComplete')
-      });
+      const from = rule.from ? { ...rule.from } : {};
+      const to = rule.to ? { ...rule.to } : {};
+      const stagger = rule.stagger ? { ...rule.stagger } : {};
+      const st = rule.scrollTrigger ? { ...rule.scrollTrigger } : {};
+      gsap.fromTo(elements, from, { ...to, ...stagger, ...st, onComplete: () => this.executeCallback('onFadeUpComplete') });
+      refreshNeeded = true;
     } else if (rule.type === 'timeline') {
-      const tlVars = this.deepClone(clonedScrollTrigger);
-      const tl = gsap.timeline({
-        ...tlVars,
-        defaults: this.deepClone(clonedDefaults)
-      });
+      const st = rule.scrollTrigger ? { ...rule.scrollTrigger } : {};
+      const defaults = rule.defaults ? { ...rule.defaults } : {};
+      const tl = gsap.timeline({ ...st, defaults });
       if (rule.sequence) {
-        rule.sequence
-          .sort((a, b) => a.order - b.order)
-          .forEach(step => {
-            const stepElements = this.previewContainer.nativeElement.querySelectorAll(step.selector);
-            if (stepElements.length > 0) {
-              const clonedStepFrom = this.deepClone(step.from || {});
-              const clonedStepTo = this.deepClone(step.to || {});
-              tl.fromTo(stepElements, clonedStepFrom, clonedStepTo, '<0.1');
-            }
-          });
+        this.applyNestedTimeline(tl, rule.sequence, container);
       }
+      refreshNeeded = true;
     }
   });
 
-  // Cloned callbacks for eval safety
-  safeConfig.callbacks.forEach(cb => {
+  // Batch callbacks
+  safeConfig.callbacks?.forEach(cb => {
     if (cb.script) {
       try {
         eval(cb.script);
@@ -235,9 +281,12 @@ applyConfig() {
     }
   });
 
-  ScrollTrigger.refresh();
-}
+  if (refreshNeeded) {
+    requestAnimationFrame(() => ScrollTrigger.refresh()); // Async for perf
+  }
 
+  this.syncFormsToJson(); // Move to end, use shallow if possible
+}
   saveConfig() {
     this.syncFormsToJson();
     if (!this.config) return;
@@ -257,7 +306,8 @@ applyConfig() {
       from: { opacity: 0, y: 40 },
       to: { opacity: 1, y: 0 },
       version: 1,
-      status: 'published'
+      status: 'published',
+      styles: {}
     };
     this.config!.rules.push(newRule);
     this.syncFormsToJson();
@@ -266,9 +316,10 @@ applyConfig() {
   editRule(index: number) {
     this.editMode = 'rule';
     this.editingIndex = index;
-    this.editingRule = { ...this.config!.rules[index] };
+    this.editingRule = this.deepClone(this.config!.rules[index]);
     this.editingRuleFromJson = JSON.stringify(this.editingRule.from || {}, null, 2);
     this.editingRuleToJson = JSON.stringify(this.editingRule.to || {}, null, 2);
+    this.editingRuleStylesJson = JSON.stringify(this.editingRule.styles || {}, null, 2);
     this.showEditDialog = true;
   }
 
@@ -295,16 +346,29 @@ applyConfig() {
     this.syncFormsToJson();
   }
 
+  addNestedStep() {
+    if (!this.editingRule.sequence) this.editingRule.sequence = [];
+    this.editingRule.sequence.push({
+      selector: '',
+      order: this.editingRule.sequence.length + 1,
+      from: {},
+      to: {},
+      styles: {},
+      timeline: undefined // Optional nested timeline
+    });
+  }
+
   saveEdit() {
     if (this.editMode === 'rule' && this.editingIndex !== null && this.config) {
       try {
         this.editingRule.from = JSON.parse(this.editingRuleFromJson || '{}');
         this.editingRule.to = JSON.parse(this.editingRuleToJson || '{}');
+        this.editingRule.styles = JSON.parse(this.editingRuleStylesJson || '{}');
       } catch (e) {
         console.error('Invalid JSON in rule:', e);
         return;
       }
-      this.config.rules[this.editingIndex] = this.editingRule;
+      this.config.rules[this.editingIndex] = this.deepClone(this.editingRule); // Clone to avoid mutation
     } else if (this.editMode === 'callback' && this.editingIndex !== null && this.config) {
       this.config.callbacks[this.editingIndex] = this.editingCallback;
     }
@@ -324,20 +388,63 @@ applyConfig() {
       eval(cb.script);
     }
   }
+// Optimized resetPreview: Limit elements, cache selectors
+resetPreview() {
+  if (!this.config) return;
 
-  resetPreview() {
-    gsap.killTweensOf('*');
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    this.previewContainer.nativeElement.innerHTML = `
-      <div class="fade-up p-4 m-2 bg-primary text-white">Fade Up Element</div>
-      <div class="timeline-section p-4 m-2 bg-secondary text-white">
-        <div class="tl-item-1">Timeline Item 1</div>
-        <div class="tl-item-2">Timeline Item 2</div>
-      </div>
-    `;
-    ScrollTrigger.refresh();
+  const container = this.previewContainer.nativeElement;
+
+  gsap.killTweensOf(container.querySelectorAll('*'));
+  ScrollTrigger.getAll().forEach(trigger => trigger.kill(false, true));
+
+  // Cache selectors (limit to 20 for perf)
+  const selectorSet = new Set<string>();
+  const maxElements = 20;
+
+  const collectSelectors = (rules: GsapRule[], count: number = 0): number => {
+    if (count >= maxElements) return count;
+    rules.forEach(rule => {
+      if (count >= maxElements) return;
+      if (rule.selector && !selectorSet.has(rule.selector)) {
+        selectorSet.add(rule.selector);
+        count++;
+      }
+      if (rule.sequence && count < maxElements) {
+        rule.sequence.forEach(step => {
+          if (count >= maxElements) return;
+          if (step.selector && !selectorSet.has(step.selector)) {
+            selectorSet.add(step.selector);
+            count++;
+          }
+          if (step['timeline'] && count < maxElements) {
+            count = collectSelectors([step['timeline']], count);
+          }
+        });
+      }
+    });
+    return count;
+  };
+
+  collectSelectors(this.config.rules);
+
+  // Generate minimal HTML
+  let html = Array.from(selectorSet).slice(0, maxElements).map(selector => {
+    const styles = this.config?.rules.find(r => r.selector === selector)?.styles || {};
+    const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
+    const cleanSelector = selector.replace(/^[.#]/, '');
+    return `<div class="${cleanSelector}" style="${styleStr}; padding: 20px; margin: 10px; border: 1px solid #ccc; background: #f0f0f0; min-height: 50px;">
+      Preview: ${selector}
+    </div>`;
+  }).join('');
+
+  if (html === '') {
+    html = '<div style="padding: 20px; text-align: center; color: #999;">No selectors. Add rules.</div>';
   }
 
+  container.innerHTML = `<div style="height: 600px; overflow-y: auto; padding: 10px;">${html}</div>`; // Reduced height
+
+  requestAnimationFrame(() => ScrollTrigger.refresh());
+}
   pauseAnimation() {
     gsap.globalTimeline.pause();
   }

@@ -24,3 +24,33 @@
 .tab-content .tab-pane.active {
   display: block;
 }
+/* src/app/pages/gsap-config-page.css */
+.preview-area { 
+  border: 1px solid #ddd; 
+  padding: 10px; 
+}
+.form-control { 
+  margin-bottom: 10px; 
+}
+.card { 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+.text-truncate { 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+.nav-tabs .nav-link.active {
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+}
+.tab-content .tab-pane {
+  display: none;
+}
+.tab-content .tab-pane.active {
+  display: block;
+}
+small.text-muted {
+  display: block;
+  font-size: 0.875em;
+}
