@@ -1,67 +1,197 @@
-<div class="grid">
+<!-- gsap-config-page.html -->
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <h2>GSAP Configuration Manager</h2>
+      <p>Load, edit, and preview GSAP animations using project-specific JSON configs from PostgreSQL.</p>
+      
+      <!-- Project Selection -->
+      <div class="mb-3">
+        <label for="projectCode" class="form-label">Project Code</label>
+        <input 
+          type="text" 
+          id="projectCode" 
+          class="form-control" 
+          [(ngModel)]="projectCode"
+          placeholder="Enter project code (e.g., 'myproject')">
+        <button pButton label="Load Config" icon="pi pi-download" class="mt-2" (click)="loadConfig()"></button>
+      </div>
 
-  <div class="col-3 p-3 border-right">
-    <h3>Pages</h3>
-    <ul class="list-none">
-      <li *ngFor="let p of pages" (click)="selectPage(p)"
-          class="p-2 cursor-pointer hover:bg-gray-100">
-        {{ p.title }}
-      </li>
-    </ul>
-  </div>
+      <!-- Structured Editor (Alternative: Bootstrap-style Tabs with Angular) -->
+      <div *ngIf="config" class="row">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between">
+              <h5>Config Editor</h5>
+              <button pButton label="Save to DB" icon="pi pi-save" (click)="saveConfig()"></button>
+            </div>
+            <div class="card-body">
+              <!-- Custom Tabs -->
+              <ul class="nav nav-tabs" id="configTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" [class.active]="activeTab === 'global'" (click)="activeTab = 'global'" type="button" role="tab">Global</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" [class.active]="activeTab === 'rules'" (click)="activeTab = 'rules'" type="button" role="tab">Rules</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" [class.active]="activeTab === 'callbacks'" (click)="activeTab = 'callbacks'" type="button" role="tab">Callbacks</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" [class.active]="activeTab === 'json'" (click)="activeTab = 'json'" type="button" role="tab">Raw JSON</button>
+                </li>
+              </ul>
+              <div class="tab-content p-3">
+                <!-- Global Tab -->
+                <div class="tab-pane" [class.active]="activeTab === 'global'" role="tabpanel">
+                  <div class="row mb-2">
+                    <div class="col-6">
+                      <label>Duration</label>
+                      <input type="number" class="form-control" [(ngModel)]="config.global.defaults.duration">
+                    </div>
+                    <div class="col-6">
+                      <label>Ease</label>
+                      <input type="text" class="form-control" [(ngModel)]="config.global.defaults.ease">
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <label>Auto Init</label>
+                    <p-checkbox [(ngModel)]="config.global.autoInit" binary="true"></p-checkbox>
+                  </div>
+                  <div class="mb-2">
+                    <label>Version</label>
+                    <input type="number" class="form-control" [(ngModel)]="config.global.version">
+                  </div>
+                </div>
+                <!-- Rules Tab -->
+                <div class="tab-pane" [class.active]="activeTab === 'rules'" role="tabpanel">
+                  <button pButton label="Add Rule" icon="pi pi-plus" class="mb-2" (click)="addRule()"></button>
+                  <p-table [value]="config.rules" [tableStyle]="{'min-width': '30rem'}">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th>ID</th>
+                        <th>Label</th>
+                        <th>Type</th>
+                        <th>Selector</th>
+                        <th>Actions</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-rule let-i="index">
+                      <tr>
+                        <td>{{ rule.id }}</td>
+                        <td>{{ rule.label }}</td>
+                        <td>{{ rule.type }}</td>
+                        <td>{{ rule.selector }}</td>
+                        <td>
+                          <button pButton icon="pi pi-pencil" (click)="editRule(i)" class="p-button-text"></button>
+                          <button pButton icon="pi pi-trash" (click)="deleteRule(i)" class="p-button-danger p-button-text"></button>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+                <!-- Callbacks Tab -->
+                <div class="tab-pane" [class.active]="activeTab === 'callbacks'" role="tabpanel">
+                  <button pButton label="Add Callback" icon="pi pi-plus" class="mb-2" (click)="addCallback()"></button>
+                  <p-table [value]="config.callbacks" [tableStyle]="{'min-width': '30rem'}">
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th>Name</th>
+                        <th>Script</th>
+                        <th>Actions</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-cb let-i="index">
+                      <tr>
+                        <td>{{ cb.name }}</td>
+                        <td class="text-truncate" style="max-width: 200px;">{{ cb.script }}</td>
+                        <td>
+                          <button pButton icon="pi pi-pencil" (click)="editCallback(i)" class="p-button-text"></button>
+                          <button pButton icon="pi pi-trash" (click)="deleteCallback(i)" class="p-button-danger p-button-text"></button>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+                <!-- Raw JSON Tab -->
+                <div class="tab-pane" [class.active]="activeTab === 'json'" role="tabpanel">
+                  <textarea 
+                    class="form-control" 
+                    rows="8" 
+                    [(ngModel)]="configJson"
+                    (input)="onJsonChange($event)"
+                    placeholder="Full JSON config..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <div class="col-9 p-3" *ngIf="selectedPage">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5>Live Preview</h5>
+              <div #previewContainer class="preview-area bg-light position-relative" style="width:100%; height:400px; overflow:hidden;">
+                <!-- Demo elements for GSAP binding -->
+                <div class="fade-up p-4 m-2 bg-primary text-white">Fade Up Element</div>
+                <div class="timeline-section p-4 m-2 bg-secondary text-white">
+                  <div class="tl-item-1">Timeline Item 1</div>
+                  <div class="tl-item-2">Timeline Item 2</div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button pButton label="Apply Config" icon="pi pi-play" class="me-2" (click)="applyConfig()"></button>
+              <button pButton label="Reset" icon="pi pi-refresh" class="me-2" (click)="resetPreview()"></button>
+              <button pButton label="Pause" icon="pi pi-pause" (click)="pauseAnimation()"></button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <h2>{{ selectedPage.title }}</h2>
-
-    <button pButton label="Add Animation" icon="pi pi-plus" class="my-3"
-            (click)="addAnimation()"></button>
-
-    <!-- Page Animation Table -->
-    <p-table [value]="selectedPage.animations">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Duration</th>
-          <th>Preview</th>
-          <th>Actions</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-row>
-        <tr>
-          <td>{{ row.id }}</td>
-          <td>{{ row.name }}</td>
-          <td>{{ row.duration }}s</td>
-
-          <!-- Live preview -->
-          <td>
-            <app-preview-grid [animation]="row"></app-preview-grid>
-          </td>
-
-          <td>
-            <button pButton icon="pi pi-pencil" (click)="editAnimation(row)"></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-
-    <div class="text-right mt-3">
-      <button pButton label="Save Page" icon="pi pi-save"
-              (click)="savePageToServer()"></button>
+      <!-- Rule/Callback Edit Dialog -->
+      <p-dialog [(visible)]="showEditDialog" modal="true" header="{{ editMode === 'rule' ? 'Edit Rule' : 'Edit Callback' }}" [style]="{width: '50vw'}">
+        <div *ngIf="editMode === 'rule'">
+          <div class="mb-2">
+            <label>Label</label>
+            <input type="text" class="form-control" [(ngModel)]="editingRule.label">
+          </div>
+          <div class="mb-2">
+            <label>Type</label>
+            <select class="form-control" [(ngModel)]="editingRule.type">
+              <option value="tween">Tween</option>
+              <option value="timeline">Timeline</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label>Selector</label>
+            <input type="text" class="form-control" [(ngModel)]="editingRule.selector">
+          </div>
+          <!-- Add more fields as needed, e.g., from/to JSON inputs -->
+          <div class="mb-2">
+            <label>From (JSON)</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="editingRuleFromJson"></textarea>
+          </div>
+          <div class="mb-2">
+            <label>To (JSON)</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="editingRuleToJson"></textarea>
+          </div>
+        </div>
+        <div *ngIf="editMode === 'callback'">
+          <div class="mb-2">
+            <label>Name</label>
+            <input type="text" class="form-control" [(ngModel)]="editingCallback.name">
+          </div>
+          <div class="mb-2">
+            <label>Script</label>
+            <textarea class="form-control" rows="4" [(ngModel)]="editingCallback.script"></textarea>
+          </div>
+        </div>
+        <ng-template pTemplate="footer">
+          <button pButton label="Save" icon="pi pi-check" (click)="saveEdit()"></button>
+          <button pButton label="Cancel" icon="pi pi-times" (click)="cancelEdit()" class="p-button-text"></button>
+        </ng-template>
+      </p-dialog>
     </div>
   </div>
-
 </div>
-
-<!-- Animation Editor Dialog -->
-<p-dialog [(visible)]="showAnimationDialog" modal="modal" header="Animation Editor" [style]="{width: '40vw'}">
-
-  <app-animation-editor
-    *ngIf="editingAnimation"
-    [config]="editingAnimation"
-    (saveConfig)="onSaveAnimation($event)">
-  </app-animation-editor>
-
-</p-dialog>

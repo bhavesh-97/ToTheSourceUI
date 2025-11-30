@@ -1,101 +1,350 @@
-import { Component, inject, OnInit } from '@angular/core';
+// src/app/pages/gsap-config-page.component.ts
+import { Component, ViewChild, ElementRef, AfterViewInit, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
-// import { MessageService } from 'primeng/api';
-import { AnimationEditorComponent } from '../gsap-master/animation-editor.component';
-import { ChangeDetectionStrategy } from '@angular/core';
-import { AnimationService } from './animation.service';
-import { PreviewGridComponent } from './preview-grid.component';
-import { AnimationConfig, PageConfig } from '../../../@core/animations/animationtypes';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Subject, timer } from 'rxjs';
+import { takeUntil, debounceTime } from 'rxjs/operators';
+import { GsapMasterService } from './gsap-master.service';
+
+// Define types based on provided JSON structure
+export interface GsapGlobal {
+  defaults: { duration: number; ease: string };
+  registerPlugins: string[];
+  autoInit: boolean;
+  meta: { version: string; description: string };
+  version: number;
+  status: string;
+}
+
+export interface GsapRule {
+  id: string;
+  label: string;
+  type: 'tween' | 'timeline';
+  selector: string;
+  from?: Record<string, any>;
+  to?: Record<string, any>;
+  defaults?: Record<string, any>;
+  stagger?: { each: number };
+  scrollTrigger?: Record<string, any>;
+  version: number;
+  status: string;
+  sequence?: Array<{
+    selector: string;
+    from: Record<string, any>;
+    to: Record<string, any>;
+    order: number;
+  }>;
+}
+
+export interface GsapCallback {
+  name: string;
+  script: string;
+}
+
+export interface GsapConfig {
+  global: GsapGlobal;
+  rules: GsapRule[];
+  callbacks: GsapCallback[];
+}
+
 @Component({
   selector: 'app-gsap-master',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    
-    CommonModule,
-    FormsModule,
-    TableModule,
-    ButtonModule,
-    DialogModule,
-    // DropdownModule,
-    ToastModule,
-    AnimationEditorComponent,
-    PreviewGridComponent
+    CommonModule, 
+    FormsModule, 
+    TableModule, 
+    ButtonModule, 
+    CheckboxModule,
+    DialogModule
   ],
   templateUrl: './gsap-master.html',
   styleUrl: './gsap-master.css'
 })
-export class GsapMaster implements OnInit {
+export class GsapConfigPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('previewContainer') previewContainer!: ElementRef<HTMLDivElement>;
 
-  private animationService = inject(AnimationService);
-  // private messageService = inject(MessageService);
+  private gsapConfigService = inject(GsapMasterService);
 
-  pages: PageConfig[] = [];
-  selectedPage: PageConfig | null = null;
+  projectCode = '';
+  config: GsapConfig | null = null;
+  configJson = '';
+  activeTab: 'global' | 'rules' | 'callbacks' | 'json' = 'global';
 
-  showAnimationDialog = false;
-  editingAnimation: AnimationConfig | null = null;
+  // Edit dialog state
+  showEditDialog = false;
+  editMode: 'rule' | 'callback' | null = null;
+  editingIndex: number | null = null;
+  editingRule: GsapRule = {} as GsapRule;
+  editingRuleFromJson = '';
+  editingRuleToJson = '';
+  editingCallback: GsapCallback = { name: '', script: '' };
+
+  // Auto-apply with debounce
+  private changeSubject = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  // Helper for deep cloning GSAP vars (to avoid mutation/circular refs)
+  private deepClone<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  constructor() {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Debounce changes: Apply config 500ms after last change
+    this.changeSubject.pipe(
+      debounceTime(500),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      if (this.config) {
+        this.applyConfig();
+      }
+    });
+  }
 
   ngOnInit() {
-    this.pages = this.animationService.getPages();
+    this.projectCode = 'test-project'; // Default for testing
+    this.loadConfig(); // Auto-load mock data
   }
 
-  selectPage(page: PageConfig) {
-    this.selectedPage = JSON.parse(JSON.stringify(page)); // deep clone
+  ngAfterViewInit() {}
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  addAnimation() {
-    this.editingAnimation = {
-      id: '',
-      name: '',
-      description: '',
-      duration: 1,
-      settings: {},
-      category: '',
-      loop: false
-    };
-    this.showAnimationDialog = true;
+  loadConfig() {
+    if (!this.projectCode) return;
+
+    this.gsapConfigService.getConfig(this.projectCode).subscribe({
+      next: (data: GsapConfig) => {
+        this.config = data;
+        this.configJson = JSON.stringify(data, null, 2);
+        this.syncJsonToForms(); // Initial sync
+        console.log('Mock config loaded:', data); // For debugging
+        this.applyConfig(); // Apply on load
+      },
+      error: (err) => console.error('Failed to load config:', err)
+    });
   }
 
-  editAnimation(anim: AnimationConfig) {
-    this.editingAnimation = JSON.parse(JSON.stringify(anim));
-    this.showAnimationDialog = true;
+  // Trigger change detection for auto-preview
+  onFormChange() {
+    this.syncFormsToJson();
+    this.changeSubject.next();
   }
 
-  onSaveAnimation(anim: AnimationConfig) {
-    if (!this.selectedPage) return;
+  onDialogChange() {
+    this.changeSubject.next();
+  }
 
-    const idx = this.selectedPage.animations.findIndex(a => a.id === anim.id);
+  // Sync form changes back to JSON (call on save or apply)
+  private syncJsonToForms() {
+    if (!this.config) return;
+    // Use deep clone to avoid circular refs from previous GSAP runs
+    const safeConfig = this.deepClone(this.config);
+    this.configJson = JSON.stringify(safeConfig, null, 2);
+  }
 
-    if (idx >= 0) {
-      this.selectedPage.animations[idx] = anim;
-    } else {
-      this.selectedPage.animations.push(anim);
+  onJsonChange(event: any) {
+    try {
+      const parsed = JSON.parse(event.target.value);
+      this.config = { ...this.config, ...parsed };
+      this.syncFormsToJson(); // Update structured forms if needed
+      this.changeSubject.next(); // Auto-apply
+    } catch (e) {
+      console.warn('Invalid JSON:', e);
+    }
+  }
+
+  // Sync structured forms to JSON
+  private syncFormsToJson() {
+    if (!this.config) return;
+    // Use deep clone to avoid circular refs from previous GSAP runs
+    const safeConfig = this.deepClone(this.config);
+    this.configJson = JSON.stringify(safeConfig, null, 2);
+  }
+
+  applyConfig() {
+    this.syncFormsToJson(); // Ensure JSON is up-to-date (with clone)
+    if (!this.config || !this.previewContainer) return;
+
+    // Kill existing animations first
+    gsap.killTweensOf('*');
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    ScrollTrigger.refresh();
+
+    const global = this.config.global;
+    gsap.defaults({ duration: global.defaults.duration, ease: global.defaults.ease });
+
+    this.config.rules.forEach(rule => {
+      if (rule.status !== 'published') return;
+      const elements = this.previewContainer.nativeElement.querySelectorAll(rule.selector);
+      if (elements.length === 0) {
+        console.warn(`No elements found for selector: ${rule.selector}`);
+        return;
+      }
+
+      // Deep clone vars to prevent GSAP from mutating original config objects
+      const clonedFrom = this.deepClone(rule.from || {});
+      const clonedTo = this.deepClone(rule.to || {});
+      const clonedStagger = this.deepClone(rule.stagger || {});
+      const clonedScrollTrigger = this.deepClone(rule.scrollTrigger || {});
+      const clonedDefaults = this.deepClone(rule.defaults || {});
+
+      if (rule.type === 'tween') {
+        gsap.fromTo(elements, clonedFrom, {
+          ...clonedTo,
+          ...clonedStagger,
+          ...clonedScrollTrigger,
+          onComplete: () => this.executeCallback('onFadeUpComplete')
+        });
+      } else if (rule.type === 'timeline') {
+        const tl = gsap.timeline({
+          ...clonedScrollTrigger,
+          defaults: clonedDefaults
+        });
+        if (rule.sequence) {
+          rule.sequence
+            .sort((a, b) => a.order - b.order)
+            .forEach(step => {
+              const stepElements = this.previewContainer.nativeElement.querySelectorAll(step.selector);
+              if (stepElements.length > 0) {
+                const clonedStepFrom = this.deepClone(step.from || {});
+                const clonedStepTo = this.deepClone(step.to || {});
+                tl.fromTo(stepElements, clonedStepFrom, clonedStepTo, '<0.1');
+              }
+            });
+        }
+      }
+    });
+
+    // Execute callbacks (cloned to be safe)
+    if (this.config.callbacks) {
+      this.config.callbacks.forEach(cb => {
+        if (cb.script) {
+          try {
+            eval(cb.script);
+          } catch (e) {
+            console.error('Callback error:', e);
+          }
+        }
+      });
     }
 
-    // this.messageService.add({
-    //   severity: 'success',
-    //   summary: 'Saved',
-    //   detail: 'Animation saved successfully'
-    // });
-
-    this.showAnimationDialog = false;
+    // Refresh ScrollTrigger after all animations are set
+    ScrollTrigger.refresh();
   }
 
-  savePageToServer() {
-    if (!this.selectedPage) return;
+  saveConfig() {
+    this.syncFormsToJson();
+    if (!this.config) return;
 
-    this.animationService.savePage(this.selectedPage);
-    // this.messageService.add({
-    //   severity: 'success',
-    //   summary: 'Updated',
-    //   detail: 'Page configuration saved.'
-    // });
+    this.gsapConfigService.saveConfig(this.projectCode, this.config).subscribe({
+      next: () => console.log('Config saved to DB'),
+      error: (err) => console.error('Save failed:', err)
+    });
+  }
+
+  addRule() {
+    const newRule: GsapRule = {
+      id: 'rule-' + Date.now(),
+      label: 'New Rule',
+      type: 'tween',
+      selector: '.new-element',
+      from: { opacity: 0, y: 40 },
+      to: { opacity: 1, y: 0 },
+      version: 1,
+      status: 'published'
+    };
+    this.config!.rules.push(newRule);
+    this.syncFormsToJson();
+  }
+
+  editRule(index: number) {
+    this.editMode = 'rule';
+    this.editingIndex = index;
+    this.editingRule = { ...this.config!.rules[index] };
+    this.editingRuleFromJson = JSON.stringify(this.editingRule.from || {}, null, 2);
+    this.editingRuleToJson = JSON.stringify(this.editingRule.to || {}, null, 2);
+    this.showEditDialog = true;
+  }
+
+  deleteRule(index: number) {
+    this.config!.rules.splice(index, 1);
+    this.syncFormsToJson();
+  }
+
+  addCallback() {
+    const newCb: GsapCallback = { name: 'newCallback', script: 'console.log("New callback");' };
+    this.config!.callbacks.push(newCb);
+    this.syncFormsToJson();
+  }
+
+  editCallback(index: number) {
+    this.editMode = 'callback';
+    this.editingIndex = index;
+    this.editingCallback = { ...this.config!.callbacks[index] };
+    this.showEditDialog = true;
+  }
+
+  deleteCallback(index: number) {
+    this.config!.callbacks.splice(index, 1);
+    this.syncFormsToJson();
+  }
+
+  saveEdit() {
+    if (this.editMode === 'rule' && this.editingIndex !== null && this.config) {
+      try {
+        this.editingRule.from = JSON.parse(this.editingRuleFromJson || '{}');
+        this.editingRule.to = JSON.parse(this.editingRuleToJson || '{}');
+      } catch (e) {
+        console.error('Invalid JSON in rule:', e);
+        return;
+      }
+      this.config.rules[this.editingIndex] = this.editingRule;
+    } else if (this.editMode === 'callback' && this.editingIndex !== null && this.config) {
+      this.config.callbacks[this.editingIndex] = this.editingCallback;
+    }
+    this.syncFormsToJson();
+    this.cancelEdit();
+  }
+
+  cancelEdit() {
+    this.showEditDialog = false;
+    this.editMode = null;
+    this.editingIndex = null;
+  }
+
+  private executeCallback(name: string) {
+    const cb = this.config?.callbacks.find(c => c.name === name);
+    if (cb?.script) {
+      eval(cb.script);
+    }
+  }
+
+  resetPreview() {
+    gsap.killTweensOf('*');
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    this.previewContainer.nativeElement.innerHTML = `
+      <div class="fade-up p-4 m-2 bg-primary text-white">Fade Up Element</div>
+      <div class="timeline-section p-4 m-2 bg-secondary text-white">
+        <div class="tl-item-1">Timeline Item 1</div>
+        <div class="tl-item-2">Timeline Item 2</div>
+      </div>
+    `;
+    ScrollTrigger.refresh();
+  }
+
+  pauseAnimation() {
+    gsap.globalTimeline.pause();
   }
 }
