@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { HeaderComponent } from '../../@theme/components/header/header.component';
 import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
 import { FooterComponent } from '../../@theme/components';
+import { GsapService } from '../../services/gsap.service';
 
 @Component({
   selector: 'app-main',
@@ -21,6 +22,11 @@ import { FooterComponent } from '../../@theme/components';
   styleUrl: './main.css'
 })
 export class MainComponent{
+  constructor(private gsapService: GsapService) {}
+  
+  ngAfterViewInit() {
+    (this.gsapService as any).run?.();
+  }
  isDark = signal(false);
   toggleDark() {
     this.isDark.update(v => !v);
