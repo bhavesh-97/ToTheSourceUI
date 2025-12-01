@@ -10,65 +10,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { forkJoin, Subject } from 'rxjs';
 import { debounceTime, map, takeUntil } from 'rxjs/operators';
 import { GsapMasterService } from './gsap-master.service';
-
-export interface GsapSequenceStep {
-  selector: string;
-  from?: Record<string, any>;
-  to?: Record<string, any>;
-  order: number;
-  timeline?: GsapRule; 
-  styles?: Record<string, string>; 
-  media?: GsapMedia; 
-}
-export interface GsapMedia {
-  type: 'image' | 'video' | 'audio' | 'none';
-  url: string;
-}
-type MediaType = 'image' | 'video' | 'audio' | 'none';
-export interface GsapRule {
-  id: string;
-  label: string;
-  type: 'tween' | 'timeline';
-  selector: string;
-  from?: Record<string, any>;
-  to?: Record<string, any>;
-  defaults?: Record<string, any>;
-  stagger?: { each: number };
-  scrollTrigger?: Record<string, any>;
-  version: number;
-  status: 'draft' | 'published' | 'archived'; 
-  sequence?: GsapSequenceStep[];
-  media: GsapMedia;
-  styles?: Record<string, string>;
-  description?: string;
-  tags?: string[];
-}
-export interface GsapCallback {
-  name: string;
-  script: string;
-}
-
-export interface GsapGlobal {
-  defaults: { duration: number; ease: string };
-  registerPlugins: string[];
-  autoInit: boolean;
-  meta: { version: string; description: string };
-  version: number;
-  status: string;
-}
-
-export interface PageConfig {
-  id: string;
-  title: string;
-  description?: string;
-  gsapConfig?: GsapConfig; 
-}
-
-export interface GsapConfig {
-  global: GsapGlobal;
-  rules: GsapRule[];
-  callbacks: GsapCallback[];
-}
+import { GsapCallback, GsapConfig, GsapMedia, GsapRule, GsapSequenceStep, PageConfig,MediaType } from '../../../@core/animations/animationtypes';
 
 @Component({
   selector: 'app-gsap-master',
@@ -87,6 +29,8 @@ export interface GsapConfig {
 export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewContainer', { static: false }) previewContainer!: ElementRef<HTMLDivElement>;
   private gsapConfigService = inject(GsapMasterService);
+  private changeSubject = new Subject<void>();
+  private destroy$ = new Subject<void>();
   pages: PageConfig[] = [];
   selectedPage: PageConfig | null = null;
   newPageTitle = '';
@@ -94,7 +38,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   config: GsapConfig | null = null;
   configJson = '';
   activeTab: 'global' | 'rules' | 'callbacks' | 'json' = 'global';
-
   showEditDialog = false;
   showAddPageDialog = false;
   editMode: 'rule' | 'callback' | null = null;
@@ -104,9 +47,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   editingRuleToJson = '';
   editingRuleStylesJson = '{}';
   editingCallback: GsapCallback = { name: '', script: '' };
-
-  private changeSubject = new Subject<void>();
-  private destroy$ = new Subject<void>();
 
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
@@ -160,7 +100,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     return null;
   }
 
- getSelectorWarning(selector: string | undefined): string | null {
+  getSelectorWarning(selector: string | undefined): string | null {
     return this.validateSelectorBestPractice(selector);
   }
 
@@ -205,11 +145,12 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       default: return 'pi-times';
     }
   }
-  private getMediaElement(media: { type: string; url: string }): string {
+  private getMediaElement(media: GsapMedia): string {
+    const cleanSelector = media.selector ? media.selector.replace(/^[.#]/, '') : '';
     switch (media.type) {
-      case 'image': return `<img src="${media.url}" alt="Preview Image" style="max-width: 100%; height: auto;">`;
-      case 'video': return `<video src="${media.url}" controls style="max-width: 100%; height: auto;"></video>`;
-      case 'audio': return `<audio src="${media.url}" controls></audio>`;
+      case 'image': return `<img src="${media.url}" class="${cleanSelector}" alt="Preview Image" style="max-width: 100%; height: auto;">`;
+      case 'video': return `<video src="${media.url}" class="${cleanSelector}" controls style="max-width: 100%; height: auto;"></video>`;
+      case 'audio': return `<audio src="${media.url}" class="${cleanSelector}" controls></audio>`;
       default: return '';
     }
   }
@@ -312,6 +253,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     console.warn('Apply not ready: config or container missing.');
     return;
   }
+  this.resetPreview();
 
     gsap.killTweensOf('*');
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
@@ -396,7 +338,12 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       version: 1,
       status: 'published',
       styles: {},
-      media: { type: 'none', url: '' } 
+      media: {
+        type: 'none', 
+        url: '',
+        id: '',
+        selector: ''
+      } 
     };
     if (this.config) {
       this.config.rules.push(newRule);
@@ -405,17 +352,18 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editRule(index: number, id : any) {
+    debugger;
     if (!this.config || !this.config || index < 0 || index >= this.config.rules.length) {
       return;
     }
     this.editMode = 'rule';
-    this.editingIndex = index;
     const ruleIndex =  this.config.rules.findIndex(r => r.id === id);
     const rule = this.config.rules[ruleIndex];
     this.editingRule = this.deepClone(rule);
-    
+    this.editingIndex = ruleIndex;
+
     if (!this.editingRule.media) {
-      this.editingRule.media = { type: 'none', url: '' };
+      this.editingRule.media = { type: 'none', url: '', id: '', selector: '' };
     }
 
     this.editingRuleFromJson = JSON.stringify(this.editingRule.from || {}, null, 2);
@@ -424,6 +372,8 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     this.editingRule.selector ??= '';
     this.editingRule.label ??= 'New Rule';
     this.editingRule.type ??= 'tween';
+    this.editingRule.media.id = this.editingRule.id || '';
+    this.editingRule.media.selector = this.editingRule.selector;
 
     this.showEditDialog = true;
   }
@@ -472,11 +422,14 @@ deleteRule(index: number) {
   }
 
   saveEdit() {
+    debugger
     if (this.editMode === 'rule' && this.editingIndex !== null && this.config) {
       try {
         this.editingRule.media = {  
                 type: this.editingRule.media?.type || 'none',
-                url: this.editingRule.media?.url || ''
+                url: this.editingRule.media?.url || '',
+                id: this.editingRule.media?.id || '',
+                selector: this.editingRule.media?.selector || ''
           };
         this.editingRule.from = JSON.parse(this.editingRuleFromJson || '{}');
         this.editingRule.to = JSON.parse(this.editingRuleToJson || '{}');
@@ -485,7 +438,7 @@ deleteRule(index: number) {
         console.error('Invalid JSON in rule:', e);
         return;
       }
-      
+      debugger;
       this.config.rules[this.editingIndex] = this.deepClone(this.editingRule);
     } else if (this.editMode === 'callback' && this.editingIndex !== null && this.config) {
       this.config.callbacks[this.editingIndex] = this.editingCallback;
@@ -508,7 +461,6 @@ deleteRule(index: number) {
   }
 
   resetPreview() {
-    debugger
     if (!this.config || !this.previewContainer) {
         console.warn('Preview not ready: config or container missing.');
         return;
@@ -542,26 +494,35 @@ deleteRule(index: number) {
         
         selectorMap.forEach((styles, selector) => {
            const mediaHtml =
-                      this.editingRule.media && this.editingRule.media.type !== 'none'
+                      this.editingRule.media && 
+                      this.editingRule.media.type !== 'none' &&
+                      this.editingRule.media.selector === selector
                       ? this.getMediaElement(this.editingRule.media)
                       : '';
-            this.editingRule.media = {
-                  type: (this.editingRule.media?.type as MediaType) || 'none',
-                  url: this.editingRule.media?.url || ''
-              };
+
             const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
             const cleanSelector = selector.replace(/^[.#]/, '');
-                      html += `<div class="${cleanSelector}" style="${styleStr}; padding: 20px; margin: 10px; border: 1px solid #ccc; background: #f0f0f0; min-height: 50px;">
-                      Preview for: ${selector} </div> ${mediaHtml}
+            if (mediaHtml) {
+               html += `
+                    <div class="${cleanSelector}" style="margin: 10px; padding: 10px; ${styleStr}; ">
+                        ${mediaHtml}
+                    </div>
                     `;
-              });
+              }
+            else{
+                  html += `
+                    <div class="${cleanSelector}" style="${styleStr}; padding: 20px; margin: 10px; border: 1px solid #ccc; background: #f0f0f0; min-height: 50px;">
+                    Preview for: ${selector} </div>`;
+                    // ${mediaHtml}
+                }
 
+            });
             if (html === '') {
                 html = '<div style="padding: 20px; text-align: center; color: #999;">No selectors in config. Add rules to see preview elements.</div>';
               }
 
             this.previewContainer.nativeElement.innerHTML = `
-                <div style="height: 800px; overflow-y: auto; padding: 10px;">
+                <div style="height: 100%; overflow-y: auto; padding: 10px;">
                 ${html}
                 </div>
               `;
@@ -580,7 +541,7 @@ deleteRule(index: number) {
           return;
         }
         if (!this.editingRule.media) {
-          this.editingRule.media = { type, url: '' };
+          this.editingRule.media = { type, url: '', id: '', selector: '' };
         } else {
           this.editingRule.media.type = type;
       }
