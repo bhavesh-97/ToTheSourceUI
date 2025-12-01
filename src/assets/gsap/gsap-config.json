@@ -13,14 +13,14 @@
       "id": "heroFadeIn",
       "label": "Hero Fade In",
       "type": "tween",
-      "selector": ".hero-title, .hero-subtitle, .hero-cta",
+      "selector": ".hero-title",
       "from": { "opacity": 0, "y": 60 },
       "to": { "opacity": 1, "y": 0 },
       "stagger": { "each": 0.2 },
       "scrollTrigger": { "enabled": false },
       "version": 2,
       "status": "published",
-      "media": { "type": "none", "url": "", "id": "", "selector": "" },
+      "media": { "type": "image", "url": "https://fastly.picsum.photos/id/10/2500/1667.jpg?hmac=J04WWC_ebchx3WwzbM-Z4_KC_LeLBWr5LZMaAkWkF68", "id": "heroFadeIn", "selector": ".hero-title" },
       "styles": {}
     },
 

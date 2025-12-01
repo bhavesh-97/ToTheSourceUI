@@ -14,26 +14,26 @@ export const CMSRoutes: Routes = [
             loadComponent: () => import('../authentication/login/login').then(m => m.Login)
      },
      {
-            path: 'dashboard',
-            loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard),
-            canActivate: [authGuard]
+            path: 'main',
+            component: MainComponent,
+      //    canActivate: [() => inject(AuthService).isLoggedIn()],
+            children: [
+                        {   path: '', 
+                            redirectTo: 'dashboard', 
+                            pathMatch: 'full' 
+                        },
+                        {
+                            path: 'dashboard',
+                            loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard),
+                        },
+                        {
+                            path: 'gsap',
+                            loadComponent: () => import('./main/gsap-master/gsap-master').then(m => m.GsapMaster),
+                        },                        
+                        {
+                            path: 'template',
+                            loadComponent: () => import('./main/template-master/template-master').then(m => m.TemplateMaster),
+                        },
+                      ],
      },
-     {
-    path: 'main',
-    component: MainComponent,
-//     canActivate: [() => inject(AuthService).isLoggedIn()],
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./main/dashboard/dashboard')
-          .then(m => m.Dashboard),
-      },
-      {
-        path: 'gsap',
-        loadComponent: () => import('./main/gsap-master/gsap-master')
-          .then(m => m.GsapMaster),
-      },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-    ],
-  },
 ];

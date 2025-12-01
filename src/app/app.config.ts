@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
@@ -43,12 +43,6 @@ export const appConfig: ApplicationConfig = {
                 }
             }
     }), 
-    {
-      provide: APP_INITIALIZER,
-      useFactory: loadGsapConfig,
-      deps: [GsapConfigLoaderService],
-      multi: true
-    },
     provideToastr({
         timeOut: 15000,
         positionClass: 'toast-top-right',

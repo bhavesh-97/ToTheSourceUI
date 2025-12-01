@@ -12,6 +12,7 @@ if (environment.production) {
 
 bootstrapApplication(App, appConfig)
 .then(appRef => {
-    appRef.injector.get(GsapService);
+    // appRef.injector.get(GsapService);
+    
   })
   .catch((err) => console.error(err));

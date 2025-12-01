@@ -136,7 +136,22 @@ export class LoginService {
               isParentMenu: false,
               parentMenuID: 300,
               link: "/CMS/main/gsap",
-              icon: "fa fa-flag",
+              icon: "pi pi-flag",
+              permissions: {
+                CanInsert: true,
+                CanUpdate: true,
+                CanDelete: false,
+                CanView: true
+              },
+              children: []
+            }, 
+            {
+              menuID: 302,
+              title: "Template Master",
+              isParentMenu: false,
+              parentMenuID: 300,
+              link: "/CMS/main/template",
+              icon: "pi pi-file",
               permissions: {
                 CanInsert: true,
                 CanUpdate: true,
