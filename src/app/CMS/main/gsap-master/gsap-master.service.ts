@@ -12,73 +12,65 @@ export class GsapMasterService {
   private previewElements: HTMLElement[] = [];
   private currentTimeline?: gsap.core.Timeline;
 private apiUrl = '/api/gsap'; // Assume backend endpoint that calls the PG function
-public MOCK_CONFIG: GsapConfig = {
-    global: {
-      defaults: { duration: 1, ease: 'power2.out' },
-      registerPlugins: ['ScrollTrigger'],
-      autoInit: true,
-      meta: { version: '1.0', description: 'GSAP master configuration' },
+public readonly MOCK_CONFIG: GsapConfig = {
+  global: {
+    defaults: { duration: 1, ease: 'power2.out' },
+    registerPlugins: ['ScrollTrigger'],
+    autoInit: true,
+    meta: { version: '1.0', description: 'GSAP master configuration' },
+    version: 1,
+    status: 'published'
+  },
+  rules: [
+    {
+      id: 'fadeUp',
+      label: 'Fade Up',
+      type: 'tween',
+      selector: '.fade-up',
+      from: { opacity: 0, y: 40 },
+      to: { opacity: 1, y: 0 },
+      stagger: { each: 0.1 },
+      scrollTrigger: { enabled: true, start: 'top 85%' },
       version: 1,
-      status: 'published'
+      status: 'published',
+      media: { type: 'none', url: '' },        // ← Required
+      styles: { background: 'blue', color: 'white' }
     },
-    rules: [
-      {
-        id: 'fadeUp',
-        label: 'Fade Up',
-        type: 'tween',
-        selector: '.fade-up',
-        from: { opacity: 0, y: 40 },
-        to: { opacity: 1, y: 0 },
-        defaults: {},
-        stagger: { each: 0.1 },
-        scrollTrigger: { enabled: true, start: 'top 85%' },
-        version: 1,
-        status: 'published',
-        sequence: undefined,
-        styles: { background: 'blue', color: 'white' },
-        media: { type: 'none', url: '' } // New: Media support
-      },
-      {
-        id: 'masterTimeline',
-        label: 'Master Timeline',
-        type: 'timeline',
-        selector: '.timeline-section',
-        from: {},
-        to: {},
-        defaults: { duration: 1, ease: 'power1.out' },
-        stagger: { each: 0 },
-        scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
-        version: 1,
-        status: 'published',
-        sequence: [
-          {
-            selector: '.tl-item-1',
-            from: { opacity: 0, y: 40 },
-            to: { opacity: 1, y: 0 },
-            order: 1,
-            styles: { background: 'green' },
-            media: { type: 'none', url: '' }
-          },
-          {
-            selector: '.tl-item-2',
-            from: { opacity: 0, y: 40 },
-            to: { opacity: 1, y: 0 },
-            order: 2,
-            styles: { background: 'red' },
-            media: { type: 'none', url: '' }
-          }
-        ],
-        styles: {},
-        media: { type: 'none', url: '' }
-      }
-    ],
-    callbacks: [
-      {
-        name: 'onFadeUpComplete',
-        script: "console.log('Fade up finished');"
-      }
-    ]
-  };
+    {
+      id: 'masterTimeline',
+      label: 'Master Timeline',
+      type: 'timeline',
+      selector: '.timeline-section',
+      defaults: { duration: 1, ease: 'power1.out' },
+      scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
+      version: 1,
+      status: 'published',
+      media: { type: 'none', url: '' },        // ← Required
+      styles: {},
+      sequence: [
+        {
+          selector: '.tl-item-1',
+          from: { opacity: 0, y: 40 },
+          to: { opacity: 1, y: 0 },
+          order: 1,
+          styles: { background: 'green' },
+          media: { type: 'none', url: '' }     // ← Required in steps too
+        },
+        {
+          selector: '.tl-item-2',
+          from: { opacity: 0, y: 40 },
+          to: { opacity: 1, y: 0 },
+          order: 2,
+          styles: { background: 'red' },
+          media: { type: 'none', url: '' }
+        }
+      ]
+    }
+  ],
+  callbacks: [
+    { name: 'onFadeUpComplete', script: "console.log('Fade up finished');" }
+  ]
+};
 private http = inject(HttpClient);
   constructor(private configService: AnimationConfigService) {
     // gsap.registerPlugin(ScrollTrigger);
@@ -134,13 +126,54 @@ private http = inject(HttpClient);
     this.previewElements = Array.from(container.querySelectorAll('.gsap-box'));
   }
 
-getConfig(projectCode: string): Observable<GsapConfig> {
+getConfigs(projectCode: string): Observable<GsapConfig> {
     // Simulate a delay like a real API (optional)
     return of(this.MOCK_CONFIG).pipe(delay(500));
   }
 getDefaultConfig(): GsapConfig {
     return JSON.parse(JSON.stringify(this.MOCK_CONFIG));
   }
+  getConfig(pageId: string): GsapConfig {
+    const config = structuredClone(this.MOCK_CONFIG); // deep clone
+
+    // Page-specific overrides
+    switch (pageId) {
+      case 'landing':
+        config.rules.push({
+          id: 'heroFade',
+          label: 'Hero Fade In',
+          type: 'tween',
+          selector: '.hero-title',
+          from: { opacity: 0, y: 50 },
+          to: { opacity: 1, y: 0 },
+          version: 1,
+          status: 'published',
+          media: { type: 'none', url: '' }
+        });
+        break;
+
+      case 'home':
+        config.rules.push({
+          id: 'contentStagger',
+          label: 'Content Stagger',
+          type: 'tween',
+          selector: '.home-content',
+          from: { opacity: 0, scale: 0.9 },
+          to: { opacity: 1, scale: 1 },
+          stagger: { each: 0.2 },
+          version: 1,
+          status: 'published',
+          media: { type: 'none', url: '' }
+        });
+        break;
+
+      // Add more pages here easily
+      // case 'about': ...
+    }
+
+    return config;
+  }
+
   // Mock save (just logs for now)
   saveConfig(projectCode: string, config: GsapConfig): Observable<any> {
     console.log('Mock save for project:', projectCode, config);
@@ -151,4 +184,5 @@ getDefaultConfig(): GsapConfig {
     this.previewElements.forEach(el => el.remove());
     this.previewElements = [];
   }
+  
 }

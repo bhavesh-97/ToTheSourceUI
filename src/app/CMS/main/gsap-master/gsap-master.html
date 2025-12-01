@@ -124,14 +124,14 @@
                           <th>Actions</th>
                         </tr>
                       </ng-template>
-                      <ng-template pTemplate="body" let-rule let-i="index">
+                      <ng-template pTemplate="body" let-rule let-i>
                         <tr>
                           <td class="align-middle">{{ rule.id }}</td>
                           <td class="align-middle">{{ rule.label }}</td>
                           <td class="align-middle">{{ rule.type }}</td>
                           <td class="align-middle">{{ rule.selector }}</td>
                           <td class="align-middle text-center">
-                            <button pButton icon="pi pi-pencil" (click)="editRule(i)" class="p-button-text mr-1"></button>
+                            <button pButton icon="pi pi-pencil" (click)="editRule(i,rule.id)" class="p-button-text mr-1"></button>
                             <button pButton icon="pi pi-trash" (click)="deleteRule(i); onFormChange()" class="p-button-danger p-button-text"></button>
                           </td>
                         </tr>
@@ -202,30 +202,54 @@
       <p-dialog [(visible)]="showEditDialog" modal="true" [header]="editMode === 'rule' ? 'Edit Rule' : 'Edit Callback'" [style]="{width: '90vw', maxWidth: '50vw'}">
         <div *ngIf="editMode === 'rule'">
           <div class="mb-2">
-    <label>Media Type</label>
-  <select class="form-control" [ngModel]="getMediaType()" (ngModelChange)="setMediaType($event)" (change)="onDialogChange()">
-  <option value="none">None</option>
-  <option value="image">Image <i class="pi pi-image ml-1"></i></option>
-  <option value="video">Video <i class="pi pi-video ml-1"></i></option>
-  <option value="audio">Audio <i class="pi pi-volume-up ml-1"></i></option>
-</select>
-  </div>
-  <div class="mb-2" *ngIf="editingRule.media?.type !== 'none'">
-    <label>Media URL</label>
-    <div class="mb-2" *ngIf="editingRule.media && editingRule.media.type !== 'none'">
-  <label>Media URL</label>
-  <input type="url" class="form-control" [(ngModel)]="editingRule.media.url" placeholder="https://example.com/image.jpg" (input)="onDialogChange()">
-  <small class="text-muted">
-    <i [class]="'pi ' + getMediaIcon(editingRule.media.type) + ' mr-1'"></i>
-    Preview: {{ editingRule.media.url || 'No URL set' }}
-  </small>
-</div>
-    <!-- Icon Preview -->
-    <small class="text-muted">
-      <!-- <i [class]="'pi ' + (getMediaIcon(editingRule.media.type) || 'pi-times') + ' mr-1'"></i> -->
-        Preview: {{ editingRule.media?.url || 'No URL set' }}
-    </small>
-  </div>
+            <label>Media Type</label>
+            <select class="form-control" [ngModel]="getMediaType()" (ngModelChange)="setMediaType($event)" (change)="onDialogChange()">
+                <option value="none">None</option>
+                <option value="image">Image <i class="pi pi-image ml-1"></i></option>
+                <option value="video">Video <i class="pi pi-video ml-1"></i></option>
+                <option value="audio">Audio <i class="pi pi-volume-up ml-1"></i></option>
+            </select>
+        </div>
+        <div class="mb-3" *ngIf="editingRule.media.type !== 'none'">
+            <label class="form-label">Media URL</label>
+                <input 
+                    type="url" 
+                    class="form-control" 
+                    [(ngModel)]="editingRule.media.url" 
+                    placeholder="https://example.com/image.jpg"
+                    (input)="onDialogChange()">
+
+                    <small class="text-muted d-block mt-2">
+                      <i [class]="'pi ' + getMediaIcon(editingRule.media.type)"></i>
+                        Preview: {{ editingRule.media.url || 'No URL set' }}
+                    </small>
+
+                  <div class="mt-3 text-center" *ngIf="editingRule.media.url">
+                    <img *ngIf="editingRule.media.type === 'image'" 
+                        [src]="editingRule.media.url" 
+                        alt="Image preview" 
+                        class="img-fluid rounded border" 
+                        style="max-height: 200px;"
+                        onerror="this.style.display='none'">
+         
+                    <video *ngIf="editingRule.media.type === 'video'" 
+                        [src]="editingRule.media.url" 
+                        controls 
+                        class="rounded border" 
+                        style="max-height: 200px;"></video>
+           
+                    <audio *ngIf="editingRule.media.type === 'audio'" 
+                        [src]="editingRule.media.url" 
+                        controls 
+                        class="w-100"></audio>
+                </div>
+            </div>
+            <!-- Icon Preview -->
+            <small class="text-muted">
+                  <i [class]="'pi ' + (getMediaIcon(editingRule.media.type) || 'pi-times') + ' mr-1'"></i>
+                  Preview: {{ editingRule.media.url || 'No URL set' }}
+            </small>
+          </div>
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label">Label</label>
@@ -261,7 +285,7 @@
               <button pButton label="Add Nested Timeline Step" icon="pi pi-plus" class="btn btn-outline-primary" (click)="addNestedStep()"></button>
             </div>
           </div>
-        </div>
+        <!-- </div> -->
         <div *ngIf="editMode === 'callback'" class="row g-3">
           <div class="col-12">
             <label class="form-label">Name</label>
@@ -279,4 +303,4 @@
       </p-dialog>
     </div>
   </div>
-</div>
+<!-- </div> -->

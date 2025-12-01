@@ -1,4 +1,3 @@
-// src/app/pages/gsap-config-page.component.ts
 import { Component, ViewChild, ElementRef, AfterViewInit, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,19 +7,22 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Subject } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
+import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, map, takeUntil } from 'rxjs/operators';
 import { GsapMasterService } from './gsap-master.service';
 
-// Enhanced interfaces
 export interface GsapSequenceStep {
   selector: string;
   from?: Record<string, any>;
   to?: Record<string, any>;
   order: number;
-  timeline?: GsapRule; // Nested timeline support (recursive)
-  styles?: Record<string, string>; // Inline styles for preview
-  media?: { type: 'image' | 'video' | 'audio' | 'none'; url: string }; 
+  timeline?: GsapRule; 
+  styles?: Record<string, string>; 
+  media?: GsapMedia; 
+}
+export interface GsapMedia {
+  type: 'image' | 'video' | 'audio' | 'none';
+  url: string;
 }
 type MediaType = 'image' | 'video' | 'audio' | 'none';
 export interface GsapRule {
@@ -34,10 +36,12 @@ export interface GsapRule {
   stagger?: { each: number };
   scrollTrigger?: Record<string, any>;
   version: number;
-  status: string;
+  status: 'draft' | 'published' | 'archived'; 
   sequence?: GsapSequenceStep[];
-  media?: { type: 'image' | 'video' | 'audio' | 'none'; url: string }; 
-  styles?: Record<string, string>; // Global styles for rule elements
+  media: GsapMedia;
+  styles?: Record<string, string>;
+  description?: string;
+  tags?: string[];
 }
 export interface GsapCallback {
   name: string;
@@ -53,12 +57,11 @@ export interface GsapGlobal {
   status: string;
 }
 
-// PageConfig for managing Landing/Home pages
 export interface PageConfig {
   id: string;
-  title: string; // e.g., "Landing Page" or "Home Page"
+  title: string;
   description?: string;
-  gsapConfig?: GsapConfig; // Embed GSAP config per page
+  gsapConfig?: GsapConfig; 
 }
 
 export interface GsapConfig {
@@ -82,22 +85,16 @@ export interface GsapConfig {
   styleUrl: './gsap-master.css'
 })
 export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
-  // @ViewChild('previewContainer') previewContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('previewContainer', { static: false }) previewContainer!: ElementRef<HTMLDivElement>;
-
   private gsapConfigService = inject(GsapMasterService);
-
-  // Page management
   pages: PageConfig[] = [];
   selectedPage: PageConfig | null = null;
   newPageTitle = '';
-
   projectCode = '';
   config: GsapConfig | null = null;
   configJson = '';
   activeTab: 'global' | 'rules' | 'callbacks' | 'json' = 'global';
 
-  // Edit dialog state
   showEditDialog = false;
   showAddPageDialog = false;
   editMode: 'rule' | 'callback' | null = null;
@@ -108,38 +105,8 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   editingRuleStylesJson = '{}';
   editingCallback: GsapCallback = { name: '', script: '' };
 
-  // Auto-apply with debounce
   private changeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
-
-  // Helper for deep cloning
-  // private deepClone<T>(obj: T): T {
-  //   return JSON.parse(JSON.stringify(obj));
-  // }
-private deepClone<T>(obj: T): T {
-  if (obj === null || obj === undefined) return obj as T;
-  return JSON.parse(JSON.stringify(obj, (key, value) => {
-    if (value === undefined) return null; // Convert undefined to null for valid JSON
-    return value;
-  })) as T;
-}
-  // Selector best practices validator
-private validateSelectorBestPractice(selector: string | undefined): string | null {
-  if (!selector || typeof selector !== 'string') {
-    return null; // Early return for invalid input
-  }
-  if (selector.includes('*')) {
-    return 'Avoid universal selector (*); use specific classes/IDs for performance.';
-  }
-  if (selector.split(' ').length > 3) {
-    return 'Deep selectors (>3 levels) may impact performance; consider flatter structure.';
-  }
-  return null;
-}
-
- getSelectorWarning(selector: string | undefined): string | null {
-  return this.validateSelectorBestPractice(selector);
-}
 
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
@@ -161,13 +128,10 @@ private validateSelectorBestPractice(selector: string | undefined): string | nul
   }
 
   ngAfterViewInit() {
-  //   if (this.pages.length > 0) {
-  //   this.selectPage(this.pages[0]); // Safe: view ready
-  // }
-  if (this.selectedPage && this.config) {
-    this.resetPreview(); // Safe
-    this.applyConfig(); // Safe
-  }
+    if (this.selectedPage && this.config) {
+      this.resetPreview(); 
+      this.applyConfig();
+    }
   }
 
   ngOnDestroy() {
@@ -175,174 +139,90 @@ private validateSelectorBestPractice(selector: string | undefined): string | nul
     this.destroy$.complete();
   }
 
-  // Load pages with examples
-  loadPages() {
-    this.pages = [
-      {
-        id: 'landing',
-        title: 'Landing Page',
-        description: 'Hero section animations',
-        gsapConfig: this.getMockConfig('landing')
-      },
-      {
-        id: 'home',
-        title: 'Home Page',
-        description: 'Main content fades',
-        gsapConfig: this.getMockConfig('home')
-      }
-    ];
-    this.selectPage(this.pages[0]);
+
+  private deepClone<T>(obj: T): T {
+    if (obj === null || obj === undefined) return obj as T;
+    return JSON.parse(JSON.stringify(obj, (key, value) => {
+      if (value === undefined) return null; 
+      return value;
+    })) as T;
   }
-
-  // Mock config per page
-  private getMockConfig(pageId: string): GsapConfig {
-    const base: GsapConfig = {
-      global: {
-        defaults: { duration: 1, ease: 'power2.out' },
-        registerPlugins: ['ScrollTrigger'],
-        autoInit: true,
-        meta: { version: '1.0', description: 'GSAP master configuration' },
-        version: 1,
-        status: 'published'
-      },
-      rules: [
-        {
-          id: 'fadeUp',
-          label: 'Fade Up',
-          type: 'tween',
-          selector: '.fade-up',
-          from: { opacity: 0, y: 40 },
-          to: { opacity: 1, y: 0 },
-          defaults: {},
-          stagger: { each: 0.1 },
-          scrollTrigger: { enabled: true, start: 'top 85%' },
-          version: 1,
-          status: 'published',
-          sequence: undefined,
-          styles: { background: 'blue', color: 'white' }
-        },
-        {
-          id: 'masterTimeline',
-          label: 'Master Timeline',
-          type: 'timeline',
-          selector: '.timeline-section',
-          from: {},
-          to: {},
-          defaults: { duration: 1, ease: 'power1.out' },
-          stagger: {
-            each: 0
-          },
-          scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
-          version: 1,
-          status: 'published',
-          sequence: [
-            {
-              selector: '.tl-item-1',
-              from: { opacity: 0, y: 40 },
-              to: { opacity: 1, y: 0 },
-              order: 1,
-              styles: { background: 'green' }
-            },
-            {
-              selector: '.tl-item-2',
-              from: { opacity: 0, y: 40 },
-              to: { opacity: 1, y: 0 },
-              order: 2,
-              styles: { background: 'red' }
-            }
-          ],
-          styles: {}
-        }
-      ],
-      callbacks: [
-        {
-          name: 'onFadeUpComplete',
-          script: "console.log('Fade up finished');"
-        }
-      ]
-    };
-
-    // Page-specific additions
-    if (pageId === 'landing') {
-      base.rules.push({
-        id: 'heroFade',
-        label: 'Hero Fade In',
-        type: 'tween',
-        selector: '.hero-title',
-        from: { opacity: 0, y: 50 },
-        to: { opacity: 1, y: 0 },
-        status: 'published',
-        version: 0
-      });
-    } else if (pageId === 'home') {
-      base.rules.push({
-        id: 'contentStagger',
-        label: 'Content Stagger',
-        type: 'tween',
-        selector: '.home-content',
-        from: { opacity: 0, scale: 0.9 },
-        to: { opacity: 1, scale: 1 },
-        stagger: { each: 0.2 },
-        status: 'published',
-        version: 0
-      });
+  private validateSelectorBestPractice(selector: string | undefined): string | null {
+    if (!selector || typeof selector !== 'string') {
+      return null; 
     }
-
-    return base;
+    if (selector.includes('*')) {
+      return 'Avoid universal selector (*); use specific classes/IDs for performance.';
+    }
+    if (selector.split(' ').length > 3) {
+      return 'Deep selectors (>3 levels) may impact performance; consider flatter structure.';
+    }
+    return null;
   }
 
-  // Add page
+ getSelectorWarning(selector: string | undefined): string | null {
+    return this.validateSelectorBestPractice(selector);
+  }
+
+  loadPages() {
+    const pageKeys = ['landing', 'home'];
+    const loaders = pageKeys.map(key =>
+    this.gsapConfigService.getConfigs(key).pipe(
+        map(config => ({
+          id: key,
+          title: key === 'landing' ? 'Landing Page' : 'Home Page',
+          description: key === 'landing' ? 'Hero animations' : 'Content fades',
+          gsapConfig: config
+        }))
+      )
+    );
+
+    forkJoin(loaders).subscribe(pages => {
+      this.pages = pages;
+      this.selectPage(this.pages[0]);
+    });
+  }
+
   addPage() {
-    if (!this.newPageTitle.trim()) return;
-    const newPage: PageConfig = {
-      id: 'page-' + Date.now(),
-      title: this.newPageTitle.trim(),
-      description: `New ${this.newPageTitle} page`,
-      gsapConfig: this.gsapConfigService.getDefaultConfig()
-      // gsapConfig: this.getMockConfig(this.newPageTitle.toLowerCase().replace(/\s+/g, '-'))
-    };
-    this.pages.push(newPage);
-    this.newPageTitle = '';
-    this.showAddPageDialog = false;
-    this.selectPage(newPage);
+      if (!this.newPageTitle.trim()) return;
+      const newPage: PageConfig = {
+        id: 'page-' + Date.now(),
+        title: this.newPageTitle.trim(),
+        description: `New ${this.newPageTitle} page`,
+        gsapConfig: this.gsapConfigService.getDefaultConfig()
+        // gsapConfig: this.getMockConfig(this.newPageTitle.toLowerCase().replace(/\s+/g, '-'))
+      };
+      this.pages.push(newPage);
+      this.newPageTitle = '';
+      this.showAddPageDialog = false;
+      this.selectPage(newPage);
+    }
+  getMediaIcon(type: string): string {
+    switch (type) {
+      case 'image': return 'pi-image';
+      case 'video': return 'pi-video';
+      case 'audio': return 'pi-volume-up';
+      default: return 'pi-times';
+    }
   }
-getMediaIcon(type: string): string {
-  switch (type) {
-    case 'image': return 'pi-image';
-    case 'video': return 'pi-video';
-    case 'audio': return 'pi-volume-up';
-    default: return 'pi-times';
+  private getMediaElement(media: { type: string; url: string }): string {
+    switch (media.type) {
+      case 'image': return `<img src="${media.url}" alt="Preview Image" style="max-width: 100%; height: auto;">`;
+      case 'video': return `<video src="${media.url}" controls style="max-width: 100%; height: auto;"></video>`;
+      case 'audio': return `<audio src="${media.url}" controls></audio>`;
+      default: return '';
+    }
   }
-}
-private getMediaElement(media: { type: string; url: string }): string {
-  switch (media.type) {
-    case 'image': return `<img src="${media.url}" alt="Preview Image" style="max-width: 100%; height: auto;">`;
-    case 'video': return `<video src="${media.url}" controls style="max-width: 100%; height: auto;"></video>`;
-    case 'audio': return `<audio src="${media.url}" controls></audio>`;
-    default: return '';
+  selectPage(page: PageConfig) {
+    this.selectedPage = page;
+    this.config = page.gsapConfig || null;
+    this.configJson = this.config ? JSON.stringify(this.config, null, 2) : '';
+    this.syncJsonToForms();
+      if (this.previewContainer) {
+      this.resetPreview();
+      this.applyConfig();
+    }
   }
-}
-  // Select page
-  // selectPage(page: PageConfig) {
-  //   this.selectedPage = page;
-  //   this.config = page.gsapConfig || null;
-  //   this.configJson = this.config ? JSON.stringify(this.config, null, 2) : '';
-  //   this.syncJsonToForms();
-  //   this.resetPreview();
-  //   this.applyConfig();
-  // }
-selectPage(page: PageConfig) {
-  this.selectedPage = page;
-  this.config = page.gsapConfig || null;
-  this.configJson = this.config ? JSON.stringify(this.config, null, 2) : '';
-  this.syncJsonToForms();
-  // Guard: Only call if view is ready
-  if (this.previewContainer) {
-    this.resetPreview();
-    this.applyConfig();
-  }
-}
-  // Delete page
   deletePage(index: number) {
     if (confirm(`Delete ${this.pages[index].title}?`)) {
       this.pages.splice(index, 1);
@@ -355,7 +235,7 @@ selectPage(page: PageConfig) {
 
   loadConfig() {
     if (!this.selectedPage) return;
-    this.gsapConfigService.getConfig(this.projectCode + '-' + this.selectedPage.id).subscribe({
+    this.gsapConfigService.getConfigs(this.projectCode + '-' + this.selectedPage.id).subscribe({
       next: (data: GsapConfig) => {
         this.selectedPage!.gsapConfig = data;
         this.config = data;
@@ -363,7 +243,7 @@ selectPage(page: PageConfig) {
         this.syncJsonToForms();
         this.applyConfig();
       },
-      error: (err) => console.error('Failed to load config:', err)
+      error: (err: any) => console.error('Failed to load config:', err)
     });
   }
 
@@ -515,7 +395,8 @@ selectPage(page: PageConfig) {
       to: { opacity: 1, y: 0 },
       version: 1,
       status: 'published',
-      styles: {}
+      styles: {},
+      media: { type: 'none', url: '' } 
     };
     if (this.config) {
       this.config.rules.push(newRule);
@@ -523,19 +404,27 @@ selectPage(page: PageConfig) {
     this.syncFormsToJson();
   }
 
-  editRule(index: number) {
-    if (!this.config || index < 0 || index >= this.config.rules.length) return;
+  editRule(index: number, id : any) {
+    if (!this.config || !this.config || index < 0 || index >= this.config.rules.length) {
+      return;
+    }
     this.editMode = 'rule';
     this.editingIndex = index;
+    const ruleIndex =  this.config.rules.findIndex(r => r.id === id);
+    const rule = this.config.rules[ruleIndex];
+    this.editingRule = this.deepClone(rule);
     
-    this.editingRule = this.deepClone(this.config!.rules[index]);
     if (!this.editingRule.media) {
-    this.editingRule.media = { type: 'none' as const, url: '' };
-  }
+      this.editingRule.media = { type: 'none', url: '' };
+    }
+
     this.editingRuleFromJson = JSON.stringify(this.editingRule.from || {}, null, 2);
     this.editingRuleToJson = JSON.stringify(this.editingRule.to || {}, null, 2);
     this.editingRuleStylesJson = JSON.stringify(this.editingRule.styles || {}, null, 2);
-    if (!this.editingRule.selector) this.editingRule.selector = '';
+    this.editingRule.selector ??= '';
+    this.editingRule.label ??= 'New Rule';
+    this.editingRule.type ??= 'tween';
+
     this.showEditDialog = true;
   }
 
@@ -619,84 +508,84 @@ deleteRule(index: number) {
   }
 
   resetPreview() {
-    // if (!this.config) return;
-if (!this.config || !this.previewContainer) {
-    console.warn('Preview not ready: config or container missing.');
-    return;
-  }
-    gsap.killTweensOf('*');
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-
-    const selectorMap = new Map<string, Record<string, string>>();
-
-    const collectSelectors = (rules: GsapRule[]) => {
-      rules.forEach(rule => {
-        if (rule.selector && !selectorMap.has(rule.selector)) {
-          selectorMap.set(rule.selector, rule.styles || {});
-        }
-        if (rule.sequence) {
-          rule.sequence.forEach(step => {
-            if (step.selector && !selectorMap.has(step.selector)) {
-              selectorMap.set(step.selector, step.styles || {});
+    debugger
+    if (!this.config || !this.previewContainer) {
+        console.warn('Preview not ready: config or container missing.');
+        return;
+      }
+        gsap.killTweensOf('*');
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+  
+        const selectorMap = new Map<string, Record<string, string>>();
+    
+        const collectSelectors = (rules: GsapRule[]) => {
+            rules.forEach(rule => {
+                if (rule.selector && !selectorMap.has(rule.selector)) {
+                selectorMap.set(rule.selector, rule.styles || {});
             }
-            if (step['timeline']) {
-              collectSelectors([step['timeline']]);
+            if (rule.sequence) {
+              rule.sequence.forEach(step => {
+                if (step.selector && !selectorMap.has(step.selector)) {
+                  selectorMap.set(step.selector, step.styles || {});
+                }
+                if (step['timeline']) {
+                  collectSelectors([step['timeline']]);
+                }
+              });
             }
           });
-        }
-      });
-    };
+      };
 
-    collectSelectors(this.config.rules);
-
-    let html = '';
+        collectSelectors(this.config.rules);
     
-    selectorMap.forEach((styles, selector) => {
-      // const rule = this.config.rules.find(r => r.selector === selector);
-      // const mediaHtml = rule?.media && rule.media.type !== 'none' 
-      // ? this.getMediaElement(rule.media) 
-      // : '';
-      this.editingRule.media = {
-  type: (this.editingRule.media?.type as MediaType) || 'none',
-  url: this.editingRule.media?.url || ''
-};
-      const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
-      const cleanSelector = selector.replace(/^[.#]/, '');
-      html += `<div class="${cleanSelector}" style="${styleStr}; padding: 20px; margin: 10px; border: 1px solid #ccc; background: #f0f0f0; min-height: 50px;">
-        Preview for: ${selector} ${this.editingRule.media}
-      </div>`;
-    });
+        let html = '';
+        
+        selectorMap.forEach((styles, selector) => {
+           const mediaHtml =
+                      this.editingRule.media && this.editingRule.media.type !== 'none'
+                      ? this.getMediaElement(this.editingRule.media)
+                      : '';
+            this.editingRule.media = {
+                  type: (this.editingRule.media?.type as MediaType) || 'none',
+                  url: this.editingRule.media?.url || ''
+              };
+            const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
+            const cleanSelector = selector.replace(/^[.#]/, '');
+                      html += `<div class="${cleanSelector}" style="${styleStr}; padding: 20px; margin: 10px; border: 1px solid #ccc; background: #f0f0f0; min-height: 50px;">
+                      Preview for: ${selector} </div> ${mediaHtml}
+                    `;
+              });
 
-    if (html === '') {
-      html = '<div style="padding: 20px; text-align: center; color: #999;">No selectors in config. Add rules to see preview elements.</div>';
-    }
+            if (html === '') {
+                html = '<div style="padding: 20px; text-align: center; color: #999;">No selectors in config. Add rules to see preview elements.</div>';
+              }
 
-    this.previewContainer.nativeElement.innerHTML = `
-      <div style="height: 800px; overflow-y: auto; padding: 10px;">
-        ${html}
-      </div>
-    `;
-    ScrollTrigger.refresh();
+            this.previewContainer.nativeElement.innerHTML = `
+                <div style="height: 800px; overflow-y: auto; padding: 10px;">
+                ${html}
+                </div>
+              `;
+            ScrollTrigger.refresh();
+        }
+    getMediaType(): string {
+          if (!this.editingRule || !this.editingRule.media) {
+            return 'none'; // Default to avoid undefined
+          }
+          return this.editingRule.media.type || 'none';
+        }
+  setMediaType(type: MediaType) {
+      const validTypes: MediaType[] = ['image', 'video', 'audio', 'none'];
+      if (!validTypes.includes(type as MediaType)) {
+          console.warn('Invalid media type:', type);
+          return;
+        }
+        if (!this.editingRule.media) {
+          this.editingRule.media = { type, url: '' };
+        } else {
+          this.editingRule.media.type = type;
+      }
+      this.onDialogChange();
   }
-getMediaType(): string {
-  if (!this.editingRule || !this.editingRule.media) {
-    return 'none'; // Default to avoid undefined
-  }
-  return this.editingRule.media.type || 'none';
-}
-setMediaType(type: MediaType) {
-  const validTypes: MediaType[] = ['image', 'video', 'audio', 'none'];
-  if (!validTypes.includes(type as MediaType)) {
-    console.warn('Invalid media type:', type);
-    return;
-  }
-  if (!this.editingRule.media) {
-    this.editingRule.media = { type, url: '' };
-  } else {
-    this.editingRule.media.type = type;
-  }
-  this.onDialogChange();
-}
   pauseAnimation() {
     gsap.globalTimeline.pause();
   }
