@@ -4,116 +4,96 @@
       "duration": 1,
       "ease": "power2.out"
     },
-    "registerPlugins": [
-      "ScrollTrigger"
-    ],
+    "registerPlugins": ["ScrollTrigger"],
     "autoInit": true,
     "meta": {
-      "version": "1.0",
-      "description": "GSAP master configuration"
+      "version": "1.1",
+      "description": "Landing page GSAP configuration"
     },
     "version": 1,
     "status": "published"
   },
+
   "rules": [
     {
-      "id": "fadeUp",
-      "label": "Fade Up",
+      "id": "heroFadeUp",
+      "label": "Hero Fade Up",
       "type": "tween",
       "selector": ".fade-up",
       "from": {
         "opacity": 0,
-        "y": 40
+        "y": 60
       },
       "to": {
         "opacity": 1,
         "y": 0
       },
       "stagger": {
-        "each": 0.1
+        "each": 0.12
       },
       "scrollTrigger": {
         "enabled": true,
-        "start": "top 85%"
+        "start": "top 90%"
       },
       "version": 1,
       "status": "published",
       "media": {
         "type": "video",
         "url": "https://motionbgs.com/media/8810/hollow-knight-echo-of-shadows.960x540.mp4",
-        "id": "fadeUp",
+        "id": "heroFadeUp",
         "selector": ".fade-up"
       },
       "styles": {
-        "background": "blue",
+        "background": "#0d47a1",
         "color": "white"
       }
     },
+
     {
-      "id": "masterTimeline",
-      "label": "Master Timeline",
+      "id": "stepsTimeline",
+      "label": "Landing Steps Timeline",
       "type": "timeline",
       "selector": ".timeline-section",
       "defaults": {
-        "duration": 1,
+        "duration": 0.9,
         "ease": "power1.out"
       },
       "scrollTrigger": {
         "enabled": true,
         "trigger": ".timeline-section",
-        "start": "top 80%",
-        "scrub": true
+        "start": "top 75%",
+        "scrub": false,
+        "once": true
       },
       "version": 1,
       "status": "published",
       "media": {
         "type": "image",
-        "url": "https://cdn.pixabay.com/photo/2025/08/15/06/29/mountain-cabin-9776289_1280.jpg",
-        "id": "masterTimeline",
+        "url": "assets/images/bhavesh.jpg",
+        "id": "stepsTimeline",
         "selector": ".timeline-section"
       },
       "styles": {},
+
       "sequence": [
         {
           "selector": ".tl-item-1",
-          "from": {
-            "opacity": 0,
-            "y": 40
-          },
-          "to": {
-            "opacity": 1,
-            "y": 0
-          },
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
           "order": 1,
           "styles": {
-            "background": "green"
-          },
-          "media": {
-            "type": "none",
-            "url": "",
-            "id": "",
-            "selector": ""
+            "background": "#1b5e20",
+            "color": "white"
           }
         },
         {
           "selector": ".tl-item-2",
-          "from": {
-            "opacity": 0,
-            "y": 40
-          },
-          "to": {
-            "opacity": 1,
-            "y": 0
-          },
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
           "order": 2,
           "styles": {
-            "background": "red"
-          },
-          "media": {
-            "type": "none",
-            "url": "",
-            "id": "",
-            "selector": ""
+            "background": "#b71c1c",
+            "color": "white"
           }
         }
       ],
@@ -121,10 +101,11 @@
       "to": {}
     }
   ],
+
   "callbacks": [
     {
       "name": "onFadeUpComplete",
-      "script": "console.log('Fade up finished');"
+      "script": "console.log('Hero section animation complete');"
     }
   ]
 }

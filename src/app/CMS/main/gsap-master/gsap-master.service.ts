@@ -4,71 +4,73 @@ import { gsap } from 'gsap';
 import { delay, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { GsapConfig } from '../../../@core/animations/animationtypes';
+import { GsapConfigLoaderService } from '../../../services/gsap-config-loader.service';
 @Injectable({ providedIn: 'root' })
 export class GsapMasterService {
   private zone = inject(NgZone);
+  private loader = inject(GsapConfigLoaderService);
   private previewElements: HTMLElement[] = [];
   private currentTimeline?: gsap.core.Timeline;
   private apiUrl = '/api/gsap'; 
-  public readonly MOCK_CONFIG: GsapConfig = {
-  global: {
-    defaults: { duration: 1, ease: 'power2.out' },
-    registerPlugins: ['ScrollTrigger'],
-    autoInit: true,
-    meta: { version: '1.0', description: 'GSAP master configuration' },
-    version: 1,
-    status: 'published'
-  },
-  rules: [
-    {
-      id: 'fadeUp',
-      label: 'Fade Up',
-      type: 'tween',
-      selector: '.fade-up',
-      from: { opacity: 0, y: 40 },
-      to: { opacity: 1, y: 0 },
-      stagger: { each: 0.1 },
-      scrollTrigger: { enabled: true, start: 'top 85%' },
-      version: 1,
-      status: 'published',
-      media: { type: 'none', url: '', id: '', selector: '' }, 
-      styles: { background: 'blue', color: 'white' }
-    },
-    {
-      id: 'masterTimeline',
-      label: 'Master Timeline',
-      type: 'timeline',
-      selector: '.timeline-section',
-      defaults: { duration: 1, ease: 'power1.out' },
-      scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
-      version: 1,
-      status: 'published',
-      media: { type: 'none', url: '', id: '', selector: '' }, 
-      styles: {},
-      sequence: [
-        {
-          selector: '.tl-item-1',
-          from: { opacity: 0, y: 40 },
-          to: { opacity: 1, y: 0 },
-          order: 1,
-          styles: { background: 'green' },
-          media: { type: 'none', url: '', id: '', selector: '' }   
-        },
-        {
-          selector: '.tl-item-2',
-          from: { opacity: 0, y: 40 },
-          to: { opacity: 1, y: 0 },
-          order: 2,
-          styles: { background: 'red' },
-          media: { type: 'none', url: '', id: '', selector: '' }   
-        }
-      ]
-    }
-  ],
-  callbacks: [
-    { name: 'onFadeUpComplete', script: "console.log('Fade up finished');" }
-  ]
-  };
+  // public readonly MOCK_CONFIG: GsapConfig = {
+  // global: {
+  //   defaults: { duration: 1, ease: 'power2.out' },
+  //   registerPlugins: ['ScrollTrigger'],
+  //   autoInit: true,
+  //   meta: { version: '1.0', description: 'GSAP master configuration' },
+  //   version: 1,
+  //   status: 'published'
+  // },
+  // rules: [
+  //   {
+  //     id: 'fadeUp',
+  //     label: 'Fade Up',
+  //     type: 'tween',
+  //     selector: '.fade-up',
+  //     from: { opacity: 0, y: 40 },
+  //     to: { opacity: 1, y: 0 },
+  //     stagger: { each: 0.1 },
+  //     scrollTrigger: { enabled: true, start: 'top 85%' },
+  //     version: 1,
+  //     status: 'published',
+  //     media: { type: 'none', url: '', id: '', selector: '' }, 
+  //     styles: { background: 'blue', color: 'white' }
+  //   },
+  //   {
+  //     id: 'masterTimeline',
+  //     label: 'Master Timeline',
+  //     type: 'timeline',
+  //     selector: '.timeline-section',
+  //     defaults: { duration: 1, ease: 'power1.out' },
+  //     scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
+  //     version: 1,
+  //     status: 'published',
+  //     media: { type: 'none', url: '', id: '', selector: '' }, 
+  //     styles: {},
+  //     sequence: [
+  //       {
+  //         selector: '.tl-item-1',
+  //         from: { opacity: 0, y: 40 },
+  //         to: { opacity: 1, y: 0 },
+  //         order: 1,
+  //         styles: { background: 'green' },
+  //         media: { type: 'none', url: '', id: '', selector: '' }   
+  //       },
+  //       {
+  //         selector: '.tl-item-2',
+  //         from: { opacity: 0, y: 40 },
+  //         to: { opacity: 1, y: 0 },
+  //         order: 2,
+  //         styles: { background: 'red' },
+  //         media: { type: 'none', url: '', id: '', selector: '' }   
+  //       }
+  //     ]
+  //   }
+  // ],
+  // callbacks: [
+  //   { name: 'onFadeUpComplete', script: "console.log('Fade up finished');" }
+  // ]
+  // };
   private http = inject(HttpClient);
 
   // Run GSAP from string code (e.g., from CKEditor)
@@ -123,13 +125,17 @@ export class GsapMasterService {
 
 getConfigs(projectCode: string): Observable<GsapConfig> {
     // Simulate a delay like a real API (optional)
-    return of(this.MOCK_CONFIG).pipe(delay(500));
+    // return of(this.MOCK_CONFIG).pipe(delay(500));
+    const config = this.loader.getConfig();
+    return of(config).pipe(delay(500));
   }
 getDefaultConfig(): GsapConfig {
-    return JSON.parse(JSON.stringify(this.MOCK_CONFIG));
+    const config = this.loader.getConfig();
+    return JSON.parse(JSON.stringify(config));
   }
   getConfig(pageId: string): GsapConfig {
-    const config = structuredClone(this.MOCK_CONFIG); // deep clone
+    const getconfig = this.loader.getConfig();
+    const config = structuredClone(getconfig); // deep clone
 
     // Page-specific overrides
     switch (pageId) {
