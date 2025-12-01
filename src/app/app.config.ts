@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
@@ -12,6 +12,12 @@ import { LoadingInterceptor } from '../app/interceptors/loading.interceptor';
 import { tokenInterceptor } from './interceptors/token-interceptor';
 import { provideNebular } from './@theme/theme.imports';
 import { NbMenuModule } from '@nebular/theme';
+import { GsapConfigLoaderService } from './services/gsap-config-loader.service';
+
+export function loadGsapConfig(configLoader: GsapConfigLoaderService) {
+  return () => configLoader.load();
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync('animations'),
@@ -36,8 +42,14 @@ export const appConfig: ApplicationConfig = {
                     cssLayer: false
                 }
             }
-    }),
-   provideToastr({
+    }), 
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadGsapConfig,
+      deps: [GsapConfigLoaderService],
+      multi: true
+    },
+    provideToastr({
         timeOut: 15000,
         positionClass: 'toast-top-right',
         preventDuplicates: true,

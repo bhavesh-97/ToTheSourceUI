@@ -1,0 +1,127 @@
+{
+  "global": {
+    "defaults": { "duration": 1.2, "ease": "power3.out" },
+    "registerPlugins": ["ScrollTrigger"],
+    "autoInit": true,
+    "meta": { "version": "2.0", "description": "GSAP Landing Page Config" },
+    "version": 2,
+    "status": "published"
+  },
+
+  "rules": [
+    {
+      "id": "heroFadeIn",
+      "label": "Hero Fade In",
+      "type": "tween",
+      "selector": ".hero-title, .hero-subtitle, .hero-cta",
+      "from": { "opacity": 0, "y": 60 },
+      "to": { "opacity": 1, "y": 0 },
+      "stagger": { "each": 0.2 },
+      "scrollTrigger": { "enabled": false },
+      "version": 2,
+      "status": "published",
+      "media": { "type": "none", "url": "", "id": "", "selector": "" },
+      "styles": {}
+    },
+
+    {
+      "id": "featureStagger",
+      "label": "Feature Cards Stagger",
+      "type": "tween",
+      "selector": ".feature-card",
+      "from": { "opacity": 0, "y": 40 },
+      "to": { "opacity": 1, "y": 0 },
+      "stagger": { "each": 0.15 },
+      "scrollTrigger": { "enabled": true, "start": "top 85%", "trigger": ".features-section" },
+      "version": 2,
+      "status": "published",
+      "media": { "type": "none", "url": "", "id": "", "selector": "" },
+      "styles": {}
+    },
+
+    {
+      "id": "imageParallax",
+      "label": "Image Parallax",
+      "type": "tween",
+      "selector": ".parallax-img",
+      "from": { "y": -60 },
+      "to": { "y": 60 },
+      "scrollTrigger": {
+        "enabled": true,
+        "trigger": ".parallax-section",
+        "start": "top bottom",
+        "end": "bottom top",
+        "scrub": true
+      },
+      "version": 1,
+      "status": "published",
+      "media": { "type": "image", "url": "/assets/hero.jpg", "id": "heroImg", "selector": ".parallax-img" },
+      "styles": {}
+    },
+
+    {
+      "id": "timelineReveal",
+      "label": "Landing Timeline",
+      "type": "timeline",
+      "selector": ".timeline-section",
+      "defaults": { "duration": 1, "ease": "power2.out" },
+      "scrollTrigger": {
+        "enabled": true,
+        "trigger": ".timeline-section",
+        "start": "top 80%",
+        "scrub": false
+      },
+      "version": 2,
+      "status": "published",
+      "media": { "type": "none", "url": "", "id": "", "selector": "" },
+      "styles": {},
+
+      "sequence": [
+        {
+          "selector": ".timeline-step-1",
+          "from": { "opacity": 0, "x": -50 },
+          "to": { "opacity": 1, "x": 0 },
+          "order": 1,
+          "styles": {},
+          "media": { "type": "none", "url": "", "id": "", "selector": "" }
+        },
+        {
+          "selector": ".timeline-step-2",
+          "from": { "opacity": 0, "x": 50 },
+          "to": { "opacity": 1, "x": 0 },
+          "order": 2,
+          "styles": {},
+          "media": { "type": "none", "url": "", "id": "", "selector": "" }
+        },
+        {
+          "selector": ".timeline-step-3",
+          "from": { "opacity": 0, "x": -50 },
+          "to": { "opacity": 1, "x": 0 },
+          "order": 3,
+          "styles": {},
+          "media": { "type": "none", "url": "", "id": "", "selector": "" }
+        }
+      ]
+    },
+
+    {
+      "id": "ctaPop",
+      "label": "CTA Pulse",
+      "type": "tween",
+      "selector": ".cta-button",
+      "from": { "scale": 0.9, "opacity": 0 },
+      "to": { "scale": 1, "opacity": 1 },
+      "stagger": { "each": 0 },
+      "scrollTrigger": { "enabled": true, "start": "top 90%", "trigger": ".cta-section" },
+      "version": 1,
+      "status": "published",
+      "media": { "type": "none", "url": "", "id": "", "selector": "" },
+      "styles": {}
+    }
+  ],
+
+  "callbacks": [
+    { "name": "onHeroComplete", "script": "console.log('Hero animation complete');" },
+    { "name": "onFeaturesVisible", "script": "console.log('Features visible');" }
+  ]
+}
