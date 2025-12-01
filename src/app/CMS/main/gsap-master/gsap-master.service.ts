@@ -13,70 +13,72 @@ export class GsapMasterService {
   private currentTimeline?: gsap.core.Timeline;
 private apiUrl = '/api/gsap'; // Assume backend endpoint that calls the PG function
 public MOCK_CONFIG: GsapConfig = {
-  global: {
-    defaults: { duration: 1, ease: 'power2.out' },
-    registerPlugins: ['ScrollTrigger'],
-    autoInit: true,
-    meta: { version: '1.0', description: 'GSAP master configuration' },
-    version: 1,
-    status: 'published'
-  },
-  rules: [
-    {
-      id: 'fadeUp',
-      label: 'Fade Up',
-      type: 'tween',
-      selector: '.fade-up',
-      from: { opacity: 0, y: 40 },
-      to: { opacity: 1, y: 0 },
-      defaults: {},
-      stagger: { each: 0.1 },
-      scrollTrigger: { enabled: true, start: 'top 85%' },
+    global: {
+      defaults: { duration: 1, ease: 'power2.out' },
+      registerPlugins: ['ScrollTrigger'],
+      autoInit: true,
+      meta: { version: '1.0', description: 'GSAP master configuration' },
       version: 1,
-      status: 'published',
-      sequence: undefined,
-      styles: { background: 'blue', color: 'white' }
+      status: 'published'
     },
-    {
-      id: 'masterTimeline',
-      label: 'Master Timeline',
-      type: 'timeline',
-      selector: '.timeline-section',
-      from: {},
-      to: {},
-      defaults: { duration: 1, ease: 'power1.out' },
-      stagger: {
-          each: 0
+    rules: [
+      {
+        id: 'fadeUp',
+        label: 'Fade Up',
+        type: 'tween',
+        selector: '.fade-up',
+        from: { opacity: 0, y: 40 },
+        to: { opacity: 1, y: 0 },
+        defaults: {},
+        stagger: { each: 0.1 },
+        scrollTrigger: { enabled: true, start: 'top 85%' },
+        version: 1,
+        status: 'published',
+        sequence: undefined,
+        styles: { background: 'blue', color: 'white' },
+        media: { type: 'none', url: '' } // New: Media support
       },
-      scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
-      version: 1,
-      status: 'published',
-      sequence: [
-        {
-          selector: '.tl-item-1',
-          from: { opacity: 0, y: 40 },
-          to: { opacity: 1, y: 0 },
-          order: 1,
-          styles: { background: 'green' }
-        },
-        {
-          selector: '.tl-item-2',
-          from: { opacity: 0, y: 40 },
-          to: { opacity: 1, y: 0 },
-          order: 2,
-          styles: { background: 'red' }
-        }
-      ],
-      styles: {}
-    }
-  ],
-  callbacks: [
-    {
-      name: 'onFadeUpComplete',
-      script: "console.log('Fade up finished');"
-    }
-  ]
-};
+      {
+        id: 'masterTimeline',
+        label: 'Master Timeline',
+        type: 'timeline',
+        selector: '.timeline-section',
+        from: {},
+        to: {},
+        defaults: { duration: 1, ease: 'power1.out' },
+        stagger: { each: 0 },
+        scrollTrigger: { enabled: true, trigger: '.timeline-section', start: 'top 80%', scrub: true },
+        version: 1,
+        status: 'published',
+        sequence: [
+          {
+            selector: '.tl-item-1',
+            from: { opacity: 0, y: 40 },
+            to: { opacity: 1, y: 0 },
+            order: 1,
+            styles: { background: 'green' },
+            media: { type: 'none', url: '' }
+          },
+          {
+            selector: '.tl-item-2',
+            from: { opacity: 0, y: 40 },
+            to: { opacity: 1, y: 0 },
+            order: 2,
+            styles: { background: 'red' },
+            media: { type: 'none', url: '' }
+          }
+        ],
+        styles: {},
+        media: { type: 'none', url: '' }
+      }
+    ],
+    callbacks: [
+      {
+        name: 'onFadeUpComplete',
+        script: "console.log('Fade up finished');"
+      }
+    ]
+  };
 private http = inject(HttpClient);
   constructor(private configService: AnimationConfigService) {
     // gsap.registerPlugin(ScrollTrigger);
@@ -136,7 +138,9 @@ getConfig(projectCode: string): Observable<GsapConfig> {
     // Simulate a delay like a real API (optional)
     return of(this.MOCK_CONFIG).pipe(delay(500));
   }
-
+getDefaultConfig(): GsapConfig {
+    return JSON.parse(JSON.stringify(this.MOCK_CONFIG));
+  }
   // Mock save (just logs for now)
   saveConfig(projectCode: string, config: GsapConfig): Observable<any> {
     console.log('Mock save for project:', projectCode, config);

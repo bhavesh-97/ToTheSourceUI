@@ -54,3 +54,47 @@ small.text-muted {
   display: block;
   font-size: 0.875em;
 }
+
+/* Responsive Dialogs */
+@media (max-width: 768px) {
+  .p-dialog {
+    width: 95vw !important;
+    max-width: none !important;
+  }
+  
+  .p-dialog .p-dialog-content {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  
+  .nav-tabs .nav-link {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .p-dialog {
+    width: 50vw !important;
+  }
+}
+
+/* Ensure tables and forms stack on mobile */
+@media (max-width: 576px) {
+  .row.g-3 > .col-12 {
+    margin-bottom: 1rem;
+  }
+  
+  .card-footer .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-footer small {
+    text-align: center;
+  }
+}
