@@ -1,7 +1,7 @@
 // src/app/shared/components/rich-text-editor/rich-text-editor.component.ts
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, SimpleChanges, DOCUMENT, Inject, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, SimpleChanges, DOCUMENT, Inject, HostListener, OnChanges, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { MenuModule } from 'primeng/menu';
@@ -21,7 +21,7 @@ interface Size { name: string; value: string }
   templateUrl: './text-editor.html',
   styleUrls: ['./text-editor.scss']
 })
-export class TextEditorComponent implements AfterViewInit {
+export class TextEditorComponent implements AfterViewInit, OnChanges, ControlValueAccessor {
   @Input() content = '';
   @Output() contentChange = new EventEmitter<string>();
 
@@ -38,13 +38,30 @@ export class TextEditorComponent implements AfterViewInit {
   bgColor = '#fbbf24';
 
   private isResizing = false;
+  private onChange = (value: string) => {}; // Part of ControlValueAccessor
+  private onTouched = () => {}; // Part of ControlValueAccessor
 
   constructor(@Inject(DOCUMENT) private doc: Document) {}
 
   ngAfterViewInit() {
-    this.editor.nativeElement.innerHTML = this.content || '<p>Start typing...</p>';
+    this.updateEditorContent(); // Refactored to use internal setter
     this.setupEditor();
     this.setupResize();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['content'] && !changes['content'].firstChange) {
+      this.updateEditorContent(); // Update internal editor when input changes
+    }
+  }
+
+  // Internal method to update editor content (handles both modes)
+  private updateEditorContent() {
+    if (this.isSource) {
+      this.editor.nativeElement.textContent = this.content || '';
+    } else {
+      this.editor.nativeElement.innerHTML = this.content || '<p>Start typing...</p>';
+    }
   }
 
   setupEditor() {
@@ -115,12 +132,7 @@ export class TextEditorComponent implements AfterViewInit {
 
   toggleSource() {
     this.isSource = !this.isSource;
-    if (this.isSource) {
-      this.editor.nativeElement.textContent = this.content;
-    } else {
-      this.content = this.editor.nativeElement.textContent || '';
-      this.editor.nativeElement.innerHTML = this.content || '<p><br></p>';
-    }
+    this.updateEditorContent(); // Use internal update instead of direct assignment
     this.sync();
   }
 
@@ -129,6 +141,35 @@ export class TextEditorComponent implements AfterViewInit {
       ? this.editor.nativeElement.textContent || ''
       : this.editor.nativeElement.innerHTML;
     this.contentChange.emit(this.content);
+    this.onChange(this.content); // Notify ngModel of changes
+  }
+
+  // ControlValueAccessor methods
+  writeValue(value: string): void {
+    this.content = value || '';
+    this.updateEditorContent(); // Update internal editor when external value changes
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState?(isDisabled: boolean): void {
+    // Optional: Handle disabled state if needed (e.g., make editor read-only)
+    if (isDisabled) {
+      this.editor.nativeElement.setAttribute('contenteditable', 'false');
+    } else {
+      this.editor.nativeElement.setAttribute('contenteditable', 'true');
+    }
+  }
+
+  // Mark as touched on blur (optional, for form validation)
+  onBlur() {
+    this.onTouched();
   }
 
   exportHTML() {
@@ -137,4 +178,15 @@ export class TextEditorComponent implements AfterViewInit {
     const a = document.createElement('a');
     a.href = url; a.download = 'document.html'; a.click();
   }
+
+  // Static provider registration for NG_VALUE_ACCESSOR
+  static ngAcceptInputType_content: string | null;
+
+  providers = [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TextEditorComponent),
+      multi: true
+    }
+  ];
 }

@@ -26,39 +26,20 @@
   </p-table>
 </div>
 
-<!-- FULL DIALOG -->
 <p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'95vw', height:'95vh', maxWidth:'1700px'}"
-  header="{{ isNew ? 'Create Template' : 'Edit: ' + form.name }}" [baseZIndex]="10000">
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
-    <div class="space-y-6 overflow-y-auto">
-      <div class="grid grid-cols-3 gap-4">
-        <div><input pInputText [(ngModel)]="form.name" placeholder="Name *" class="w-full"></div>
-        <div><select [(ngModel)]="form.type" class="w-full p-3 border rounded"><option>website</option><option>admin</option><option>email</option></select></div>
-        <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
-      </div>
-
+    header="{{ isNew ? 'Create Template' : 'Edit: ' + form.name }}" [baseZIndex]="10000">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
+      <div class="space-y-6 overflow-y-auto">
+        <div class="grid grid-cols-3 gap-4">
+          <div><input pInputText [(ngModel)]="form.name" placeholder="Name *" class="w-full"></div>
+          <div><select [(ngModel)]="form.type" class="w-full p-3 border rounded"><option>website</option><option>admin</option><option>email</option></select></div>
+          <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
+        </div>
         <app-text-editor
             [(content)]="messageContent"
             placeholder="Write your message with formatting..."
             height="500px">
         </app-text-editor>
-
-      <textarea rows="6" pInputTextarea [(ngModel)]="form.css" placeholder="CSS" class="w-full font-mono text-sm"></textarea>
-
-      <div>
-        <button pButton label="Add GSAP Rule" icon="pi pi-plus" (click)="addRule()" class="p-button-sm"></button>
-        <div *ngFor="let r of form.gsapConfig.rules; let i=index" class="p-4 bg-gray-50 rounded mt-2">
-          <input pInputText [(ngModel)]="r.label" placeholder="Label" class="w-full mb-2">
-          <input pInputText [(ngModel)]="r.selector" placeholder="Selector" class="w-full">
-          <button pButton icon="pi pi-trash" class="p-button-danger p-button-sm mt-2" (click)="removeRule(i)"></button>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex flex-col">
-      <h3 class="text-xl font-bold mb-4 text-center bg-gray-100 py-3 rounded-t">LIVE PREVIEW</h3>
-      <iframe #previewFrame class="flex-1 border-4 border-dashed border-indigo-200 rounded-b-lg bg-white"></iframe>
     </div>
   </div>
 

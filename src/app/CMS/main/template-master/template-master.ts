@@ -36,7 +36,7 @@ import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/
 
 export class TemplateMaster implements OnInit, AfterViewChecked {
   @ViewChild('previewFrame') previewFrame!: ElementRef<HTMLIFrameElement>;
-  messageContent = '<p>Hello <strong>world</strong>!</p>';
+  messageContent = '';
   // CKEditor 5 v44+ – No version error
   @ViewChild('ckeditor') ckeditor: any;
 
@@ -110,9 +110,6 @@ export class TemplateMaster implements OnInit, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    if (this.dialogVisible && this.previewFrame) {
-      setTimeout(() => this.renderPreview(), 100);
-    }
   }
 
   openDialog(isNew: boolean, tpl?: Template) {
@@ -143,6 +140,7 @@ export class TemplateMaster implements OnInit, AfterViewChecked {
   }
 
   save() {
+    debugger;
     if (!this.form.name.trim()) {
       this.notificationService.showMessage('Name is required!', 'Error', PopupMessageType.Error);
       return;
@@ -199,42 +197,8 @@ export class TemplateMaster implements OnInit, AfterViewChecked {
   removeRule(i: number) {
     this.form.gsapConfig.rules.splice(i, 1);
   }
-
-  // FIXED: No more "missing )" error
-  renderPreview() {
-    const iframe = this.previewFrame?.nativeElement;
-    if (!iframe?.contentDocument) return;
-    const doc = iframe.contentDocument;
-
-    const scripts = this.form.gsapConfig.rules.map((r: any) => {
-      let code = `gsap.fromTo("${r.selector}", ${JSON.stringify(r.from || {})}, ${JSON.stringify(r.to || {})}`;
-      if (r.stagger) code += `, { stagger: ${JSON.stringify(r.stagger)} }`;
-      if (r.scrollTrigger?.enabled) {
-        code += `, { scrollTrigger: { trigger: "${r.selector}", start: "${r.scrollTrigger.start}" } }`;
-      }
-      return code + ');';
-    }).join('\n');
-
-    const fullHtml = `<!DOCTYPE html>
-<html><head>
-  <meta charset="utf-8">
-  <style>body{margin:0;padding:0;height:100vh;overflow-x:hidden}${this.form.css}</style>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"><\/script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"><\/script>
-</head><body>
-  ${this.form.html || '<div style="padding:100px;text-align:center;color:#666">Empty</div>'}
-  <script>
-    gsap.defaults(${JSON.stringify(this.form.gsapConfig.global.defaults || {})});
-    gsap.registerPlugin(ScrollTrigger);
-    try { ${scripts} } catch(e) { console.error(e); }
-  <\/script>
-</body></html>`;
-
-    doc.open();
-    doc.write(fullHtml);
-    doc.close();
-  }
 }
+
 type TemplateType = 'website' | 'admin' | 'email';
 type TemplateStatus = 'published' | 'draft' | 'warning' | 'success';
 interface Template {

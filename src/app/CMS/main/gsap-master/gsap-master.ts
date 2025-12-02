@@ -304,7 +304,8 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     safeConfig.callbacks.forEach(cb => {
       if (cb.script) {
         try {
-          eval(cb.script);
+          // eval(cb.script);
+          new Function(cb.script)();
         } catch (e) {
           console.error('Callback error:', e);
         }
@@ -456,7 +457,8 @@ deleteRule(index: number) {
   private executeCallback(name: string) {
     const cb = this.config?.callbacks.find(c => c.name === name);
     if (cb?.script) {
-      eval(cb.script);
+      // eval(cb.script);
+      new Function(cb.script)();
     }
   }
 
