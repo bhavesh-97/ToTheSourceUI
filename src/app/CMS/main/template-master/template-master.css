@@ -1,0 +1,30 @@
+:host ::ng-deep {
+  .template-editor-dialog {
+    .p-dialog-content {
+      background: #f8fafc !important;
+      padding: 2rem !important;
+    }
+    .ck-editor__editable {
+      min-height: 680px !important;
+      font-size: 15px !important;
+      line-height: 1.7 !important;
+      background: white !important;
+    }
+
+    .ck-toolbar {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-bottom: none !important;
+    }
+
+    .ck-content {
+      padding: 1.5rem !important;
+    }
+
+    .ck-source-editing-area {
+      font-family: 'Fira Code', 'Courier New', monospace !important;
+      background: #1e1e1e !important;
+      color: #d4d4d4 !important;
+    }
+  }
+}

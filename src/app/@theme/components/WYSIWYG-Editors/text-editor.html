@@ -1,0 +1,64 @@
+<div class="pro-editor" [class.dark]="isDark">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="tools-left">
+      <button class="tool-btn" (click)="exec('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+      <button class="tool-btn" (click)="exec('italic')" title="Italic"><i class="fas fa-italic"></i></button>
+      <button class="tool-btn" (click)="exec('underline')" title="Underline"><i class="fas fa-underline"></i></button>
+      <button class="tool-btn" (click)="exec('strikethrough')" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+
+      <div class="divider"></div>
+
+      <p-colorPicker [(ngModel)]="textColor" (onChange)="exec('foreColor', textColor)" class="color-picker"></p-colorPicker>
+      <p-colorPicker [(ngModel)]="bgColor" (onChange)="exec('hiliteColor', bgColor)" class="color-picker"></p-colorPicker>
+
+      <div class="divider"></div>
+
+      <button class="tool-btn" (click)="exec('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+      <button class="tool-btn" (click)="exec('insertOrderedList')" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+      <button class="tool-btn" (click)="exec('justifyLeft')" title="Align Left"><i class="fas fa-align-left"></i></button>
+      <button class="tool-btn" (click)="exec('justifyCenter')" title="Align Center"><i class="fas fa-align-center"></i></button>
+      <button class="tool-btn" (click)="exec('justifyRight')" title="Align Right"><i class="fas fa-align-right"></i></button>
+
+      <div class="divider"></div>
+
+      <button class="tool-btn" (click)="showLink=true" title="Link"><i class="fas fa-link"></i></button>
+      <button class="tool-btn" (click)="showImage=true" title="Image"><i class="fas fa-image"></i></button>
+      <button class="tool-btn" (click)="insertTable()" title="Table"><i class="fas fa-table"></i></button>
+      <button class="tool-btn" (click)="exec('formatBlock', 'blockquote')" title="Quote"><i class="fas fa-quote-left"></i></button>
+      <button class="tool-btn" (click)="exec('formatBlock', 'pre')" title="Code"><i class="fas fa-code"></i></button>
+    </div>
+
+    <div class="tools-right">
+      <button class="tool-btn" (click)="exec('undo')" title="Undo"><i class="fas fa-undo"></i></button>
+      <button class="tool-btn" (click)="exec('redo')" title="Redo"><i class="fas fa-redo"></i></button>
+      <button class="tool-btn" (click)="exportHTML()" title="Export HTML"><i class="fas fa-download"></i></button>
+      <button class="tool-btn" (click)="toggleSource()" title="Source Code">
+        <i class="fas" [class.fa-code]="!isSource" [class.fa-eye]="isSource"></i>
+      </button>
+      <button class="tool-btn" (click)="toggleTheme()" title="Toggle Theme">
+        <i class="fas" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Editor -->
+  <div #editor contenteditable="true" class="editor-content"></div>
+
+  <!-- Resizer -->
+  <div #resizer class="resizer"><i class="fas fa-grip-lines"></i></div>
+
+  <!-- Dialogs -->
+  <p-dialog header="Insert Link" [(visible)]="showLink" [modal]="true" [style]="{width: '400px'}">
+    <div class="flex flex-col gap-3">
+      <input pInputText [(ngModel)]="linkText" placeholder="Link text (optional)" class="w-full">
+      <input pInputText [(ngModel)]="linkUrl" placeholder="https://example.com" class="w-full">
+      <p-checkbox  [(ngModel)]="linkNewTab" label="Open in new tab"></p-checkbox>
+      <button pButton label="Insert Link" (click)="insertLink()" class="p-button-success"></button>
+    </div>
+  </p-dialog>
+
+  <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true">
+    <p-fileUpload mode="basic" accept="image/*" chooseLabel="Choose Image" (onSelect)="uploadImage($event.files[0])"></p-fileUpload>
+  </p-dialog>
+</div>

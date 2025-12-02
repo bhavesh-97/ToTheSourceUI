@@ -1,0 +1,71 @@
+{
+  "id": "landing-hero-v2",
+  "name": "Modern Landing Hero",
+  "type": "website",
+  "category": "landing",
+  "thumbnail": "/assets/templates/hero-thumb.jpg",
+  "description": "Animated hero with video background and staggered fade-ups",
+  "status": "published",
+  "version": 2,
+  "createdAt": "2025-11-20",
+  "updatedAt": "2025-12-01",
+
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+
+    "rules": [
+      {
+        "id": "hero-video-bg",
+        "label": "Hero Video Background Fade In",
+        "type": "tween",
+        "selector": ".hero-video",
+        "from": { "opacity": 0, "scale": 1.1 },
+        "to": { "opacity": 1, "scale": 1 },
+        "duration": 2,
+        "scrollTrigger": {
+          "trigger": ".hero-section",
+          "start": "top top",
+          "scrub": true
+        },
+        "media": {
+          "type": "video",
+          "url": "https://motionbgs.com/media/8810/hollow-knight-echo-of-shadows.960x540.mp4",
+          "loop": true,
+          "muted": true,
+          "autoplay": true
+        }
+      },
+      {
+        "id": "title-stagger",
+        "label": "Title & Button Stagger",
+        "type": "tween",
+        "selector": ".hero-title, .hero-subtitle, .hero-cta",
+        "from": { "opacity": 0, "y": 80 },
+        "to": { "opacity": 1, "y": 0 },
+        "stagger": { "each": 0.15, "from": "start" },
+        "scrollTrigger": {
+          "trigger": ".hero-content",
+          "start": "top 80%"
+        }
+      }
+    ],
+
+    "callbacks": [
+      {
+        "name": "onHeroComplete",
+        "script": "console.log('Hero animation finished!'); ga('send', 'event', 'Template', 'hero_loaded');"
+      }
+    ]
+  },
+
+  "html": "<section class=\"hero-section\">...</section>",
+  "css": ".hero-section { min-height: 100vh; }",
+  "previewUrl": "/preview/landing-hero-v2"
+}

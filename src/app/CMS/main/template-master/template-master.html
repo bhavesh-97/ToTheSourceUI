@@ -1,5 +1,71 @@
-<div class="fade-up">Animated Video</div>
-<section class="timeline-section">
-  <div class="tl-item-1">Step 1</div>
-  <div class="tl-item-2">Step 2</div>
-</section>
+<div class="p-6 bg-gray-50 min-h-screen">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-800">Template Master</h1>
+    <button pButton label="New Template" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)"></button>
+  </div>
+
+  <p-table [value]="templates()" class="shadow-lg rounded-lg">
+    <ng-template pTemplate="header">
+      <tr class="bg-indigo-600 text-white">
+        <th>Preview</th><th>Name</th><th>Type</th><th>Status</th><th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-tpl>
+      <tr class="hover:bg-gray-100">
+        <td><img [src]="tpl.thumbnail" class="w-48 h-28 object-cover rounded"></td>
+        <td class="font-bold">{{ tpl.name }}</td>
+        <td><span class="px-3 py-1 bg-indigo-100 rounded-full">{{ tpl.type }}</span></td>
+        <td><p-tag [value]="tpl.status" [severity]="tpl.status === 'published' ? 'success' : 'warn'"></p-tag></td>
+        <td class="space-x-2">
+          <button pButton icon="pi pi-eye" class="p-button-rounded" (click)="openDialog(false, tpl)"></button>
+          <button pButton icon="pi pi-copy" class="p-button-rounded p-button-outlined" (click)="duplicate(tpl)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteTemplate(tpl)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- FULL DIALOG -->
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'95vw', height:'95vh', maxWidth:'1700px'}"
+  header="{{ isNew ? 'Create Template' : 'Edit: ' + form.name }}" [baseZIndex]="10000">
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
+    <div class="space-y-6 overflow-y-auto">
+      <div class="grid grid-cols-3 gap-4">
+        <div><input pInputText [(ngModel)]="form.name" placeholder="Name *" class="w-full"></div>
+        <div><select [(ngModel)]="form.type" class="w-full p-3 border rounded"><option>website</option><option>admin</option><option>email</option></select></div>
+        <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
+      </div>
+
+        <app-text-editor
+            [(content)]="messageContent"
+            placeholder="Write your message with formatting..."
+            height="500px">
+        </app-text-editor>
+
+      <textarea rows="6" pInputTextarea [(ngModel)]="form.css" placeholder="CSS" class="w-full font-mono text-sm"></textarea>
+
+      <div>
+        <button pButton label="Add GSAP Rule" icon="pi pi-plus" (click)="addRule()" class="p-button-sm"></button>
+        <div *ngFor="let r of form.gsapConfig.rules; let i=index" class="p-4 bg-gray-50 rounded mt-2">
+          <input pInputText [(ngModel)]="r.label" placeholder="Label" class="w-full mb-2">
+          <input pInputText [(ngModel)]="r.selector" placeholder="Selector" class="w-full">
+          <button pButton icon="pi pi-trash" class="p-button-danger p-button-sm mt-2" (click)="removeRule(i)"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col">
+      <h3 class="text-xl font-bold mb-4 text-center bg-gray-100 py-3 rounded-t">LIVE PREVIEW</h3>
+      <iframe #previewFrame class="flex-1 border-4 border-dashed border-indigo-200 rounded-b-lg bg-white"></iframe>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-4">
+      <button pButton label="Save" icon="pi pi-save" class="p-button-success" (click)="save()"></button>
+      <button pButton label="Cancel" class="p-button-outlined" (click)="dialogVisible = false"></button>
+    </div>
+  </ng-template>
+</p-dialog>
