@@ -36,9 +36,7 @@
           <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
         </div>
         <app-text-editor
-            [(content)]="messageContent"
-            placeholder="Write your message with formatting..."
-            height="500px">
+            [(content)]="form.html" placeholder="Write your message with formatting..." height="500px">
         </app-text-editor>
     </div>
   </div>

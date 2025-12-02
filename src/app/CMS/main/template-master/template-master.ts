@@ -66,8 +66,8 @@ export class TemplateMaster implements OnInit, AfterViewChecked {
     type: 'website' as TemplateType,
     status: 'draft' as TemplateStatus,
     html: `<div class="hero min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 text-white">
-  <h1 class="fade-up text-8xl font-black">Welcome</h1>
-</div>`,
+              <h1 class="fade-up text-8xl font-black">Welcome</h1>
+           </div>`,
     css: `.hero { display: grid; place-items: center; }`,
     gsapConfig: {
       global: { defaults: { duration: 1.5, ease: "power4.out" } },

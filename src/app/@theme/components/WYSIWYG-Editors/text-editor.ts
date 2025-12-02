@@ -179,7 +179,6 @@ export class TextEditorComponent implements AfterViewInit, OnChanges, ControlVal
     a.href = url; a.download = 'document.html'; a.click();
   }
 
-  // Static provider registration for NG_VALUE_ACCESSOR
   static ngAcceptInputType_content: string | null;
 
   providers = [
