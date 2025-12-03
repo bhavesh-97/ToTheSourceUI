@@ -18,6 +18,13 @@ interface Size { name: string; value: string }
   standalone: true,
   imports: [CommonModule, FormsModule, ButtonModule, ToolbarModule, MenuModule,
     ColorPickerModule, DialogModule, FileUploadModule, TooltipModule, DividerModule],
+   providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TextEditorComponent),
+      multi: true
+    }
+  ],
   templateUrl: './text-editor.html',
   styleUrls: ['./text-editor.scss']
 })
@@ -180,12 +187,4 @@ export class TextEditorComponent implements AfterViewInit, OnChanges, ControlVal
   }
 
   static ngAcceptInputType_content: string | null;
-
-  providers = [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => TextEditorComponent),
-      multi: true
-    }
-  ];
 }

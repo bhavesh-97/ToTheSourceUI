@@ -28,8 +28,7 @@ import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/
             InputTextModule, 
             TextareaModule, 
             TextEditorComponent,
-            ConfirmDialogModule,
-            CKEditorModule ],
+            ConfirmDialogModule],
   templateUrl: './template-master.html',
   styleUrl: './template-master.css'
 })
@@ -37,26 +36,6 @@ import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/
 export class TemplateMaster implements OnInit, AfterViewChecked {
   @ViewChild('previewFrame') previewFrame!: ElementRef<HTMLIFrameElement>;
   messageContent = '';
-  // CKEditor 5 v44+ – No version error
-  @ViewChild('ckeditor') ckeditor: any;
-
-  // THIS LINE FIXES THE ERROR
-  public Editor = (Editor as any).default || Editor;
-
-  public editorConfig = {
-    toolbar: [
-      'sourceEditing', '|',
-      'heading', 'bold', 'italic', 'underline', 'strikethrough', '|',
-      'link', 'bulletedList', 'numberedList', '|',
-      'outdent', 'indent', 'blockQuote', 'insertTable', 'mediaEmbed', '|',
-      'fontFamily', 'fontSize', 'fontColor', '|',
-      'code', 'codeBlock', '|',
-      'undo', 'redo'
-    ],
-    htmlSupport: { allow: [{ name: /.*/, attributes: true, classes: true, styles: true }] },
-    height: 600
-  };
-
   templates = signal<Template[]>([]);
   dialogVisible = false;
   isNew = false;
@@ -102,7 +81,7 @@ export class TemplateMaster implements OnInit, AfterViewChecked {
       name: 'Modern Hero 2025',
       type: 'website',
       status: 'published',
-      thumbnail: 'https://via.placeholder.com/600x400/7c3aed/ffffff?text=HERO',
+      thumbnail: 'https://via.placeholder.com/600x400/7c3aed',
       html: this.form.html,
       css: this.form.css,
       gsapConfig: this.form.gsapConfig
