@@ -3,17 +3,16 @@
     <div class="logo-area">
       <img src="assets/images/product/To the Source.png" alt="To The Source" class="logo-img">
     </div>
-
-    <button class="menu-btn" (click)="toggleSidebar.emit()">
+    <button pButton class="menu-btn p-button-text" (click)="toggleSidebar.emit()">
       <i class="pi pi-bars"></i>
     </button>
   </div>
   <div class="search-wrapper">
     <i class="pi pi-search"></i>
-    <input type="text" placeholder="Search anything..." />
+    <input pInputText type="text" placeholder="Search anything..." />
   </div>
   <div class="right-group">
-    <button class="icon-btn">
+    <button pButton class="icon-btn p-button-text">
       <i class="pi pi-bell"></i>
       <span class="badge">3</span>
     </button>

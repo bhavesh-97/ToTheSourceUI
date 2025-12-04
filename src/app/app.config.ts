@@ -33,16 +33,14 @@ export const appConfig: ApplicationConfig = {
       withInterceptorsFromDi()
     ),
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
-    providePrimeNG({
-            theme: {
-                preset: Aura,
-                options: {
-                    prefix: 'p',
-                    darkModeSelector: 'system',
-                    cssLayer: false
-                }
-            }
-    }), 
+providePrimeNG({
+    theme: {
+        preset: Aura,
+        options: {
+            darkModeSelector: '.my-app-dark'
+        }
+    }
+}),
     provideToastr({
         timeOut: 15000,
         positionClass: 'toast-top-right',

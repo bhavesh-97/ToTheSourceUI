@@ -138,3 +138,72 @@
     display: none;
   }
 }
+html.my-app-dark {
+  --sidebar-bg: #111827;
+  --sidebar-hover-bg: #1f2937;
+  --sidebar-active-bg: #1e1b4b;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-light: #94a3b8;
+  --sidebar-accent: #7c4dff;
+  --sidebar-border: #312e81;
+}
+
+/* Sidebar container */
+html.my-app-dark .sidebar {
+  background: var(--sidebar-bg) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Main menu links */
+html.my-app-dark .nav a {
+  color: var(--sidebar-text);
+}
+
+html.my-app-dark .nav a:hover {
+  background: var(--sidebar-hover-bg);
+  border-left: 4px solid var(--sidebar-accent);
+  color: var(--sidebar-accent);
+}
+
+html.my-app-dark .nav a.active {
+  background: var(--sidebar-active-bg);
+  border-left: 4px solid var(--sidebar-accent);
+  color: var(--sidebar-accent);
+}
+
+/* Icons */
+html.my-app-dark .nav a i {
+  color: var(--sidebar-text-light);
+}
+
+html.my-app-dark .nav a:hover i,
+html.my-app-dark .nav a.active i {
+  color: var(--sidebar-accent);
+}
+
+/* Parent menu dropdown arrow */
+html.my-app-dark .parent-menu > a.has-children i.pi {
+  color: var(--sidebar-text-light);
+}
+
+html.my-app-dark .parent-menu > a.has-children:hover i.pi {
+  color: var(--sidebar-accent);
+}
+
+/* Child menu */
+html.my-app-dark .child-menu a {
+  color: var(--sidebar-text-light);
+}
+
+html.my-app-dark .child-menu a:hover,
+html.my-app-dark .child-menu a.active {
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-accent) !important;
+  border-left: 4px solid var(--sidebar-accent);
+}
+
+/* Upgrade card (optional dark version) */
+html.my-app-dark .upgrade-card {
+  background: rgba(124, 77, 255, 0.15);
+  border: 1px solid var(--sidebar-border);
+}

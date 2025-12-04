@@ -1,14 +1,14 @@
 .loader-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.75);
+  /* background: rgba(255, 255, 255, 0.75); */
+  background: rgba(var(--p-surface-0-rgb), 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1200;
   backdrop-filter: blur(3px);
 }
-
 .spinner-container {
   position: relative;
   width: 100px;
@@ -40,7 +40,8 @@
   content: '';
   position: absolute;
   inset: 8px; /* inner gap */
-  background: white;
+  /* background: white; */
+  background: var(--p-surface-0);
   border-radius: 50%;
 }
 
@@ -55,4 +56,11 @@
   to {
     transform: rotate(360deg);
   }
+}
+body.p-dark .loader-overlay {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+body.p-dark .spinner-ring::before {
+  background: #121212; /* darker center */
 }

@@ -15,7 +15,7 @@ import { SelectModule } from 'primeng/select';
 import { SearchInputComponent } from '../search-input/search-input.component';
 import { LoginService } from '../../../authentication/login/login.service';
 import { MUser } from '../../../models/MUser';
-
+import { ImageModule } from 'primeng/image';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -27,6 +27,7 @@ import { MUser } from '../../../models/MUser';
     AvatarModule,
     BadgeModule,
     TooltipModule,
+    ImageModule,
     InputTextModule,
     ToggleButtonModule,
     SelectModule
@@ -44,11 +45,16 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.loginService.getUserInfo();
+  const saved = localStorage.getItem("darkMode") === "1";
+  this.isDarkMode = saved;
 
-    this.isDarkMode = localStorage.getItem("darkMode") === "1";
-    if (this.isDarkMode) document.body.classList.add("dark");
+  if (saved) {
+    document.body.classList.add("p-dark");
   }
-
+  }
+ toggle() {
+    this.loginService.toggleDarkMode();
+  }
   toggleProfileDropdown() {
     this.showProfileDropdown = !this.showProfileDropdown;
     setTimeout(() => {
@@ -90,11 +96,12 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  toggleDarkMode() {
-    this.isDarkMode = document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode", this.isDarkMode ? "1" : "0");
-    gsap.fromTo("body", { opacity: 0.85 }, { opacity: 1, duration: 0.25 });
-  }
+toggleDarkMode() {
+  const html = document.documentElement; 
+  html.classList.toggle('my-app-dark');
+  const enabled = html.classList.contains('my-app-dark');
+  localStorage.setItem('darkMode', enabled ? '1' : '0');
+}
 
   getIconClass(icon: string) {
     if (!icon) return '';
