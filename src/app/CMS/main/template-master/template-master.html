@@ -7,14 +7,12 @@
   <p-table [value]="templates()" class="shadow-lg rounded-lg">
     <ng-template pTemplate="header">
       <tr class="bg-indigo-600 text-white">
-        <th>Preview</th><th>Name</th><th>Type</th><th>Status</th><th>Actions</th>
+        <th>TemplateName</th><th>Status</th><th>Actions</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-tpl>
       <tr class="hover:bg-gray-100">
-        <td><img [src]="tpl.thumbnail" class="w-48 h-28 object-cover rounded"></td>
-        <td class="font-bold">{{ tpl.name }}</td>
-        <td><span class="px-3 py-1 bg-indigo-100 rounded-full">{{ tpl.type }}</span></td>
+        <td class="font-bold">{{ tpl.TemplateName }}</td>
         <td><p-tag [value]="tpl.status" [severity]="tpl.status === 'published' ? 'success' : 'warn'"></p-tag></td>
         <td class="space-x-2">
           <button pButton icon="pi pi-eye" class="p-button-rounded" (click)="openDialog(false, tpl)"></button>
@@ -27,16 +25,18 @@
 </div>
 
 <p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'95vw', height:'95vh', maxWidth:'1700px'}"
-    header="{{ isNew ? 'Create Template' : 'Edit: ' + form.name }}" [baseZIndex]="10000">
+    header="{{ isNew ? 'Create Template' : 'Edit: ' + form.TemplateName }}" [baseZIndex]="10000">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
       <div class="space-y-6 overflow-y-auto">
         <div class="grid grid-cols-3 gap-4">
-          <div><input pInputText [(ngModel)]="form.name" placeholder="Name *" class="w-full"></div>
-          <div><select [(ngModel)]="form.type" class="w-full p-3 border rounded"><option>website</option><option>admin</option><option>email</option></select></div>
+          <div><input pInputText [(ngModel)]="form.TemplateName" placeholder="Name *" class="w-full"></div>
           <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
         </div>
-        <app-text-editor
-            [(content)]="form.html" placeholder="Write your message with formatting..." height="500px">
+       <app-text-editor
+            [(ngModel)]="form.html"
+            name="htmlContent"
+            placeholder="Write your message with formatting..."
+            height="500px">
         </app-text-editor>
     </div>
   </div>

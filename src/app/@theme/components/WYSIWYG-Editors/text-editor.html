@@ -43,7 +43,7 @@
   </div>
 
   <!-- Editor -->
-  <div #editor contenteditable="true" class="editor-content"></div>
+  <div #editor contenteditable="true" class="editor-content" (blur)="onBlur()"></div>
 
   <!-- Resizer -->
   <div #resizer class="resizer"><i class="fas fa-grip-lines"></i></div>
@@ -53,12 +53,13 @@
     <div class="flex flex-col gap-3">
       <input pInputText [(ngModel)]="linkText" placeholder="Link text (optional)" class="w-full">
       <input pInputText [(ngModel)]="linkUrl" placeholder="https://example.com" class="w-full">
-      <p-checkbox  [(ngModel)]="linkNewTab" label="Open in new tab"></p-checkbox>
+      <p-checkbox [(ngModel)]="linkNewTab" label="Open in new tab"></p-checkbox>
       <button pButton label="Insert Link" (click)="insertLink()" class="p-button-success"></button>
     </div>
   </p-dialog>
 
   <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true">
-    <p-fileUpload mode="basic" accept="image/*" chooseLabel="Choose Image" (onSelect)="uploadImage($event.files[0])"></p-fileUpload>
+    <p-fileUpload mode="basic" accept="image/*" chooseLabel="Choose Image" 
+                  (onSelect)="uploadImage($event.files[0])"></p-fileUpload>
   </p-dialog>
 </div>

@@ -1,24 +1,43 @@
-// src/app/shared/components/rich-text-editor/rich-text-editor.component.ts
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, SimpleChanges, DOCUMENT, Inject, HostListener, OnChanges, forwardRef } from '@angular/core';
+import { 
+  Component, 
+  ElementRef, 
+  ViewChild, 
+  AfterViewInit, 
+  Inject, 
+  forwardRef 
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { MenuModule } from 'primeng/menu';
 import { ToolbarModule } from 'primeng/toolbar';
-import { FileUploadModule } from 'primeng/fileupload';
-import { DividerModule } from 'primeng/divider';
+import { MenuModule } from 'primeng/menu';
 import { ColorPickerModule } from 'primeng/colorpicker';
+import { DialogModule } from 'primeng/dialog';
+import { FileUploadModule } from 'primeng/fileupload';
 import { TooltipModule } from 'primeng/tooltip';
-import { MenuItem } from 'primeng/api';
-interface Font { name: string; value: string }
-interface Size { name: string; value: string }
+import { DividerModule } from 'primeng/divider';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DOCUMENT } from '@angular/common';
+
 @Component({
   selector: 'app-text-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, ToolbarModule, MenuModule,
-    ColorPickerModule, DialogModule, FileUploadModule, TooltipModule, DividerModule],
-   providers: [
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ButtonModule, 
+    ToolbarModule, 
+    MenuModule,
+    ColorPickerModule, 
+    DialogModule, 
+    FileUploadModule, 
+    TooltipModule, 
+    DividerModule,
+    InputTextModule,
+    CheckboxModule
+  ],
+  providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => TextEditorComponent),
@@ -28,51 +47,53 @@ interface Size { name: string; value: string }
   templateUrl: './text-editor.html',
   styleUrls: ['./text-editor.scss']
 })
-export class TextEditorComponent implements AfterViewInit, OnChanges, ControlValueAccessor {
-  @Input() content = '';
-  @Output() contentChange = new EventEmitter<string>();
-
+export class TextEditorComponent implements AfterViewInit, ControlValueAccessor {
   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
   @ViewChild('resizer') resizer!: ElementRef<HTMLDivElement>;
 
+  // Internal content variable
+  private _content = '';
+  
+  // UI state variables
   isDark = false;
   isSource = false;
   showLink = false;
   showImage = false;
 
-  linkUrl = ''; linkText = ''; linkNewTab = true;
+  linkUrl = ''; 
+  linkText = ''; 
+  linkNewTab = true;
   textColor = '#1f2937';
   bgColor = '#fbbf24';
 
   private isResizing = false;
-  private onChange = (value: string) => {}; // Part of ControlValueAccessor
-  private onTouched = () => {}; // Part of ControlValueAccessor
+  private onChange = (value: string) => {};
+  private onTouched = () => {};
 
   constructor(@Inject(DOCUMENT) private doc: Document) {}
 
   ngAfterViewInit() {
-    this.updateEditorContent(); // Refactored to use internal setter
+    this.updateEditorContent();
     this.setupEditor();
     this.setupResize();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['content'] && !changes['content'].firstChange) {
-      this.updateEditorContent(); // Update internal editor when input changes
-    }
-  }
-
-  // Internal method to update editor content (handles both modes)
-  private updateEditorContent() {
+  // Internal method to update editor content
+  private updateEditorContent(content?: string) {
+    const valueToUse = content !== undefined ? content : this._content;
+    
+    if (!this.editor?.nativeElement) return;
+    
     if (this.isSource) {
-      this.editor.nativeElement.textContent = this.content || '';
+      this.editor.nativeElement.textContent = valueToUse || '';
     } else {
-      this.editor.nativeElement.innerHTML = this.content || '<p>Start typing...</p>';
+      this.editor.nativeElement.innerHTML = valueToUse || '<p>Start typing...</p>';
     }
   }
 
-  setupEditor() {
+  private setupEditor() {
     this.editor.nativeElement.addEventListener('input', () => this.sync());
+    this.editor.nativeElement.addEventListener('blur', () => this.onBlur());
     this.editor.nativeElement.addEventListener('dragover', e => e.preventDefault());
     this.editor.nativeElement.addEventListener('drop', e => {
       e.preventDefault();
@@ -81,7 +102,7 @@ export class TextEditorComponent implements AfterViewInit, OnChanges, ControlVal
     });
   }
 
-  setupResize() {
+  private setupResize() {
     const resizer = this.resizer.nativeElement;
     resizer.addEventListener('mousedown', (e: MouseEvent) => {
       this.isResizing = true;
@@ -139,22 +160,42 @@ export class TextEditorComponent implements AfterViewInit, OnChanges, ControlVal
 
   toggleSource() {
     this.isSource = !this.isSource;
-    this.updateEditorContent(); // Use internal update instead of direct assignment
+    this.updateEditorContent();
     this.sync();
   }
 
-  sync() {
-    this.content = this.isSource
+  private sync() {
+    if (!this.editor?.nativeElement) return;
+    
+    const newContent = this.isSource
       ? this.editor.nativeElement.textContent || ''
       : this.editor.nativeElement.innerHTML;
-    this.contentChange.emit(this.content);
-    this.onChange(this.content); // Notify ngModel of changes
+    
+    // Update internal value and notify
+    if (newContent !== this._content) {
+      this._content = newContent;
+      this.onChange(this._content);
+    }
   }
 
-  // ControlValueAccessor methods
+  onBlur() {
+    this.onTouched();
+  }
+
+  exportHTML() {
+    const blob = new Blob([this._content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; 
+    a.download = 'document.html'; 
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ControlValueAccessor Implementation
   writeValue(value: string): void {
-    this.content = value || '';
-    this.updateEditorContent(); // Update internal editor when external value changes
+    this._content = value || '';
+    this.updateEditorContent(this._content);
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -165,26 +206,9 @@ export class TextEditorComponent implements AfterViewInit, OnChanges, ControlVal
     this.onTouched = fn;
   }
 
-  setDisabledState?(isDisabled: boolean): void {
-    // Optional: Handle disabled state if needed (e.g., make editor read-only)
-    if (isDisabled) {
-      this.editor.nativeElement.setAttribute('contenteditable', 'false');
-    } else {
-      this.editor.nativeElement.setAttribute('contenteditable', 'true');
+  setDisabledState(isDisabled: boolean): void {
+    if (this.editor?.nativeElement) {
+      this.editor.nativeElement.contentEditable = isDisabled ? 'false' : 'true';
     }
   }
-
-  // Mark as touched on blur (optional, for form validation)
-  onBlur() {
-    this.onTouched();
-  }
-
-  exportHTML() {
-    const blob = new Blob([this.content], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'document.html'; a.click();
-  }
-
-  static ngAcceptInputType_content: string | null;
 }
