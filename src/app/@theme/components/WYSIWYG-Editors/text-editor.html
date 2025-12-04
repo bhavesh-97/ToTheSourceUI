@@ -1,65 +1,297 @@
-<div class="pro-editor" [class.dark]="isDark">
-  <!-- Toolbar -->
-  <div class="toolbar">
-    <div class="tools-left">
-      <button class="tool-btn" (click)="exec('bold')" title="Bold"><i class="fas fa-bold"></i></button>
-      <button class="tool-btn" (click)="exec('italic')" title="Italic"><i class="fas fa-italic"></i></button>
-      <button class="tool-btn" (click)="exec('underline')" title="Underline"><i class="fas fa-underline"></i></button>
-      <button class="tool-btn" (click)="exec('strikethrough')" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
-
-      <div class="divider"></div>
-
-      <p-colorPicker [(ngModel)]="textColor" (onChange)="exec('foreColor', textColor)" class="color-picker"></p-colorPicker>
-      <p-colorPicker [(ngModel)]="bgColor" (onChange)="exec('hiliteColor', bgColor)" class="color-picker"></p-colorPicker>
-
-      <div class="divider"></div>
-
-      <button class="tool-btn" (click)="exec('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
-      <button class="tool-btn" (click)="exec('insertOrderedList')" title="Numbered List"><i class="fas fa-list-ol"></i></button>
-      <button class="tool-btn" (click)="exec('justifyLeft')" title="Align Left"><i class="fas fa-align-left"></i></button>
-      <button class="tool-btn" (click)="exec('justifyCenter')" title="Align Center"><i class="fas fa-align-center"></i></button>
-      <button class="tool-btn" (click)="exec('justifyRight')" title="Align Right"><i class="fas fa-align-right"></i></button>
-
-      <div class="divider"></div>
-
-      <button class="tool-btn" (click)="showLink=true" title="Link"><i class="fas fa-link"></i></button>
-      <button class="tool-btn" (click)="showImage=true" title="Image"><i class="fas fa-image"></i></button>
-      <button class="tool-btn" (click)="insertTable()" title="Table"><i class="fas fa-table"></i></button>
-      <button class="tool-btn" (click)="exec('formatBlock', 'blockquote')" title="Quote"><i class="fas fa-quote-left"></i></button>
-      <button class="tool-btn" (click)="exec('formatBlock', 'pre')" title="Code"><i class="fas fa-code"></i></button>
+<div class="pro-editor" [class.dark]="isDark" [class.fullscreen]="isFullscreen">
+  <!-- Advanced Toolbar -->
+  <div class="toolbar advanced-toolbar">
+    <!-- File Operations -->
+    <div class="toolbar-group">
+      <p-splitButton label="File" icon="pi pi-file" [model]="fileMenuItems" styleClass="p-button-text"></p-splitButton>
     </div>
 
-    <div class="tools-right">
-      <button class="tool-btn" (click)="exec('undo')" title="Undo"><i class="fas fa-undo"></i></button>
-      <button class="tool-btn" (click)="exec('redo')" title="Redo"><i class="fas fa-redo"></i></button>
-      <button class="tool-btn" (click)="exportHTML()" title="Export HTML"><i class="fas fa-download"></i></button>
+    <div class="divider"></div>
+
+    <!-- Edit Operations -->
+    <div class="toolbar-group">
+      <button class="tool-btn" (click)="exec('undo')" title="Undo (Ctrl+Z)">
+        <i class="pi pi-undo"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('redo')" title="Redo (Ctrl+Shift+Z)">
+        <i class="pi pi-redo"></i>
+      </button>
+      <button class="tool-btn" (click)="clearFormatting()" title="Clear Formatting">
+        <i class="pi pi-eraser"></i>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Text Formatting -->
+    <div class="toolbar-group">
+      <button class="tool-btn" [class.active]="isBold" (click)="exec('bold')" title="Bold (Ctrl+B)">
+        <i class="pi pi-bold"></i>
+      </button>
+      <button class="tool-btn" [class.active]="isItalic" (click)="exec('italic')" title="Italic (Ctrl+I)">
+        <i class="pi pi-italic"></i>
+      </button>
+      <button class="tool-btn" [class.active]="isUnderline" (click)="exec('underline')" title="Underline (Ctrl+U)">
+        <i class="pi pi-underline"></i>
+      </button>
+      <button class="tool-btn" [class.active]="isStrikethrough" (click)="exec('strikethrough')" title="Strikethrough">
+        <i class="pi pi-strikethrough"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('superscript')" title="Superscript">
+        <sup>X<sup>2</sup></sup>
+      </button>
+      <button class="tool-btn" (click)="exec('subscript')" title="Subscript">
+        <sub>X<sub>2</sub></sub>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Font Controls -->
+    <div class="toolbar-group">
+      <button class="tool-btn" (click)="showFontDialog = true" title="Font Settings">
+        <i class="pi pi-font"></i>
+      </button>
+      
+      <button class="tool-btn" (click)="showInsertDialog = true" title="Insert Elements">
+        <i class="pi pi-plus"></i>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Colors -->
+    <div class="toolbar-group">
+      <p-colorPicker [(ngModel)]="textColor" (onChange)="exec('foreColor', textColor)" 
+                     class="color-picker" title="Text Color">
+        <i class="pi pi-palette" [style.color]="textColor"></i>
+      </p-colorPicker>
+      
+      <p-colorPicker [(ngModel)]="bgColor" (onChange)="exec('backColor', bgColor)" 
+                     class="color-picker" title="Background Color">
+        <div class="color-icon" [style.background]="bgColor"></div>
+      </p-colorPicker>
+      
+      <p-colorPicker [(ngModel)]="highlightColor" (onChange)="exec('hiliteColor', highlightColor)"
+                     class="color-picker" title="Highlight Color">
+        <i class="pi pi-highlighter" [style.color]="highlightColor"></i>
+      </p-colorPicker>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Alignment & Lists -->
+    <div class="toolbar-group">
+      <button class="tool-btn" (click)="exec('justifyLeft')" title="Align Left">
+        <i class="pi pi-align-left"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('justifyCenter')" title="Align Center">
+        <i class="pi pi-align-center"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('justifyRight')" title="Align Right">
+        <i class="pi pi-align-right"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('justifyFull')" title="Justify">
+        <i class="pi pi-align-justify"></i>
+      </button>
+      
+      <div class="divider"></div>
+      
+      <button class="tool-btn" (click)="exec('insertUnorderedList')" title="Bullet List">
+        <i class="pi pi-list"></i>
+      </button>
+      <button class="tool-btn" (click)="exec('insertOrderedList')" title="Numbered List">
+        <i class="pi pi-sort-numeric-down"></i>
+      </button>
+      <button class="tool-btn" (click)="insertHorizontalRule()" title="Horizontal Line">
+        <i class="pi pi-minus"></i>
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- View Controls -->
+    <div class="toolbar-group">
       <button class="tool-btn" (click)="toggleSource()" title="Source Code">
-        <i class="fas" [class.fa-code]="!isSource" [class.fa-eye]="isSource"></i>
+        <i class="pi" [class.pi-code]="!isSource" [class.pi-eye]="isSource"></i>
       </button>
       <button class="tool-btn" (click)="toggleTheme()" title="Toggle Theme">
-        <i class="fas" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
+        <i class="pi" [class.pi-moon]="!isDark" [class.pi-sun]="isDark"></i>
+      </button>
+      <button class="tool-btn" (click)="toggleFullscreen()" title="Fullscreen (F11)">
+        <i class="pi" [class.pi-window-maximize]="!isFullscreen" [class.pi-window-minimize]="isFullscreen"></i>
+      </button>
+      <button class="tool-btn" (click)="wordCountInfo()" title="Word Count">
+        <i class="pi pi-chart-bar"></i>
+        <span class="word-count-badge">{{wordCount}}</span>
       </button>
     </div>
   </div>
 
-  <!-- Editor -->
-  <div #editor contenteditable="true" class="editor-content" (blur)="onBlur()"></div>
+  <!-- Editor Area -->
+  <div #editor contenteditable="true" class="editor-content advanced-editor" (blur)="onBlur()"></div>
+
+  <!-- Statistics Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <i class="pi pi-file"></i>
+      <span>{{charCount}} chars</span>
+    </div>
+    <div class="status-item">
+      <i class="pi pi-file-edit"></i>
+      <span>{{wordCount}} words</span>
+    </div>
+    <div class="status-item">
+      <i class="pi pi-clock"></i>
+      <span>{{readingTime}} min read</span>
+    </div>
+    <div class="status-item">
+      <i class="pi pi-info-circle"></i>
+      <span>{{isSource ? 'Source Mode' : 'Rich Text'}}</span>
+    </div>
+  </div>
 
   <!-- Resizer -->
-  <div #resizer class="resizer"><i class="fas fa-grip-lines"></i></div>
+  <div #resizer class="resizer"><i class="pi pi-grip-lines-vertical"></i></div>
 
   <!-- Dialogs -->
-  <p-dialog header="Insert Link" [(visible)]="showLink" [modal]="true" [style]="{width: '400px'}">
-    <div class="flex flex-col gap-3">
-      <input pInputText [(ngModel)]="linkText" placeholder="Link text (optional)" class="w-full">
-      <input pInputText [(ngModel)]="linkUrl" placeholder="https://example.com" class="w-full">
-      <p-checkbox [(ngModel)]="linkNewTab" label="Open in new tab"></p-checkbox>
-      <button pButton label="Insert Link" (click)="insertLink()" class="p-button-success"></button>
+  
+  <!-- Font Dialog -->
+  <p-dialog header="Font Settings" [(visible)]="showFontDialog" [modal]="true" [style]="{width: '400px'}">
+    <div class="dialog-content">
+      <div class="form-group">
+        <label>Font Family</label>
+        <p-select [options]="fontOptions" [(ngModel)]="selectedFont" optionLabel="label" optionValue="value"></p-select>
+      </div>
+      <div class="form-group">
+        <label>Font Size</label>
+        <p-select [options]="fontSizeOptions" [(ngModel)]="selectedFontSize" optionLabel="label" optionValue="value"></p-select>
+      </div>
+      <div class="form-group">
+        <label>Heading Level</label>
+        <p-select [options]="headingOptions" [(ngModel)]="selectedHeading" optionLabel="label" optionValue="value"></p-select>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button pButton label="Apply" icon="pi pi-check" (click)="changeFont()" class="p-button-success"></button>
+        <button pButton label="Cancel" icon="pi pi-times" (click)="showFontDialog = false" class="p-button-secondary"></button>
+      </div>
     </div>
   </p-dialog>
 
-  <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true">
-    <p-fileUpload mode="basic" accept="image/*" chooseLabel="Choose Image" 
-                  (onSelect)="uploadImage($event.files[0])"></p-fileUpload>
+  <!-- Insert Dialog -->
+  <p-dialog header="Insert Elements" [(visible)]="showInsertDialog" [modal]="true" [style]="{width: '500px'}">
+    <div class="dialog-content">
+      <div class="grid grid-cols-2 gap-4">
+        <button pButton label="Link" icon="pi pi-link" (click)="showLink=true; showInsertDialog=false;" class="p-button-outlined"></button>
+        <button pButton label="Image" icon="pi pi-image" (click)="showImage=true; showInsertDialog=false;" class="p-button-outlined"></button>
+        <button pButton label="Table" icon="pi pi-table" (click)="showTableConfig=true; showInsertDialog=false;" class="p-button-outlined"></button>
+        <button pButton label="Code" icon="pi pi-code" (click)="showCodeDialog=true; showInsertDialog=false;" class="p-button-outlined"></button>
+        <button pButton label="Emoji" icon="pi pi-smile" (click)="showEmojiPicker=true; showInsertDialog=false;" class="p-button-outlined"></button>
+        <button pButton label="Special Chars" icon="pi pi-percentage" (click)="showSpecialChars=true; showInsertDialog=false;" class="p-button-outlined"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Link Dialog -->
+  <p-dialog header="Insert Link" [(visible)]="showLink" [modal]="true" [style]="{width: '450px'}">
+    <div class="dialog-content">
+      <div class="form-group">
+        <label>Link Text (Optional)</label>
+        <input pInputText [(ngModel)]="linkText" placeholder="Display text" class="w-full">
+      </div>
+      <div class="form-group">
+        <label>URL *</label>
+        <input pInputText [(ngModel)]="linkUrl" placeholder="https://example.com" class="w-full">
+      </div>
+      <div class="form-group flex gap-4">
+        <p-checkbox [(ngModel)]="linkNewTab" label="Open in new tab"></p-checkbox>
+        <p-checkbox [(ngModel)]="linkNoFollow" label="No follow"></p-checkbox>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button pButton label="Insert" icon="pi pi-check" (click)="insertLink()" class="p-button-success"></button>
+        <button pButton label="Cancel" icon="pi pi-times" (click)="showLink=false" class="p-button-secondary"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Image Dialog -->
+  <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true" [style]="{width: '450px'}">
+    <div class="dialog-content">
+      <p-fileUpload mode="basic" name="demo[]" accept="image/*" 
+                    maxFileSize="5000000" chooseLabel="Choose Image"
+                    (onSelect)="uploadImage($event.files[0])">
+      </p-fileUpload>
+      <div class="mt-4 text-sm text-gray-500">
+        <p><i class="pi pi-info-circle mr-2"></i>Supported formats: JPG, PNG, GIF, WebP</p>
+        <p><i class="pi pi-info-circle mr-2"></i>Maximum file size: 5MB</p>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Table Configuration Dialog -->
+  <p-dialog header="Insert Table" [(visible)]="showTableConfig" [modal]="true" [style]="{width: '400px'}">
+    <div class="dialog-content">
+      <div class="form-group">
+        <label>Rows</label>
+        <p-inputNumber [(ngModel)]="tableConfig.rows" [min]="1" [max]="20" class="w-full"></p-inputNumber>
+      </div>
+      <div class="form-group">
+        <label>Columns</label>
+        <p-inputNumber [(ngModel)]="tableConfig.cols" [min]="1" [max]="10" class="w-full"></p-inputNumber>
+      </div>
+      <div class="form-group flex gap-4">
+        <p-checkbox [(ngModel)]="tableConfig.header" label="Include header row"></p-checkbox>
+        <p-checkbox [(ngModel)]="tableConfig.border" label="Show borders"></p-checkbox>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button pButton label="Insert Table" icon="pi pi-table" (click)="insertTable()" class="p-button-success"></button>
+        <button pButton label="Cancel" icon="pi pi-times" (click)="showTableConfig=false" class="p-button-secondary"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Code Dialog -->
+  <p-dialog header="Insert Code" [(visible)]="showCodeDialog" [modal]="true" [style]="{width: '500px'}">
+    <div class="dialog-content">
+      <div class="form-group">
+        <label>Language</label>
+        <p-select [options]="codeLanguageOptions" [(ngModel)]="selectedCodeLanguage" optionLabel="label" optionValue="value"></p-select>
+      </div>
+      <div class="form-group">
+        <label>Code</label>
+        <textarea pInputTextarea [(ngModel)]="codeContent" rows="10" class="w-full font-mono" placeholder="Paste your code here..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button pButton label="Insert Code" icon="pi pi-code" (click)="insertCode()" class="p-button-success"></button>
+        <button pButton label="Cancel" icon="pi pi-times" (click)="showCodeDialog=false" class="p-button-secondary"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Emoji Picker Dialog -->
+  <p-dialog header="Insert Emoji" [(visible)]="showEmojiPicker" [modal]="true" [style]="{width: '400px'}">
+    <div class="dialog-content">
+      <div class="emoji-grid">
+        <button *ngFor="let emoji of emojis" 
+                class="emoji-btn" 
+                (click)="insertEmoji(emoji.emoji)"
+                [title]="emoji.description">
+          {{emoji.emoji}}
+        </button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Special Characters Dialog -->
+  <p-dialog header="Insert Special Character" [(visible)]="showSpecialChars" [modal]="true" [style]="{width: '500px'}">
+    <div class="dialog-content">
+      <div class="special-chars-grid">
+        <button *ngFor="let char of specialCharacters" 
+                class="char-btn" 
+                (click)="insertSpecialChar(char)">
+          {{char}}
+        </button>
+      </div>
+    </div>
   </p-dialog>
 </div>
