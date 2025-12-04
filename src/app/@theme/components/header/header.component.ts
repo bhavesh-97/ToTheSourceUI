@@ -52,9 +52,6 @@ export class HeaderComponent implements OnInit {
     document.body.classList.add("p-dark");
   }
   }
- toggle() {
-    this.loginService.toggleDarkMode();
-  }
   toggleProfileDropdown() {
     this.showProfileDropdown = !this.showProfileDropdown;
     setTimeout(() => {
