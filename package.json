@@ -43,6 +43,7 @@
     "@studio-freight/lenis": "^1.0.42",
     "@types/crypto-js": "^4.2.2",
     "@types/three": "^0.181.0",
+    "angular-resizable-element": "^8.0.0",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
     "classlist.js": "^1.1.20150312",

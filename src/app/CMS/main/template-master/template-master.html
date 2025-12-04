@@ -32,12 +32,23 @@
           <div><input pInputText [(ngModel)]="form.TemplateName" placeholder="Name *" class="w-full"></div>
           <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
         </div>
-       <app-text-editor
+       <!-- <app-text-editor
             [(ngModel)]="form.html"
             name="htmlContent"
             placeholder="Write your message with formatting..."
             height="50px"
             width="50px">
+        </app-text-editor> -->
+        <app-text-editor
+            [(ngModel)]="form.html"
+            [width]="'1000px'"
+            [height]="'800px'"
+            [minHeight]="'300px'"
+            [maxHeight]="'1000px'"
+            [allowResize]="true"
+            [allowFullscreen]="true"
+            [autoSave]="true"
+            placeholder="Start typing your content...">
         </app-text-editor>
     </div>
   </div>
