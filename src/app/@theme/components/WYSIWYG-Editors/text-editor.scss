@@ -369,7 +369,8 @@ $transition: all 0.3s ease;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
-    color: darken($warning-color, 20%);
+    // color: darken($warning-color, 20%);
+    color: color-mix(in srgb, color $warning-color, color 20%);
     
     i {
       font-size: 14px;
@@ -599,7 +600,8 @@ $transition: all 0.3s ease;
         transition: $transition;
         
         &:hover {
-          background: darken($primary-color, 10%);
+          // background: darken($primary-color, 10%);
+          background: color-mix(in srgb, $primary-color, white 10%);
         }
         
         i {
@@ -1397,7 +1399,8 @@ $transition: all 0.3s ease;
         cursor: pointer;
         
         &:hover {
-          background: darken($primary-color, 10%);
+          // background: darken($primary-color, 10%);
+          background: color-mix(in srgb, $primary-color, white 10%);
         }
       }
     }

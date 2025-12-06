@@ -9,7 +9,7 @@ import {
   Renderer2,
   HostListener,
   ChangeDetectorRef,
-  Input,
+  Input,  
   Output,
   EventEmitter,
   OnChanges,
