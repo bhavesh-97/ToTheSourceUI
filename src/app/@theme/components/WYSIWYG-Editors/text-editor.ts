@@ -91,11 +91,10 @@ interface EditorPreset {
   styleUrls: ['./text-editor.scss']
 })
 export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlValueAccessor, OnChanges {
-[x: string]: any;
   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
   @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
   @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
-
+  @Output() clickOutside = new EventEmitter<void>();
   // Enhanced Input Properties
   @Input() width: string = '100%';
   @Input() height: string = '500px';
@@ -6461,9 +6460,25 @@ public aiImproveWriting() {
     // this.currentFont = font;
     this.exec('fontName', font.value);
   }
+ showFontSizeDropdown = false;
+
+  toggleFontSizeDropdown() {
+     this.showFontSizeDropdown = !this.showFontSizeDropdown;
+  }
+   closeFontSizeDropdown(): void {
+    this.showFontSizeDropdown = false;
+  }
+
+   @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+     const target = event.target as HTMLElement;
+     if (!target.closest('.toolbar-dropdown')) {
+       this.showFontSizeDropdown = false;
+     }
+  }
 
   changeFontSize(sizeOption: any) {
-    this.currentFontSize = sizeOption;
+    this.currentFontSize = sizeOption.size;
     
     const selection = this.doc.getSelection();
     if (selection && selection.rangeCount > 0) {
