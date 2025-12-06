@@ -1,20 +1,4 @@
-import { 
-  Component, 
-  ElementRef, 
-  ViewChild, 
-  AfterViewInit, 
-  Inject, 
-  forwardRef,
-  OnDestroy,
-  Renderer2,
-  HostListener,
-  ChangeDetectorRef,
-  Input,  
-  Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges
-} from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, Inject, forwardRef,OnDestroy,Renderer2,HostListener,ChangeDetectorRef,Input,  Output,EventEmitter,OnChanges,SimpleChanges} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -3683,12 +3667,12 @@ private insertText(text: string): void {
     
     // Show notification for critical alerts
     if (alert.severity === 'critical') {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Performance Alert',
-        detail: alert.message,
-        life: 5000
-      });
+      // this.messageService.add({
+      //   severity: 'error',
+      //   summary: 'Performance Alert',
+      //   detail: alert.message,
+      //   life: 5000
+      // });
     }
   }
 
