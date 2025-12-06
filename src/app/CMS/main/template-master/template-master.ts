@@ -44,9 +44,7 @@ export class TemplateMaster implements OnInit {
     TemplateID: 0,
     TemplateName: '',
     status: 'draft' as TemplateStatus,
-    html: `<div class="hero min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 text-white">
-              <h1 class="fade-up text-8xl font-black">Welcome</h1>
-           </div>`
+    html: ``
   };
 
   constructor(private notificationService: NotificationService) {}
