@@ -1,6 +1,4 @@
-// Import Font Awesome
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-
 // Variables
 $primary-color: #3b82f6;
 $secondary-color: #6b7280;
@@ -66,12 +64,17 @@ $transition: all 0.3s ease;
   
   &.dark {
     background: $dark-bg !important;
-    border-color: lighten($dark-bg, 10%);
+    // border-color: lighten($dark-bg, 10%);
+    border-color: color-mix(in srgb, var(--dark-bg), white 10%);
+
     color: $dark-text !important;
     
     .main-toolbar, .status-bar {
-      background: darken($dark-bg, 5%);
-      border-color: lighten($dark-bg, 10%);
+      // background: darken($dark-bg, 5%);
+      background: color-mix(in srgb, var(--dark-bg), white 5%);
+      // border-color: lighten($dark-bg, 10%);
+      border-color: color-mix(in srgb, var(--dark-bg), white 10%);
+
     }
     
     .editor-content {
@@ -84,12 +87,12 @@ $transition: all 0.3s ease;
     }
     
     .toolbar-btn {
-      background: lighten($dark-bg, 5%);
+      background: color-mix(in srgb, var(--dark-bg), white 5%);
       color: $dark-text;
       
       &:hover {
-        background: lighten($dark-bg, 10%);
-        border-color: lighten($dark-bg, 20%);
+        background: color-mix(in srgb, var(--dark-bg), white 10%);
+        border-color: color-mix(in srgb, var(--dark-bg), white 20%);
       }
       
       &.active {
@@ -111,7 +114,8 @@ $transition: all 0.3s ease;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: lighten($border-color, 10%);
+  background: color-mix(in srgb, $border-color, white 10%);
+  
   border-bottom: 1px solid $border-color;
   min-height: 60px;
   gap: 12px;
@@ -158,7 +162,7 @@ $transition: all 0.3s ease;
     position: relative;
     
     &:hover {
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
       border-color: $border-color;
       color: $light-text;
     }
@@ -234,7 +238,7 @@ $transition: all 0.3s ease;
         font-size: 14px;
         
         &:hover {
-          background: lighten($border-color, 5%);
+          background: color-mix(in srgb, $border-color, white 5%);
         }
         
         i {
@@ -300,7 +304,7 @@ $transition: all 0.3s ease;
       justify-content: center;
       
       &:hover {
-        background: lighten($border-color, 5%);
+        background: color-mix(in srgb, $border-color, white 5%);
       }
     }
     
@@ -333,7 +337,7 @@ $transition: all 0.3s ease;
           font-size: 14px;
           
           &:hover {
-            background: lighten($border-color, 5%);
+            background: color-mix(in srgb, $border-color, white 5%);
           }
           
           i {
@@ -360,12 +364,13 @@ $transition: all 0.3s ease;
     align-items: center;
     gap: 8px;
     padding: 4px 12px;
-    background: lighten($warning-color, 40%);
-    border: 1px solid lighten($warning-color, 20%);
+    background: color-mix(in srgb, $warning-color, white 40%);
+    border: 1px solid color-mix(in srgb, $warning-color, white 20%);
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
-    color: darken($warning-color, 20%);
+    // color: darken($warning-color, 20%);
+    color: color-mix(in srgb, color $warning-color, color 20%);
     
     i {
       font-size: 14px;
@@ -416,7 +421,7 @@ $transition: all 0.3s ease;
   
   &:empty:before {
     content: attr(placeholder);
-    color: lighten($secondary-color, 20%);
+    color: color-mix(in srgb, $secondary-color, white 20%);
     pointer-events: none;
   }
   
@@ -430,7 +435,7 @@ $transition: all 0.3s ease;
   }
   
   &.readonly {
-    background: lighten($border-color, 8%);
+    background: color-mix(in srgb, $border-color, white 8%);
     cursor: not-allowed;
     
     &:focus {
@@ -477,12 +482,12 @@ $transition: all 0.3s ease;
     padding: 0.5em 1em;
     color: $secondary-color;
     font-style: italic;
-    background: lighten($border-color, 8%);
+    background: color-mix(in srgb, $border-color, white 8%);
     border-radius: 0 $border-radius $border-radius 0;
   }
   
   pre {
-    background: lighten($border-color, 8%);
+    background: color-mix(in srgb, $border-color, white 8%);
     border: 1px solid $border-color;
     border-radius: 6px;
     padding: 1em;
@@ -494,7 +499,7 @@ $transition: all 0.3s ease;
   
   code {
     font-family: 'Courier New', monospace;
-    background: lighten($border-color, 5%);
+    background: color-mix(in srgb, $border-color, white 5%);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.9em;
@@ -512,19 +517,19 @@ $transition: all 0.3s ease;
     }
     
     th {
-      background: lighten($border-color, 8%);
+      background: color-mix(in srgb, $border-color, white 8%);
       font-weight: 600;
     }
     
     &.striped {
       tbody tr:nth-child(even) {
-        background: lighten($border-color, 8%);
+        background: color-mix(in srgb, $border-color, white 8%);
       }
     }
     
     &.hover {
       tbody tr:hover {
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
       }
     }
     
@@ -574,7 +579,7 @@ $transition: all 0.3s ease;
       justify-content: space-between;
       align-items: center;
       padding: 8px 16px;
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
       border-bottom: 1px solid $border-color;
       
       .language {
@@ -595,7 +600,8 @@ $transition: all 0.3s ease;
         transition: $transition;
         
         &:hover {
-          background: darken($primary-color, 10%);
+          // background: darken($primary-color, 10%);
+          background: color-mix(in srgb, $primary-color, white 10%);
         }
         
         i {
@@ -690,7 +696,7 @@ $transition: all 0.3s ease;
   display: flex;
   align-items: center;
   padding: 8px 16px;
-  background: lighten($border-color, 10%);
+  background: color-mix(in srgb, $border-color, white 10%);
   border-top: 1px solid $border-color;
   font-size: 12px;
   color: $secondary-color;
@@ -728,7 +734,7 @@ $transition: all 0.3s ease;
     font-weight: 600;
     
     .dark & {
-      background: lighten($dark-bg, 10%);
+      background: color-mix(in srgb, $dark-bg, white 10%);
       color: $dark-text;
     }
   }
@@ -773,7 +779,7 @@ $transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: lighten($border-color, 5%);
+  background: color-mix(in srgb, $border-color, white 5%);
   border-top-left-radius: 4px;
   border: 1px solid $border-color;
   z-index: 10;
@@ -822,7 +828,7 @@ $transition: all 0.3s ease;
     .p-dialog-footer {
       background: $dark-bg;
       color: $dark-text;
-      border-color: lighten($dark-bg, 10%);
+      border-color: color-mix(in srgb, $dark-bg, white 10%);
     }
   }
 }
@@ -864,9 +870,9 @@ $transition: all 0.3s ease;
       color: $light-text;
       
       .dark & {
-        background: lighten($dark-bg, 5%);
+        background: color-mix(in srgb, $dark-bg, white 5%);
         color: $dark-text;
-        border-color: lighten($dark-bg, 10%);
+        border-color: color-mix(in srgb, $dark-bg, white 10%);
       }
     }
     
@@ -898,7 +904,7 @@ $transition: all 0.3s ease;
       justify-content: center;
       
       &:hover {
-        background: lighten($border-color, 5%);
+        background: color-mix(in srgb, $border-color, white 5%);
       }
       
       &.active {
@@ -965,7 +971,7 @@ $transition: all 0.3s ease;
     transition: $transition;
     
     &:hover {
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
     }
     
     &.active {
@@ -1007,7 +1013,7 @@ $transition: all 0.3s ease;
     transition: $transition;
     
     &:hover {
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
       transform: scale(1.1);
     }
   }
@@ -1059,13 +1065,13 @@ $transition: all 0.3s ease;
     
     &.striped {
       tbody tr:nth-child(even) {
-        background: lighten($border-color, 8%);
+        background: color-mix(in srgb, $border-color, white 8%);
       }
     }
     
     &.hover {
       tbody tr:hover {
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
       }
     }
     
@@ -1076,7 +1082,7 @@ $transition: all 0.3s ease;
     }
     
     th {
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
       font-weight: 600;
     }
   }
@@ -1105,7 +1111,7 @@ $transition: all 0.3s ease;
     
     .template-preview {
       height: 120px;
-      background: lighten($border-color, 8%);
+      background: color-mix(in srgb, $border-color, white 8%);
       overflow: hidden;
       padding: 1rem;
       font-size: 12px;
@@ -1161,12 +1167,12 @@ $transition: all 0.3s ease;
       transition: $transition;
       
       &:hover {
-        background: lighten($border-color, 5%);
+        background: color-mix(in srgb, $border-color, white 5%);
         border-color: $primary-color;
       }
       
       &.active {
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
         border-color: $primary-color;
       }
       
@@ -1216,7 +1222,7 @@ $transition: all 0.3s ease;
 // Upload Info
 .upload-info {
   padding: 1rem;
-  background: lighten($border-color, 8%);
+  background: color-mix(in srgb, $border-color, white 8%);
   border-radius: 6px;
   margin-top: 1rem;
   
@@ -1272,7 +1278,7 @@ $transition: all 0.3s ease;
       transition: $transition;
       
       &:hover {
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
         border-color: $primary-color;
       }
       
@@ -1306,7 +1312,7 @@ $transition: all 0.3s ease;
       border-radius: 6px;
       
       &:hover {
-        background: lighten($border-color, 5%);
+        background: color-mix(in srgb, $border-color, white 5%);
       }
       
       .user-avatar {
@@ -1345,10 +1351,10 @@ $transition: all 0.3s ease;
       margin-bottom: 1rem;
       padding: 0.75rem;
       border-radius: 6px;
-      background: lighten($border-color, 8%);
+      background: color-mix(in srgb, $border-color, white 8%);
       
       &.own-message {
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
         margin-left: 2rem;
       }
       
@@ -1393,7 +1399,8 @@ $transition: all 0.3s ease;
         cursor: pointer;
         
         &:hover {
-          background: darken($primary-color, 10%);
+          // background: darken($primary-color, 10%);
+          background: color-mix(in srgb, $primary-color, white 10%);
         }
       }
     }
@@ -1420,7 +1427,7 @@ $transition: all 0.3s ease;
     font-size: 14px;
     
     &:hover {
-      background: lighten($border-color, 5%);
+      background: color-mix(in srgb, $border-color, white 5%);
     }
     
     i {
@@ -1495,17 +1502,17 @@ $transition: all 0.3s ease;
       
       &.critical {
         border-left: 4px solid $danger-color;
-        background: lighten($danger-color, 40%);
+        background: color-mix(in srgb, $danger-color, white 40%);
       }
       
       &.warning {
         border-left: 4px solid $warning-color;
-        background: lighten($warning-color, 40%);
+        background: color-mix(in srgb, $warning-color, white 40%);
       }
       
       &.info {
         border-left: 4px solid $primary-color;
-        background: lighten($primary-color, 40%);
+        background: color-mix(in srgb, $primary-color, white 40%);
       }
       
       .alert-message {
@@ -1696,8 +1703,8 @@ $transition: all 0.3s ease;
   .history-item,
   .context-menu,
   .overflow-menu {
-    background: lighten($dark-bg, 5%);
-    border-color: lighten($dark-bg, 10%);
+    background: color-mix(in srgb, $dark-bg, white 5%);
+    border-color: color-mix(in srgb, $dark-bg, white 10%);
     color: $dark-text;
   }
   
@@ -1707,11 +1714,11 @@ $transition: all 0.3s ease;
   .history-item:hover,
   .context-menu-item:hover,
   .overflow-menu-item:hover {
-    background: lighten($dark-bg, 10%);
+    background: color-mix(in srgb, $dark-bg, white 10%);
   }
   
   .color-palette .color-swatch {
-    border-color: lighten($dark-bg, 15%);
+    border-color: color-mix(in srgb, $dark-bg, white 15%);
     
     &:hover {
       border-color: $primary-color;
