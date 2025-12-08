@@ -114,7 +114,7 @@ export class AuthenticationService {
     this.menuList.set([]);
 
     setTimeout(() => {
-      window.location.href = 'http://chennaicbsdev.amnex.com';
+      window.location.href = '';
     }, 600);
   }
 }

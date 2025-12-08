@@ -228,11 +228,11 @@ export class LoginService {
 
     //#region Login/Logout Service Methods
       GetUserLogin(loginModel: MUser, encryptPayload = false): Observable<JsonResponseModel> {
-        // return this.http.post<JsonResponseModel>(`${this.baseUrl}/Login/Login`,loginModel,                    
-        //                                               { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
-        //     );
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/Login/Login`,loginModel,                    
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
         // demo Json
-          return of(this.demoLoginResponse).pipe(delay(500));
+          // return of(this.demoLoginResponse).pipe(delay(500));
       }
       isLoggedIn(): boolean {
           return this.getToken() !== null;

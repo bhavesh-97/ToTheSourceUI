@@ -188,10 +188,11 @@ export class Login implements AfterViewInit {
         console.log(res);
         if (!res.isError) {
           debugger;
+          var response = JSON.parse(res.result);
           this.loginForm.reset();
           this.loginService.storeToken(res.token ?? '');
-          this.loginService.storeUserInfo(res.result.user ?? new MUser());
-          this.loginService.storeMenuList(res.result.menu ?? []);
+          this.loginService.storeUserInfo(response.user ?? new MUser());
+          this.loginService.storeMenuList(response.menu ?? []);
           this.notificationService.showMessage(res.strMessage, res.title, res.type);
    //       this.router.navigate(['/CMS/dashboard']);
            this.router.navigate(['/CMS/main']);
