@@ -10,6 +10,7 @@
        [style.min-width]="minWidth"
        [style.max-width]="maxWidth"
        [class.resizable]="allowResize"
+       [class.dark]="isDark"
        #editorContainer>
     
     <!-- Main Toolbar -->
@@ -43,18 +44,20 @@
           </button>
           
           <!-- Font Size Dropdown -->
-          <div class="toolbar-dropdown desktop-only">
-            <button class="toolbar-btn" pTooltip="Font Size">
-              <span class="font-size-label">{{currentFontSize.label}}</span>
-              <i class="fa fa-chevron-down ml-1"></i>
-            </button>
-            <div class="dropdown-menu">
-              <div *ngFor="let size of fontSizeOptions" 
-                   class="dropdown-item"
-                   (click)="changeFontSize(size)">
-                {{size.label}}
+          <div class="toolbar-dropdown desktop-only" clickOutside
+                (clickOutside)="closeFontSizeDropdown()" 
+                [class.open]="showFontSizeDropdown">
+              <button class="toolbar-btn" pTooltip="Font Size" 
+                  (click)="toggleFontSizeDropdown()">
+                    <span class="font-size-label">{{currentFontSize.label || 'Font Size'}}</span>
+                      <i class="fa fa-chevron-down ml-1"></i>
+              </button>
+              <div class="dropdown-menu" *ngIf="showFontSizeDropdown">
+                  <div *ngFor="let size of fontSizeOptions" class="dropdown-item"
+                      (click)="changeFontSize(size); closeFontSizeDropdown()">
+                    {{size.label}}
+                  </div>
               </div>
-            </div>
           </div>
         </div>
         

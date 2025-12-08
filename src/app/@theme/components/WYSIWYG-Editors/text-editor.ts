@@ -1,20 +1,4 @@
-import { 
-  Component, 
-  ElementRef, 
-  ViewChild, 
-  AfterViewInit, 
-  Inject, 
-  forwardRef,
-  OnDestroy,
-  Renderer2,
-  HostListener,
-  ChangeDetectorRef,
-  Input,  
-  Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges
-} from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, Inject, forwardRef,OnDestroy,Renderer2,HostListener,ChangeDetectorRef,Input,  Output,EventEmitter,OnChanges,SimpleChanges} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -107,11 +91,10 @@ interface EditorPreset {
   styleUrls: ['./text-editor.scss']
 })
 export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlValueAccessor, OnChanges {
-[x: string]: any;
   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
   @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
   @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
-
+  @Output() clickOutside = new EventEmitter<void>();
   // Enhanced Input Properties
   @Input() width: string = '100%';
   @Input() height: string = '500px';
@@ -3683,12 +3666,12 @@ private insertText(text: string): void {
     
     // Show notification for critical alerts
     if (alert.severity === 'critical') {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Performance Alert',
-        detail: alert.message,
-        life: 5000
-      });
+      // this.messageService.add({
+      //   severity: 'error',
+      //   summary: 'Performance Alert',
+      //   detail: alert.message,
+      //   life: 5000
+      // });
     }
   }
 
@@ -6477,9 +6460,25 @@ public aiImproveWriting() {
     // this.currentFont = font;
     this.exec('fontName', font.value);
   }
+ showFontSizeDropdown = false;
+
+  toggleFontSizeDropdown() {
+     this.showFontSizeDropdown = !this.showFontSizeDropdown;
+  }
+   closeFontSizeDropdown(): void {
+    this.showFontSizeDropdown = false;
+  }
+
+   @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+     const target = event.target as HTMLElement;
+     if (!target.closest('.toolbar-dropdown')) {
+       this.showFontSizeDropdown = false;
+     }
+  }
 
   changeFontSize(sizeOption: any) {
-    this.currentFontSize = sizeOption;
+    this.currentFontSize = sizeOption.size;
     
     const selection = this.doc.getSelection();
     if (selection && selection.rangeCount > 0) {
