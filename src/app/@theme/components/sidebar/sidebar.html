@@ -13,14 +13,33 @@
           <span>{{ item.title }}</span>
           <i class="pi" [ngClass]="opened[item.title] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
         </a>
-        <div class="child-menu" *ngIf="opened[item.title]">
-          <a *ngFor="let child of item.children"
-             [routerLink]="child.link"
-             routerLinkActive="active">
+        <div class="child-menu" *ngIf="opened[item.title]" [attr.data-label]="item.title">
+          <ng-container *ngFor="let child of item.children">
+            <a *ngIf="!child.children || child.children.length === 0"
+              [routerLink]="child.link"
+              routerLinkActive="active">
+                <i [class]="child.icon"></i>
+                <span>{{ child.title }}</span>
+            </a>
+
+          <div *ngIf="child.children && child.children.length > 0" class="parent-menu">
+            <a (click)="toggleChild(child.title, true)" class="has-children">
             <i [class]="child.icon"></i>
             <span>{{ child.title }}</span>
+            <i class="pi" [ngClass]="opened[child.title] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
           </a>
+          <div class="child-menu" *ngIf="opened[child.title]" [attr.data-label]="child.title">
+              <a *ngFor="let grandChild of child.children"
+                [routerLink]="grandChild.link"
+                routerLinkActive="active">
+                <i [class]="grandChild.icon"></i>
+                <span>{{ grandChild.title }}</span>
+              </a>
+          </div>
         </div>
+
+        </ng-container>
+      </div>
       </div>
 
     </ng-container>
