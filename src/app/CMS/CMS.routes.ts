@@ -16,7 +16,7 @@ export const CMSRoutes: Routes = [
      {
             path: 'main',
             component: MainComponent,
-      //    canActivate: [() => inject(AuthService).isLoggedIn()],
+            canActivate: [authGuard],
             children: [
                         {   path: '', 
                             redirectTo: 'dashboard', 
@@ -34,6 +34,10 @@ export const CMSRoutes: Routes = [
                             path: 'template',
                             loadComponent: () => import('./main/template-master/template-master').then(m => m.TemplateMaster),
                         },
+                         {
+                            path: 'rolemaster',
+                            loadComponent: () => import('./main/rolemaster/rolemaster').then(m => m.Rolemaster),
+                        },
                       ],
-     },
+          },
 ];

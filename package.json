@@ -52,6 +52,7 @@
     "express": "^5.1.0",
     "file-saver": "^2.0.5",
     "gsap": "^3.13.0",
+    "jspdf-autotable": "^5.0.2",
     "ngx-toastr": "^19.1.0",
     "primeicons": "^7.0.0",
     "primeng": "^20.3.0",
@@ -60,6 +61,7 @@
     "tinymce": "^7.9.1",
     "tslib": "^2.3.0",
     "web-animations-js": "^2.3.2",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
