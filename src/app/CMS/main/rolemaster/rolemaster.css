@@ -1,51 +1,30 @@
-  .advanced-demo {
-      padding: 20px;
+:host ::ng-deep {
+  .template-editor-dialog {
+    .p-dialog-content {
+      background: #f8fafc !important;
+      padding: 2rem !important;
     }
-    
-    .custom-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .ck-editor__editable {
+      min-height: 680px !important;
+      font-size: 15px !important;
+      line-height: 1.7 !important;
+      background: white !important;
     }
-    
-    .custom-header .badge {
-      background: #6366f1;
-      color: white;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
+
+    .ck-toolbar {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-bottom: none !important;
     }
-    
-    .custom-actions {
-      display: flex;
-      gap: 8px;
+
+    .ck-content {
+      padding: 1.5rem !important;
     }
-    
-    .stock-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
+
+    .ck-source-editing-area {
+      font-family: 'Fira Code', 'Courier New', monospace !important;
+      background: #1e1e1e !important;
+      color: #d4d4d4 !important;
     }
-    
-    .stock-low {
-      background: #fef3c7;
-      color: #92400e;
-    }
-    
-    .stock-medium {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-    
-    .stock-high {
-      background: #d1fae5;
-      color: #065f46;
-    }
+  }
+}

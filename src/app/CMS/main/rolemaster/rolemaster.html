@@ -1,50 +1,61 @@
-    <div class="advanced-demo">
-      <h2>Advanced Table Demo with Custom Templates</h2>
-      
-      <app-table 
-        [data]="users"
-        [config]="tableConfig"
-        [title]="'Product Inventory'"
-        [showSearch]="true">
-        
-        <!-- Custom Header Template -->
-        <ng-template #headerTemplate let-col>
-          <div class="custom-header">
-            <i class="pi pi-tag mr-2"></i>
-            <span>{{ col.header }}</span>
-            <span class="badge">*</span>
-          </div>
-        </ng-template>
-        
-        <!-- Custom Cell Template for Status -->
-        <ng-template #statusCellTemplate let-rowData let-col="col">
-          <!-- <p-tag 
-            [severity]="getStatusSeverity(rowData[col.field]) "
-            [value]="rowData[col.field]"
-            [rounded]="true">
-          </p-tag> -->
-          getStatusSeverity(rowData[col.field])
-        </ng-template>
-        
-        <!-- Custom Cell Template for Actions -->
-        <ng-template #actionsCellTemplate let-rowData>
-          <div class="custom-actions">
-            <p-button 
-              icon="pi pi-shopping-cart" 
-              [rounded]="true" 
-              [text]="true"
-              severity="success"
-              (onClick)="addToCart(rowData)">
-            </p-button>
-            <p-button 
-              icon="pi pi-heart" 
-              [rounded]="true" 
-              [text]="true"
-              severity="danger"
-              (onClick)="addToWishlist(rowData)">
-            </p-button>
-          </div>
-        </ng-template>
-        
-      </app-table>
+<div class="p-6 bg-gray-50 min-h-screen">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-800">Role Master</h1>
+    <button pButton label="Add Role" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)"></button>
+  </div>
+  <p-table [value]="templates()" class="shadow-lg rounded-lg">
+    <ng-template pTemplate="header">
+      <tr class="bg-indigo-600 text-white">
+        <th>TemplateName</th><th>Status</th><th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-tpl>
+      <tr class="hover:bg-gray-100">
+        <td class="font-bold">{{ tpl.TemplateName }}</td>
+        <td><p-tag [value]="tpl.status" [severity]="tpl.status === 'published' ? 'success' : 'warn'"></p-tag></td>
+        <td class="space-x-2">
+          <button pButton icon="pi pi-eye" class="p-button-rounded" (click)="openDialog(false, tpl)"></button>
+          <button pButton icon="pi pi-copy" class="p-button-rounded p-button-outlined" (click)="duplicate(tpl)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteTemplate(tpl)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'95vw', height:'95vh', maxWidth:'1700px'}"
+    header="{{ isNew ? 'Create Template' : 'Edit: ' + form.TemplateName }}" [baseZIndex]="10000">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
+      <div class="space-y-6 overflow-y-auto">
+        <div class="grid grid-cols-3 gap-4">
+          <div><input pInputText [(ngModel)]="form.TemplateName" placeholder="Name *" class="w-full"></div>
+          <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
+        </div>
+       <!-- <app-text-editor
+            [(ngModel)]="form.html"
+            name="htmlContent"
+            placeholder="Write your message with formatting..."
+            height="50px"
+            width="50px">
+        </app-text-editor> -->
+        <app-text-editor
+            [(ngModel)]="form.html"
+            [width]="'1000px'"
+            [height]="'600px'"
+            [minHeight]="'300px'"
+            [maxHeight]="'1000px'"
+            [allowResize]="true"
+            [allowFullscreen]="true"
+            [autoSave]="true"
+            placeholder="Start typing your content...">
+        </app-text-editor>
     </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-4">
+      <button pButton label="Save" icon="pi pi-save" class="p-button-success" (click)="save()"></button>
+      <button pButton label="Cancel" class="p-button-outlined" (click)="dialogVisible = false"></button>
+    </div>
+  </ng-template>
+</p-dialog>
