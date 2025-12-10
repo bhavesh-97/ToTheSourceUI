@@ -1,7 +1,7 @@
-export interface RoleMaster {
-  roleID: number;
-  roleName: string;
-  isActive: boolean;
-  permissions: string[]; // e.g., ['users:read', 'roles:delete']
-  permissionsMap: { [key: string]: boolean }; // For checkbox binding
+import { MCommonEntitiesMaster } from "../../../models/MCommonEntitiesMaster";
+
+export class RoleMaster {
+  roleID: number = 0;
+  roleName: string = "";
+  MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }

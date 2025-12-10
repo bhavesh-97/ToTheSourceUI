@@ -1,14 +1,7 @@
-/* ========================
-   RoleMaster - Clean Transparent Design (Light Background)
-   Perfectly visible text, no white card, works on any light/transparent background
-   ======================== */
-
 :host {
   display: block;
   padding: 1.5rem;
 }
-
-/* === Remove all white/card background === */
 :host ::ng-deep .card {
   background: transparent !important;
   border: none !important;

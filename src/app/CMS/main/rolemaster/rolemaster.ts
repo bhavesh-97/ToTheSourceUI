@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms'; // Added
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-// import { InputSwitchModule } from 'primeng/inputswitch';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { Table, TableModule } from 'primeng/table';
@@ -18,23 +18,13 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
 import { RoleMaster } from './MRoleMaster';
 import { ConfirmationService } from 'primeng/api';
 
-interface PermissionAction {
-  key: string;
-  label: string;
-}
-
-interface PermissionModule {
-  name: string;
-  key: string;
-  actions: PermissionAction[];
-}
 
 @Component({
   selector: 'app-rolemaster',
   standalone: true,
   imports: [
     CommonModule, 
-    FormsModule, 
+    ReactiveFormsModule, // Changed from FormsModule
     RouterModule,
     ButtonModule, 
     TableModule, 
@@ -42,9 +32,8 @@ interface PermissionModule {
     SelectModule,
     IconFieldModule,
     InputIconModule,
-    // InputSwitchModule,
+    ToggleSwitchModule,
     InputTextModule,
-    // DropdownModule,
     DialogModule,
     ConfirmDialogModule,
     TooltipModule
@@ -57,7 +46,7 @@ export class Rolemaster implements OnInit {
   @ViewChild('dt') dt!: Table;
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
-  
+  private fb = inject(FormBuilder); 
   roles: RoleMaster[] = [];
   selectedRoles: RoleMaster[] = [];
   loading: boolean = true;
@@ -65,59 +54,31 @@ export class Rolemaster implements OnInit {
   searchValue: string = '';
   rows: number = 10;
   totalRecords: number = 0;
-
-  // Dialog properties
   displayDialog: boolean = false;
   roleDialogHeader: string = '';
-  currentRole: RoleMaster = this.createEmptyRole();
-
-  // Filter options
+  roleForm!: FormGroup; 
   statusFilterOptions = [
     { label: 'All', value: null },
     { label: 'Active', value: true, severity: 'success' },
     { label: 'Inactive', value: false, severity: 'danger' }
   ];
-pageSizeOptions = [
+  pageSizeOptions = [
     { label: '5', value: 5 },
     { label: '10', value: 10 },
     { label: '25', value: 25 },
     { label: '50', value: 50 }
   ];
-  // Permissions configuration
-  permissionModules: PermissionModule[] = [
-    {
-      name: 'Users',
-      key: 'users',
-      actions: [
-        { key: 'read', label: 'Read' },
-        { key: 'create', label: 'Create' },
-        { key: 'update', label: 'Update' },
-        { key: 'delete', label: 'Delete' }
-      ]
-    },
-    {
-      name: 'Roles',
-      key: 'roles',
-      actions: [
-        { key: 'read', label: 'Read' },
-        { key: 'create', label: 'Create' },
-        { key: 'update', label: 'Update' },
-        { key: 'delete', label: 'Delete' }
-      ]
-    },
-    {
-      name: 'Dashboard',
-      key: 'dashboard',
-      actions: [
-        { key: 'view', label: 'View' },
-        { key: 'export', label: 'Export' }
-      ]
-    }
-    // Add more modules as needed
-  ];
-
+ 
   ngOnInit() {
+    this.initializeForm(); 
     this.loadData();
+  }
+  initializeForm() {
+    this.roleForm = this.fb.group({
+      roleID: [0],
+      roleName: ['', [Validators.required, Validators.minLength(2)]],
+      isActive: [true]
+    });
   }
 
   loadData() {
@@ -127,109 +88,85 @@ pageSizeOptions = [
         { 
           roleID: 1, 
           roleName: 'User', 
-          isActive: true,
-          permissions: ['users:read', 'dashboard:view'],
-          permissionsMap: { 'users:read': true, 'dashboard:view': true }
+          MCommonEntitiesMaster :{
+            isActive: true
+          }
         },
         { 
           roleID: 2, 
           roleName: 'Tester', 
-          isActive: true,
-          permissions: ['users:read', 'users:update', 'roles:read'],
-          permissionsMap: { 'users:read': true, 'users:update': true, 'roles:read': true }
+          MCommonEntitiesMaster :{
+            isActive: true
+          }
         },
         { 
           roleID: 3, 
           roleName: 'Support', 
-          isActive: false,
-          permissions: ['users:read'],
-          permissionsMap: { 'users:read': true }
+          MCommonEntitiesMaster :{
+            isActive: false
+          }
         },
-        // Add more mock data...
         { 
           roleID: 10, 
-          roleName: 'Administrator', 
-          isActive: true,
-          permissions: ['users:*', 'roles:*', 'dashboard:*'], // Full access simulation
-          permissionsMap: {} // Populate all true
+          roleName: 'Administrator',  
+          MCommonEntitiesMaster :{
+            isActive: true
+          }
         }
-      ].map(role => ({
-        ...role,
-        permissionsMap: this.generatePermissionsMap(role.permissions)
-      }));
+      ];
       this.totalRecords = this.roles.length;
       this.loading = false;
     }, 800);
   }
 
-  private generatePermissionsMap(permissions: string[]): { [key: string]: boolean } {
-    const map: { [key: string]: boolean } = {};
-    permissions.forEach(perm => map[perm] = true);
-    // Ensure all possible permissions are initialized
-    this.permissionModules.forEach(module => {
-      module.actions.forEach(action => {
-        const fullKey = `${module.key}:${action.key}`;
-        if (map[fullKey] === undefined) map[fullKey] = false;
-      });
-    });
-    return map;
-  }
-
-createEmptyRole(): RoleMaster {
-  const map: Record<string, boolean> = {};
-
-  // Safe guard – if permissionModules is not yet initialized
-  if (this.permissionModules && Array.isArray(this.permissionModules)) {
-    this.permissionModules.forEach(mod => {
-      mod.actions.forEach(act => {
-        map[`${mod.key}:${act.key}`] = false;
-      });
-    });
-  }
-
-  return {
-    roleID: 0,
-    roleName: '',
-    isActive: true,
-    permissions: [],
-    permissionsMap: map
-  };
-}
   openNew() {
-    this.currentRole = { ...this.createEmptyRole() };
+    this.roleForm.reset({
+      roleID: 0,
+      roleName: '',
+      isActive: true
+    });
     this.roleDialogHeader = 'Create New Role';
     this.displayDialog = true;
   }
 
+  // Edit existing role
   editRole(role: RoleMaster) {
-    this.currentRole = { 
-      ...role, 
-      permissionsMap: { ...role.permissionsMap } // Deep copy
-    };
+    this.roleForm.patchValue({
+      roleID: role.roleID,
+      roleName: role.roleName,
+      isActive: role.MCommonEntitiesMaster.isActive
+    });    
     this.roleDialogHeader = 'Edit Role';
     this.displayDialog = true;
   }
-
-  updatePermissionsArray() {
-    this.currentRole.permissions = Object.keys(this.currentRole.permissionsMap).filter(key => this.currentRole.permissionsMap[key]);
-  }
-
   async saveRole() {
-    if (!this.currentRole.roleName.trim()) return;
+    // Mark all controls as touched to show validation errors
+    this.markFormGroupTouched(this.roleForm);
+    
+    if (this.roleForm.invalid) {
+      this.messageService.showMessage('Please fill in all required fields correctly.', 'Validation Error', PopupMessageType.Warning);
+      return;
+    }
 
     this.saving = true;
     try {
-      this.updatePermissionsArray();
-      if (this.currentRole.roleID === 0) {
-        this.currentRole.roleID = Date.now();
-        this.roles = [...this.roles, { ...this.currentRole }];
+      const formValue = this.roleForm.value;
+      const newRole: RoleMaster = {
+        ...formValue,
+        permissionsMap: { ...formValue.permissionsMap }
+      };
+
+      if (newRole.roleID === 0) {
+        newRole.roleID = Date.now();
+        this.roles = [...this.roles, newRole];
         this.messageService.showMessage('Role created successfully!', 'Success', PopupMessageType.Success);
       } else {
         this.roles = this.roles.map(r => 
-          r.roleID === this.currentRole.roleID ? { ...this.currentRole } : r
+          r.roleID === newRole.roleID ? newRole : r
         );
         this.messageService.showMessage('Role updated successfully!', 'Success', PopupMessageType.Success);
       }
+      
       this.totalRecords = this.roles.length;
       this.displayDialog = false;
     } catch (error) {
@@ -239,16 +176,18 @@ createEmptyRole(): RoleMaster {
     }
   }
 
-  getPermissionDisplay(perm: string): string {
-    const [module, action] = perm.split(':');
-    const mod = this.permissionModules.find(m => m.key === module);
-    const act = mod?.actions.find(a => a.key === action);
-    return act ? act.label : perm;
+  // Helper to mark all form controls as touched
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
-
   onRowsChange(event: any) {
     this.rows = event.value;
-    // this.dt.paginator({ first: 0, rows: this.rows, page: 0 });
   }
 
   deleteRole(role: RoleMaster) {

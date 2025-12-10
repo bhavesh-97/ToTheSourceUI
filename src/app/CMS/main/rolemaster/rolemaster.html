@@ -61,9 +61,6 @@
             </p-columnFilter>
           </div>
         </th>
-        <th style="min-width: 12rem">
-          Permissions
-        </th>
         <th style="width: 8rem">Actions</th>
       </tr>
     </ng-template>
@@ -84,13 +81,10 @@
         </td>
         <td>
           <p-tag 
-            [value]="role.isActive ? 'Active' : 'Inactive'"
-            [severity]="role.isActive ? 'success' : 'danger'"
+            [value]="role.MCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
+            [severity]="role.MCommonEntitiesMaster.isActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
-        </td>
-        <td>
-          <span class="text-600 text-sm">{{ role.permissions.length }} permissions</span>
         </td>
         <td>
           <div class="flex gap-2">
@@ -123,58 +117,51 @@
     </ng-template>
   </p-table>
 </div>
-  <!-- Role + Permissions Dialog -->
-  <p-dialog [(visible)]="displayDialog" [header]="roleDialogHeader" [modal]="true"
-            [style]="{width: '90vw', maxWidth: '900px'}" [resizable]="true">
-
-    <div class="row">
-      <div class="col-md-5">
-        <div class="mb-4">
-          <label class="form-label fw-medium">Role Name <span class="text-danger">*</span></label>
-          <input pInputText [(ngModel)]="currentRole.roleName" class="form-control"
-                 [class.is-invalid]="!currentRole.roleName" placeholder="e.g. Administrator"/>
-          <div class="invalid-feedback">Role name is required</div>
+<p-dialog [(visible)]="displayDialog" [header]="roleDialogHeader" [modal]="true"
+          [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
+  <form [formGroup]="roleForm" id="roleForm"> 
+    <div class="container-fluid">
+      <div class="row mb-3 align-items-center">
+        <div class="col-8">
+          <label class="form-label fw-medium mb-0">
+            Role Name <span class="text-danger">*</span>
+          </label>
         </div>
-
-        <div class="mb-4">
-          <label class="form-label fw-medium">Status</label>
-          <div class="d-flex align-items-center gap-3">
-            <p-inputSwitch [(ngModel)]="currentRole.isActive"></p-inputSwitch>
-            <span>{{ currentRole.isActive ? 'Active' : 'Inactive' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-7">
-        <h6 class="fw-semibold mb-3">Permissions</h6>
-        <div class="row g-3">
-          <div class="col-6" *ngFor="let module of permissionModules">
-            <div class="border rounded p-3 bg-white">
-              <small class="text-muted d-block mb-2 fw-medium">{{ module.name }}</small>
-              <div class="d-flex flex-wrap gap-3">
-                <div class="form-check" *ngFor="let action of module.actions">
-                  <input class="form-check-input" type="checkbox"
-                         [id]="'perm-' + module.key + '-' + action.key"
-                         [(ngModel)]="currentRole.permissionsMap[module.key + ':' + action.key]"
-                         (ngModelChange)="updatePermissionsArray()">
-                  <label class="form-check-label small" [for]="'perm-' + module.key + '-' + action.key">
-                    {{ action.label }}
-                  </label>
-                </div>
+        <div class="col-8">
+          <input pInputText
+                 #inputField
+                 formControlName="roleName"
+                 class="form-control input100"
+                 [class.is-invalid]="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched"
+                 placeholder="e.g. Administrator" />
+          <div *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched" class="invalid-feedback">
+            <div *ngIf="roleForm.get('roleName')?.errors?.['required']">Role name is required</div>
+              <div *ngIf="roleForm.get('roleName')?.errors?.['minlength']">
+                Role name must be at least {{roleForm.get('roleName')?.errors?.['minlength']?.requiredLength}} characters
               </div>
-            </div>
           </div>
         </div>
       </div>
+
+      <div class="row mb-3 align-items-center">
+        <div class="col-8">
+          <label class="form-label fw-medium mb-0">Status</label>
+        </div>
+        <div class="col-8 d-flex align-items-center gap-3">
+          <p-toggleswitch #inputField formControlName="isActive"></p-toggleswitch>
+          <span>{{ roleForm.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
+        </div>
+      </div>
+
     </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false">
+    </button>
+    <button type="submit" pButton label="Save Role" icon="pi pi-check" [loading]="saving" 
+            [disabled]="roleForm.invalid" class="p-button-success"form="roleForm">
+    </button>
+  </ng-template>
+</p-dialog>
 
-    <ng-template pTemplate="footer">
-      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text"
-              (click)="displayDialog = false"></button>
-      <button pButton label="Save Role" icon="pi pi-check" [loading]="saving"
-              [disabled]="!currentRole.roleName"
-              class="p-button-success" (click)="saveRole()"></button>
-    </ng-template>
-  </p-dialog>
-
-  <p-confirmDialog></p-confirmDialog>
+<p-confirmDialog></p-confirmDialog>
