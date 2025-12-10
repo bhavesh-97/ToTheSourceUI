@@ -1,12 +1,12 @@
 <div class="card">
   <p-table #dt 
            [value]="roles" 
-           dataKey="roleID" 
+           dataKey="RoleID" 
            [rows]="10" 
            [rowsPerPageOptions]="[10, 25, 50]" 
            [loading]="loading" 
            [paginator]="true" 
-           [globalFilterFields]="['roleName']" 
+           [globalFilterFields]="['RoleName']" 
            [showGridlines]="true"
            styleClass="p-datatable-sm">
 
@@ -41,7 +41,7 @@
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Role Name
-            <p-columnFilter type="text" field="roleName" display="menu"></p-columnFilter>
+            <p-columnFilter type="text" field="RoleName" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 10rem">
@@ -73,16 +73,13 @@
         </td> -->
         <td>
           <div class="flex align-items-center gap-3">
-            <div class="border-round surface-200 flex align-items-center justify-content-center" style="width: 2.5rem; height: 2.5rem;">
-              <i class="pi pi-user text-primary"></i>
-            </div>
-            <span class="font-medium">{{ role.roleName }}</span>
+            <span class="font-medium">{{ role.RoleName }}</span>
           </div>
         </td>
         <td>
           <p-tag 
-            [value]="role.MCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
-            [severity]="role.MCommonEntitiesMaster.isActive ? 'success' : 'danger'"
+            [value]="role.isActive ? 'Active' : 'Inactive'"
+            [severity]="role.isActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -130,14 +127,14 @@
         <div class="col-8">
           <input pInputText
                  #inputField
-                 formControlName="roleName"
+                 formControlName="RoleName"
                  class="form-control input100"
-                 [class.is-invalid]="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched"
+                 [class.is-invalid]="roleForm.get('RoleName')?.invalid && roleForm.get('RoleName')?.touched"
                  placeholder="e.g. Administrator" />
-          <div *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched" class="invalid-feedback">
-            <div *ngIf="roleForm.get('roleName')?.errors?.['required']">Role name is required</div>
-              <div *ngIf="roleForm.get('roleName')?.errors?.['minlength']">
-                Role name must be at least {{roleForm.get('roleName')?.errors?.['minlength']?.requiredLength}} characters
+          <div *ngIf="roleForm.get('RoleName')?.invalid && roleForm.get('RoleName')?.touched" class="invalid-feedback">
+            <div *ngIf="roleForm.get('RoleName')?.errors?.['required']">Role name is required</div>
+              <div *ngIf="roleForm.get('RoleName')?.errors?.['minlength']">
+                Role name must be at least {{roleForm.get('RoleName')?.errors?.['minlength']?.requiredLength}} characters
               </div>
           </div>
         </div>

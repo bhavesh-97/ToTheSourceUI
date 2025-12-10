@@ -1,7 +1,7 @@
 import { MCommonEntitiesMaster } from "../../../models/MCommonEntitiesMaster";
 
 export class RoleMaster {
-  roleID: number = 0;
-  roleName: string = "";
+  RoleID: number = 0;
+  RoleName: string = "";
   MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms'; // Added
+import { Component, ElementRef, inject, OnInit, QueryList, Renderer2, ViewChild, ViewChildren } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; 
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -17,14 +17,16 @@ import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { RoleMaster } from './MRoleMaster';
 import { ConfirmationService } from 'primeng/api';
-
+import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
+import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
+import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 
 @Component({
   selector: 'app-rolemaster',
   standalone: true,
   imports: [
     CommonModule, 
-    ReactiveFormsModule, // Changed from FormsModule
+    ReactiveFormsModule, 
     RouterModule,
     ButtonModule, 
     TableModule, 
@@ -44,9 +46,12 @@ import { ConfirmationService } from 'primeng/api';
 })
 export class Rolemaster implements OnInit {
   @ViewChild('dt') dt!: Table;
+  @ViewChildren('inputField') inputElements!: QueryList<ElementRef>;
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
   private fb = inject(FormBuilder); 
+  private FormUtils = inject(FormUtils);
+  private renderer = inject(Renderer2);
   roles: RoleMaster[] = [];
   selectedRoles: RoleMaster[] = [];
   loading: boolean = true;
@@ -57,58 +62,51 @@ export class Rolemaster implements OnInit {
   displayDialog: boolean = false;
   roleDialogHeader: string = '';
   roleForm!: FormGroup; 
-  statusFilterOptions = [
-    { label: 'All', value: null },
-    { label: 'Active', value: true, severity: 'success' },
-    { label: 'Inactive', value: false, severity: 'danger' }
-  ];
-  pageSizeOptions = [
-    { label: '5', value: 5 },
-    { label: '10', value: 10 },
-    { label: '25', value: 25 },
-    { label: '50', value: 50 }
-  ];
- 
+
   ngOnInit() {
-    this.initializeForm(); 
     this.loadData();
   }
-  initializeForm() {
-    this.roleForm = this.fb.group({
-      roleID: [0],
-      roleName: ['', [Validators.required, Validators.minLength(2)]],
-      isActive: [true]
-    });
-  }
+  private formFields: FormFieldConfig[] = [
+    { name: 'RoleID', isMandatory: false, events: [] },
+    { name: 'RoleName', isMandatory: false,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+    { name: 'isActive', isMandatory: false, validationMessage: '', events: [] },
+  ];
 
+  constructor(){
+    debugger
+    this.roleForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
+   }
+    ngAfterViewInit() {
+      this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.roleForm);
+    }
   loadData() {
     this.loading = true;
     setTimeout(() => {
       this.roles = [
         { 
-          roleID: 1, 
-          roleName: 'User', 
+          RoleID: 1, 
+          RoleName: 'User', 
           MCommonEntitiesMaster :{
             isActive: true
           }
         },
         { 
-          roleID: 2, 
-          roleName: 'Tester', 
+          RoleID: 2, 
+          RoleName: 'Tester', 
           MCommonEntitiesMaster :{
             isActive: true
           }
         },
         { 
-          roleID: 3, 
-          roleName: 'Support', 
+          RoleID: 3, 
+          RoleName: 'Support', 
           MCommonEntitiesMaster :{
             isActive: false
           }
         },
         { 
-          roleID: 10, 
-          roleName: 'Administrator',  
+          RoleID: 10, 
+          RoleName: 'Administrator',  
           MCommonEntitiesMaster :{
             isActive: true
           }
@@ -121,8 +119,8 @@ export class Rolemaster implements OnInit {
 
   openNew() {
     this.roleForm.reset({
-      roleID: 0,
-      roleName: '',
+      RoleID: 0,
+      RoleName: '',
       isActive: true
     });
     this.roleDialogHeader = 'Create New Role';
@@ -132,14 +130,15 @@ export class Rolemaster implements OnInit {
   // Edit existing role
   editRole(role: RoleMaster) {
     this.roleForm.patchValue({
-      roleID: role.roleID,
-      roleName: role.roleName,
+      RoleID: role.RoleID,
+      RoleName: role.RoleName,
       isActive: role.MCommonEntitiesMaster.isActive
     });    
     this.roleDialogHeader = 'Edit Role';
     this.displayDialog = true;
   }
   async saveRole() {
+    debugger;
     // Mark all controls as touched to show validation errors
     this.markFormGroupTouched(this.roleForm);
     
@@ -156,13 +155,13 @@ export class Rolemaster implements OnInit {
         permissionsMap: { ...formValue.permissionsMap }
       };
 
-      if (newRole.roleID === 0) {
-        newRole.roleID = Date.now();
+      if (newRole.RoleID === 0) {
+        newRole.RoleID = Date.now();
         this.roles = [...this.roles, newRole];
         this.messageService.showMessage('Role created successfully!', 'Success', PopupMessageType.Success);
       } else {
         this.roles = this.roles.map(r => 
-          r.roleID === newRole.roleID ? newRole : r
+          r.RoleID === newRole.RoleID ? newRole : r
         );
         this.messageService.showMessage('Role updated successfully!', 'Success', PopupMessageType.Success);
       }
@@ -193,13 +192,13 @@ export class Rolemaster implements OnInit {
   deleteRole(role: RoleMaster) {
     this.confirmationService.confirm({
       key: 'roleDialog',
-      message: `Are you sure you want to delete <b>${role.roleName}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${role.RoleName}</b>? This action cannot be undone.`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.roles = this.roles.filter(r => r.roleID !== role.roleID);
+        this.roles = this.roles.filter(r => r.RoleID !== role.RoleID);
         this.totalRecords = this.roles.length;
-        this.selectedRoles = this.selectedRoles.filter(r => r.roleID !== role.roleID);
+        this.selectedRoles = this.selectedRoles.filter(r => r.RoleID !== role.RoleID);
         this.messageService.showMessage('Role deleted successfully!', 'Success', PopupMessageType.Success);
       }
     });
@@ -214,8 +213,8 @@ export class Rolemaster implements OnInit {
       header: 'Confirm Bulk Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        const deletedIds = this.selectedRoles.map(r => r.roleID);
-        this.roles = this.roles.filter(r => !deletedIds.includes(r.roleID));
+        const deletedIds = this.selectedRoles.map(r => r.RoleID);
+        this.roles = this.roles.filter(r => !deletedIds.includes(r.RoleID));
         this.selectedRoles = [];
         this.totalRecords = this.roles.length;
         this.messageService.showMessage(`${this.selectedRoles.length} roles deleted successfully!`, 'Success', PopupMessageType.Success);
