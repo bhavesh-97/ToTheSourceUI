@@ -7,12 +7,13 @@
   <p-table [value]="templates()" class="shadow-lg rounded-lg">
     <ng-template pTemplate="header">
       <tr class="bg-indigo-600 text-white">
-        <th>TemplateName</th><th>Status</th><th>Actions</th>
+        <th>Template Name</th><th>Template Type</th><th>Status</th><th>Actions</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-tpl>
       <tr class="hover:bg-gray-100">
         <td class="font-bold">{{ tpl.TemplateName }}</td>
+        <td class="font-bold">{{ tpl.TemplateTye }}</td>
         <td><p-tag [value]="tpl.status" [severity]="tpl.status === 'published' ? 'success' : 'warn'"></p-tag></td>
         <td class="space-x-2">
           <button pButton icon="pi pi-eye" class="p-button-rounded" (click)="openDialog(false, tpl)"></button>
@@ -30,6 +31,7 @@
       <div class="space-y-6 overflow-y-auto">
         <div class="grid grid-cols-3 gap-4">
           <div><input pInputText [(ngModel)]="form.TemplateName" placeholder="Name *" class="w-full"></div>
+          <div><input pInputText [(ngModel)]="form.TemplateType" placeholder="Name *" class="w-full"></div>
           <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
         </div>
        <!-- <app-text-editor

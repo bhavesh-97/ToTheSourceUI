@@ -43,6 +43,7 @@ export class TemplateMaster implements OnInit {
   form = {
     TemplateID: 0,
     TemplateName: '',
+    TemplateType: '',
     status: 'draft' as TemplateStatus,
     html: ``
   };
@@ -62,6 +63,7 @@ export class TemplateMaster implements OnInit {
     return {
               TemplateID: 1,
               TemplateName: 'Modern Hero 2025',
+              TemplateType: 'Website',
               status: 'published',
               html: this.form.html
         };
@@ -73,6 +75,7 @@ export class TemplateMaster implements OnInit {
       this.form = {
         TemplateID: 0,
         TemplateName: '',
+        TemplateType:'',
         status: 'draft',
         html: '<div class="py-32 text-center"><h1 class="fade-up">New Template</h1></div>'
       }
@@ -80,6 +83,7 @@ export class TemplateMaster implements OnInit {
       this.form = {
         TemplateID: tpl.TemplateID,
         TemplateName: tpl.TemplateName,
+        TemplateType: tpl.TemplateType,
         status: tpl.status,
         html: tpl.html
       };
@@ -98,6 +102,7 @@ export class TemplateMaster implements OnInit {
       // TemplateID: this.isNew ? Date.now().toString() : this.templates().find(t => t.TemplateName === this.form.TemplateName)?.TemplateID || Date.now().toString(),
       TemplateID: this.form.TemplateID,
       TemplateName: this.form.TemplateName.trim(),
+      TemplateType: this.form.TemplateType.trim(),
       status: this.form.status,
       html: this.form.html
     };
