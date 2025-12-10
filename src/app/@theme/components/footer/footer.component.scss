@@ -1,30 +1,69 @@
-// @import '../../styles/themes';
-// @import '@nebular/theme/styles/global/breakpoints';
-// @import 'bootstrap/scss/mixins/breakpoints';
+.footer-container {
+  width: 100%;
+  padding: 22px 0;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  user-select: none;
+}
 
-// @include nb-install-component() {
-//   width: 100%;
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
+.footer-inner {
+  width: 95%;
+  max-width: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #7d8da5;
+  font-size: 14px;
 
-//   .socials {
-//     font-size: 2rem;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
 
-//     a {
-//       padding: 0.4rem;
-//       color: nb-theme(text-hint-color);
-//       transition: color ease-out 0.1s;
+/* ---------- Left (Brand) ----------- */
 
-//       &:hover {
-//         color: nb-theme(text-basic-color);
-//       }
-//     }
-//   }
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
-//   @include media-breakpoint-down(is) {
-//     .socials {
-//       font-size: 1.5rem;
-//     }
-//   }
-// }
+  .footer-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .footer-title {
+    font-weight: 600;
+    color: #555;
+  }
+}
+
+/* ----------- Middle (Tagline) ----------- */
+
+.footer-center {
+  .tagline {
+    font-size: 14px;
+    opacity: 0.85;
+  }
+}
+
+/* ------------ Right (Social Icons) ------------ */
+
+.footer-socials {
+  display: flex;
+  gap: 14px;
+
+  a {
+    font-size: 20px;
+    color: #98a1b3;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #556ee6;
+      transform: translateY(-2px);
+    }
+  }
+}

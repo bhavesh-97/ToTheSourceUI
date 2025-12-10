@@ -4,16 +4,29 @@ import { Component } from '@angular/core';
   selector: 'app-footer',
   styleUrls: ['./footer.component.scss'],
   template: `
-    <span class="created-by">
-      Created with ♥ by <b><a href="https://akveo.page.link/8V2f" target="_blank">To The Source</a></b> 2025
-    </span>
-    <div class="socials">
-      <a href="#" target="_blank" class="ion ion-social-github"></a>
-      <a href="#" target="_blank" class="ion ion-social-facebook"></a>
-      <a href="#" target="_blank" class="ion ion-social-twitter"></a>
-      <a href="#" target="_blank" class="ion ion-social-linkedin"></a>
-    </div>
+    <footer class="footer-container">
+      <div class="footer-inner">
+
+        <div class="footer-brand">
+          <!-- <img src="assets/images/product/To the Source Icon.png" alt="logo" class="footer-logo" /> -->
+          <!-- <span class="footer-title">To The Source</span> -->
+        </div>
+
+        <div class="footer-center">
+          <span class="tagline">
+            © 2025 To The Source — Empowering Creative Experiences
+          </span>
+        </div>
+
+        <div class="footer-socials">
+          <a href="#" aria-label="Github"><i class="ion ion-social-github"></i></a>
+          <a href="#" aria-label="Facebook"><i class="ion ion-social-facebook"></i></a>
+          <a href="#" aria-label="Twitter"><i class="ion ion-social-twitter"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="ion ion-social-linkedin"></i></a>
+        </div>
+
+      </div>
+    </footer>
   `,
 })
-export class FooterComponent {
-}
+export class FooterComponent {}
