@@ -1,30 +1,137 @@
-:host ::ng-deep {
-  .template-editor-dialog {
-    .p-dialog-content {
-      background: #f8fafc !important;
-      padding: 2rem !important;
-    }
-    .ck-editor__editable {
-      min-height: 680px !important;
-      font-size: 15px !important;
-      line-height: 1.7 !important;
-      background: white !important;
-    }
+/* ========================
+   RoleMaster - Clean Transparent Design (Light Background)
+   Perfectly visible text, no white card, works on any light/transparent background
+   ======================== */
 
-    .ck-toolbar {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      border-bottom: none !important;
-    }
+:host {
+  display: block;
+  padding: 1.5rem;
+}
 
-    .ck-content {
-      padding: 1.5rem !important;
-    }
+/* === Remove all white/card background === */
+:host ::ng-deep .card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
 
-    .ck-source-editing-area {
-      font-family: 'Fira Code', 'Courier New', monospace !important;
-      background: #1e1e1e !important;
-      color: #d4d4d4 !important;
-    }
-  }
+/* === Table fully transparent === */
+:host ::ng-deep .p-datatable,
+:host ::ng-deep .p-datatable-header,
+:host ::ng-deep .p-datatable-thead > tr > th,
+:host ::ng-deep .p-datatable-tbody > tr,
+:host ::ng-deep .p-paginator {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* === Header row - subtle light style === */
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1f2937 !important;        /* Dark readable text */
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* === Row hover === */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* === All text - Force dark & visible === */
+:host ::ng-deep .p-datatable-tbody > tr > td,
+:host ::ng-deep .p-datatable .p-paginator,
+:host ::ng-deep .p-datatable .p-paginator * {
+  color: #1f2937 !important;        /* Main text */
+}
+
+:host ::ng-deep .p-datatable .text-600,
+:host ::ng-deep .p-inputtext::placeholder {
+  color: #6b7280 !important;        /* Muted text */
+}
+
+/* === Search input & buttons - clean look === */
+:host ::ng-deep .p-inputtext {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  color: #1f2937 !important;
+  border-radius: 6px;
+}
+
+:host ::ng-deep .p-inputtext:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+:host ::ng-deep .p-button {
+  border-radius: 6px !important;
+}
+
+:host ::ng-deep .p-button[icon="pi pi-filter-slash"] {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  color: #4b5563 !important;
+}
+
+:host ::ng-deep .p-button.p-button-success {
+  background: #10b981 !important;
+  border: 1px solid #10b981 !important;
+  color: white !important;
+}
+
+/* === Icons - dark and visible === */
+:host ::ng-deep .pi {
+  color: #4b5563 !important;
+  font-weight: bold;
+}
+
+/* === Tags (Active/Inactive) === */
+:host ::ng-deep .p-tag {
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+}
+
+:host ::ng-deep .p-tag.p-tag-success {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+:host ::ng-deep .p-tag.p-tag-danger {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+/* === Paginator === */
+:host ::ng-deep .p-paginator {
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding-top: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page {
+  color: #4b5563 !important;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
+}
+
+/* === Empty state === */
+:host ::ng-deep .p-datatable-emptymessage td {
+  color: #6b7280 !important;
+  font-size: 1.1rem;
+}
+
+/* === Title text === */
+:host ::ng-deep .p-datatable .p-datatable-header h2 {
+  color: #111827 !important;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
