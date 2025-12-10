@@ -116,7 +116,7 @@
 </div>
 <p-dialog [(visible)]="displayDialog" [header]="roleDialogHeader" [modal]="true"
           [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
-  <form [formGroup]="roleForm" id="roleForm"> 
+  <form [formGroup]="roleForm" id="roleForm" (ngSubmit)="saveRole()"> 
     <div class="container-fluid">
       <div class="row mb-3 align-items-center">
         <div class="col-8">
@@ -144,9 +144,9 @@
         <div class="col-8">
           <label class="form-label fw-medium mb-0">Status</label>
         </div>
-        <div class="col-8 d-flex align-items-center gap-3">
+        <div class="col-8 d-flex align-items-center gap-3"  formGroupName="MCommonEntitiesMaster">
           <p-toggleswitch #inputField formControlName="isActive"></p-toggleswitch>
-          <span>{{ roleForm.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
+          <span>{{ roleForm.get('MCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
       </div>
 

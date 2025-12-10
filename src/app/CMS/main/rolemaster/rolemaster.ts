@@ -69,7 +69,7 @@ export class Rolemaster implements OnInit {
   private formFields: FormFieldConfig[] = [
     { name: 'RoleID', isMandatory: false, events: [] },
     { name: 'RoleName', isMandatory: false,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
-    { name: 'isActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'MCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor(){
@@ -121,7 +121,9 @@ export class Rolemaster implements OnInit {
     this.roleForm.reset({
       RoleID: 0,
       RoleName: '',
-      isActive: true
+      MCommonEntitiesMaster:{
+        isActive: true
+      }
     });
     this.roleDialogHeader = 'Create New Role';
     this.displayDialog = true;
@@ -132,7 +134,9 @@ export class Rolemaster implements OnInit {
     this.roleForm.patchValue({
       RoleID: role.RoleID,
       RoleName: role.RoleName,
-      isActive: role.MCommonEntitiesMaster.isActive
+       MCommonEntitiesMaster:{
+        isActive: role.MCommonEntitiesMaster.isActive
+      }
     });    
     this.roleDialogHeader = 'Edit Role';
     this.displayDialog = true;
@@ -140,19 +144,20 @@ export class Rolemaster implements OnInit {
   async saveRole() {
     debugger;
     // Mark all controls as touched to show validation errors
-    this.markFormGroupTouched(this.roleForm);
-    
-    if (this.roleForm.invalid) {
-      this.messageService.showMessage('Please fill in all required fields correctly.', 'Validation Error', PopupMessageType.Warning);
+    // this.markFormGroupTouched(this.roleForm);
+       const outcome = this.FormUtils.validateFormFields(this.formFields, this.roleForm, this.inputElements.toArray(), this.renderer);
+    if (outcome.isError) {
+      this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
-    }
-
+    }  
+    const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.roleForm, this.inputElements.toArray(), RoleMaster);
+    // call api for store data      
+  
     this.saving = true;
     try {
       const formValue = this.roleForm.value;
       const newRole: RoleMaster = {
-        ...formValue,
-        permissionsMap: { ...formValue.permissionsMap }
+        ...formValue
       };
 
       if (newRole.RoleID === 0) {
