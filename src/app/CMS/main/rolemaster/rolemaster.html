@@ -44,6 +44,12 @@
             <p-columnFilter type="text" field="RoleName" display="menu"></p-columnFilter>
           </div>
         </th>
+        <th style="min-width: 16rem">
+          <div class="flex align-items-center justify-content-between">
+            Role Level
+            <p-columnFilter type="text" field="RoleLevel" display="menu"></p-columnFilter>
+          </div>
+        </th>
         <th style="min-width: 10rem">
           <div class="flex align-items-center justify-content-between">
             Status
@@ -74,6 +80,11 @@
         <td>
           <div class="flex align-items-center gap-3">
             <span class="font-medium">{{ role.RoleName }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex align-items-center gap-3">
+            <span class="font-medium">{{ role.RoleLevel }}</span>
           </div>
         </td>
         <td>
@@ -118,6 +129,7 @@
           [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
   <form [formGroup]="roleForm" id="roleForm" (ngSubmit)="saveRole()"> 
     <div class="container-fluid">
+      <input pInputText #inputField formControlName="RoleID"  hidden/>
       <div class="row mb-3 align-items-center">
         <div class="col-8">
           <label class="form-label fw-medium mb-0">
@@ -138,16 +150,47 @@
               </div>
           </div>
         </div>
-      </div>
+         <div class="col-8 mt-3 ">
+          <label class="form-label fw-medium mb-0">
+            Role Level <span class="text-danger">*</span>
+          </label>
+        </div>
+        
+        <div class="col-8">
+          <input pInputText
+              #inputField
+              formControlName="RoleLevel"
+              class="form-control input100"
+              [class.is-invalid]="roleForm.get('RoleLevel')?.invalid && roleForm.get('RoleLevel')?.touched"
+              placeholder="e.g. 1" />
 
+            <div *ngIf="roleForm.get('RoleLevel')?.invalid && roleForm.get('RoleLevel')?.touched"class="invalid-feedback">
+                <div *ngIf="roleForm.get('RoleLevel')?.errors?.['required']">
+                    Role level is required
+                </div>
+                <div *ngIf="roleForm.get('RoleLevel')?.errors?.['min']">
+                    Role level must be at least {{ roleForm.get('RoleLevel')?.errors?.['min']?.min }}
+                </div>
+  
+                <div *ngIf="roleForm.get('RoleLevel')?.errors?.['max']">
+                    Role level cannot exceed {{ roleForm.get('RoleLevel')?.errors?.['max']?.max }}
+                </div>
+
+                <div *ngIf="roleForm.get('RoleLevel')?.errors?.['pattern']">
+                    Please enter a valid number
+                </div>
+            </div>
+          </div>
+        </div>
       <div class="row mb-3 align-items-center">
         <div class="col-8">
           <label class="form-label fw-medium mb-0">Status</label>
         </div>
-        <div class="col-8 d-flex align-items-center gap-3"  formGroupName="MCommonEntitiesMaster">
-          <p-toggleswitch #inputField formControlName="isActive"></p-toggleswitch>
-          <span>{{ roleForm.get('MCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}</span>
+        <div class="col-8 d-flex align-items-center gap-3" formGroupName="MCommonEntitiesMaster">
+            <p-toggleswitch formControlName="isActive"></p-toggleswitch>
+            <span>{{ roleForm.get('MCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
+
       </div>
 
     </div>

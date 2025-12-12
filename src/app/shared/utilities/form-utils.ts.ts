@@ -58,30 +58,73 @@ export class FormUtils {
   };
 
  // Create FormGroup based on form field configurations
+  // public createFormGroup(formFields: FormFieldConfig[], fb: FormBuilder): FormGroup {
+  //   const controlsConfig: { [key: string]: any } = {};
+  //   formFields.forEach((field) => {
+  //     const validators: ValidatorFn[] = [];
+
+  //      //  If field has events with validation rules, add the first one
+  //     if (field?.events?.length && field.events[0].validationRule) {
+  //        validators.push(
+  //           this.getValidator(field.events[0].validationRule, field.validationMessage, field.name)
+  //        );
+  //     }
+
+  //    // If field is mandatory and no validator was added yet, add required validator
+  //    if (field.isMandatory && validators.length === 0) {
+  //      validators.push(Validators.required);
+  //    }
+
+  //     // If field has validationMessage but no events/validators, also add required
+  //     if (field.validationMessage && validators.length === 0) {
+  //       validators.push(Validators.required);
+  //     }
+  //     controlsConfig[field.name] = ['', validators];
+  //   });
+  //   return fb.group(controlsConfig);
+  // }
   public createFormGroup(formFields: FormFieldConfig[], fb: FormBuilder): FormGroup {
-    const controlsConfig: { [key: string]: any } = {};
+    const rootGroup = fb.group({});
+
     formFields.forEach((field) => {
-      const validators: ValidatorFn[] = [];
-
-       //  If field has events with validation rules, add the first one
-      if (field?.events?.length && field.events[0].validationRule) {
-         validators.push(
-            this.getValidator(field.events[0].validationRule, field.validationMessage, field.name)
-         );
+      const path = field.name.split('.'); // e.g. ["MCommonEntitiesMaster", "isActive"]
+  
+      let currentGroup = rootGroup;
+  
+      // Build nested groups if needed
+      for (let i = 0; i < path.length - 1; i++) {
+        const segment = path[i];
+  
+        if (!currentGroup.get(segment)) {
+          currentGroup.addControl(segment, fb.group({}));
+        }
+  
+        currentGroup = currentGroup.get(segment) as FormGroup;
       }
-
-     // If field is mandatory and no validator was added yet, add required validator
-     if (field.isMandatory && validators.length === 0) {
-       validators.push(Validators.required);
-     }
-
-      // If field has validationMessage but no events/validators, also add required
+  
+      // Setup validators
+      const validators: ValidatorFn[] = [];
+  
+      if (field?.events?.length && field.events[0].validationRule) {
+        validators.push(
+          this.getValidator(field.events[0].validationRule, field.validationMessage, field.name)
+        );
+      }
+  
+      if (field.isMandatory && validators.length === 0) {
+        validators.push(Validators.required);
+      }
+  
       if (field.validationMessage && validators.length === 0) {
         validators.push(Validators.required);
       }
-      controlsConfig[field.name] = ['', validators];
+
+      const controlName = path[path.length - 1];
+  
+      currentGroup.addControl(controlName, fb.control('', validators));
     });
-    return fb.group(controlsConfig);
+
+    return rootGroup;
   }
 
   // Register event listeners for form fields
@@ -92,17 +135,20 @@ export class FormUtils {
     formGroup: FormGroup
   ): void {
     formFields.forEach((field, index) => {
-      const element = elementRefs[index]?.nativeElement as HTMLInputElement;
-        if (element) {
-          field.events?.forEach(event => {
-            this.attachEventListener(
-                    element,
-                    event.type,
-                    (e: Event) => this.handleEvent(e, event.validationRule, element, renderer, field, formGroup.controls[field.name]),
-                    renderer
+      const element = elementRefs[index]?.nativeElement as HTMLInputElement;        
+      if (!element) {
+         console.warn(`⚠️ UI Element not found for form field '${field.name}'`);
+         return;
+      }
+      const control = formGroup.get(field.name) as AbstractControl;
+      field.events?.forEach(event => {
+        this.attachEventListener(
+                element,
+                event.type,
+                (e: Event) => this.handleEvent(e, event.validationRule, element, renderer, field, control),
+                renderer
                 );
             });
-          }
       });
   }
 
@@ -174,7 +220,6 @@ export class FormUtils {
  
   field.isMandatory = isMandatory;
 
-  // 1️⃣ Update validators
   const validator = isMandatory && field.events?.[0]?.validationRule
     ? this.getValidator(field.events[0].validationRule, field.validationMessage, field.name)
     : null;

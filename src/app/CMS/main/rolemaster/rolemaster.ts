@@ -68,7 +68,8 @@ export class Rolemaster implements OnInit {
   }
   private formFields: FormFieldConfig[] = [
     { name: 'RoleID', isMandatory: false, events: [] },
-    { name: 'RoleName', isMandatory: false,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+    { name: 'RoleName', isMandatory: true,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+    { name: 'RoleLevel', isMandatory: true,validationMessage: 'Please enter a valid Role Level.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.NumberOnly }] },
     { name: 'MCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
@@ -86,6 +87,7 @@ export class Rolemaster implements OnInit {
         { 
           RoleID: 1, 
           RoleName: 'User', 
+          RoleLevel: 1, 
           MCommonEntitiesMaster :{
             isActive: true
           }
@@ -93,6 +95,7 @@ export class Rolemaster implements OnInit {
         { 
           RoleID: 2, 
           RoleName: 'Tester', 
+          RoleLevel: 2,
           MCommonEntitiesMaster :{
             isActive: true
           }
@@ -100,6 +103,7 @@ export class Rolemaster implements OnInit {
         { 
           RoleID: 3, 
           RoleName: 'Support', 
+          RoleLevel: 3,
           MCommonEntitiesMaster :{
             isActive: false
           }
@@ -107,6 +111,7 @@ export class Rolemaster implements OnInit {
         { 
           RoleID: 10, 
           RoleName: 'Administrator',  
+          RoleLevel: 1,
           MCommonEntitiesMaster :{
             isActive: true
           }
@@ -121,6 +126,7 @@ export class Rolemaster implements OnInit {
     this.roleForm.reset({
       RoleID: 0,
       RoleName: '',
+      RoleLevel: 0,
       MCommonEntitiesMaster:{
         isActive: true
       }
@@ -134,6 +140,7 @@ export class Rolemaster implements OnInit {
     this.roleForm.patchValue({
       RoleID: role.RoleID,
       RoleName: role.RoleName,
+      RoleLevel:role.RoleLevel,
        MCommonEntitiesMaster:{
         isActive: role.MCommonEntitiesMaster.isActive
       }
@@ -145,7 +152,7 @@ export class Rolemaster implements OnInit {
     debugger;
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.roleForm);
-       const outcome = this.FormUtils.validateFormFields(this.formFields, this.roleForm, this.inputElements.toArray(), this.renderer);
+    const outcome = this.FormUtils.validateFormFields(this.formFields, this.roleForm, this.inputElements.toArray(), this.renderer);
     if (outcome.isError) {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
