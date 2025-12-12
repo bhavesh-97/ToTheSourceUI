@@ -69,7 +69,7 @@ export class Rolemaster implements OnInit {
   private formFields: FormFieldConfig[] = [
     { name: 'RoleID', isMandatory: false, events: [] },
     { name: 'RoleName', isMandatory: true,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
-    { name: 'RoleLevel', isMandatory: true,validationMessage: 'Please enter a valid Role Level.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.NumberOnly }] },
+    { name: 'RoleLevel', isMandatory: true,validationMessage: 'Please enter a valid Role Level.', min:1, max:10, events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.NumberOnly }] },
     { name: 'MCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 

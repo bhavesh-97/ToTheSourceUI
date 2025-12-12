@@ -114,11 +114,25 @@ export class FormUtils {
       if (field.isMandatory && validators.length === 0) {
         validators.push(Validators.required);
       }
-  
       if (field.validationMessage && validators.length === 0) {
         validators.push(Validators.required);
       }
 
+      // Min & Max length
+      if (field.minLength) {
+        validators.push(Validators.minLength(field.minLength));
+      }
+      if (field.maxLength) {
+        validators.push(Validators.maxLength(field.maxLength));
+      }
+         // Min & Max value (for number)
+      if (field.min !== undefined) {
+        validators.push(Validators.min(field.min));
+      }
+      if (field.max !== undefined) {
+        validators.push(Validators.max(field.max));
+      }
+      
       const controlName = path[path.length - 1];
   
       currentGroup.addControl(controlName, fb.control('', validators));
