@@ -20,6 +20,7 @@ import { ConfirmationService } from 'primeng/api';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { FormUtils } from '../../../shared/utilities/form-utils.ts';
+import { RolemasterService } from './rolemaster.service';
 
 @Component({
   selector: 'app-rolemaster',
@@ -49,6 +50,7 @@ export class Rolemaster implements OnInit {
   @ViewChildren('inputField') inputElements!: QueryList<ElementRef>;
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
+  private RoleMasterService = inject(RolemasterService);
   private fb = inject(FormBuilder); 
   private FormUtils = inject(FormUtils);
   private renderer = inject(Renderer2);
@@ -74,52 +76,76 @@ export class Rolemaster implements OnInit {
   ];
 
   constructor(){
-    debugger
     this.roleForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
    }
     ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.roleForm);
     }
   loadData() {
-    this.loading = true;
-    setTimeout(() => {
-      this.roles = [
-        { 
-          RoleID: 1, 
-          RoleName: 'User', 
-          RoleLevel: 1, 
-          MCommonEntitiesMaster :{
-            isActive: true
+       this.loading = true;
+       this.RoleMasterService.GetAllRoleDetails().subscribe({
+          next: (res) => {
+            console.log(res);
+            if (!res.isError) {
+              debugger;
+              var response = JSON.parse(res.result);
+              this.loading = false;
+              this.roles = response;
+              
+              console.log(this.roles);
+              this.totalRecords = this.roles.length;
+              this.messageService.showMessage(res.strMessage, res.title, res.type);
+            } else {
+              this.messageService.showMessage(res.strMessage, res.title, res.type);
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.messageService.showMessage(
+              'Something went wrong while connecting to the server.',
+              'Error',
+              PopupMessageType.Error
+            );
           }
-        },
-        { 
-          RoleID: 2, 
-          RoleName: 'Tester', 
-          RoleLevel: 2,
-          MCommonEntitiesMaster :{
-            isActive: true
-          }
-        },
-        { 
-          RoleID: 3, 
-          RoleName: 'Support', 
-          RoleLevel: 3,
-          MCommonEntitiesMaster :{
-            isActive: false
-          }
-        },
-        { 
-          RoleID: 10, 
-          RoleName: 'Administrator',  
-          RoleLevel: 1,
-          MCommonEntitiesMaster :{
-            isActive: true
-          }
-        }
-      ];
-      this.totalRecords = this.roles.length;
-      this.loading = false;
-    }, 800);
+        });
+    // setTimeout(() => {
+    //   this.roles = [
+    //     { 
+    //       RoleID: 1, 
+    //       RoleName: 'User', 
+    //       RoleLevel: 1, 
+    //       MCommonEntitiesMaster :{
+    //         isActive: true
+    //       }
+    //     },
+    //     { 
+    //       RoleID: 2, 
+    //       RoleName: 'Tester', 
+    //       RoleLevel: 2,
+    //       MCommonEntitiesMaster :{
+    //         isActive: true
+    //       }
+    //     },
+    //     { 
+    //       RoleID: 3, 
+    //       RoleName: 'Support', 
+    //       RoleLevel: 3,
+    //       MCommonEntitiesMaster :{
+    //         isActive: false
+    //       }
+    //     },
+    //     { 
+    //       RoleID: 10, 
+    //       RoleName: 'Administrator',  
+    //       RoleLevel: 1,
+    //       MCommonEntitiesMaster :{
+    //         isActive: true
+    //       }
+    //     }
+    //   ];
+    //   this.totalRecords = this.roles.length;
+    //   this.loading = false;
+    // }, 800);
   }
 
   openNew() {
@@ -142,7 +168,7 @@ export class Rolemaster implements OnInit {
       RoleName: role.RoleName,
       RoleLevel:role.RoleLevel,
        MCommonEntitiesMaster:{
-        isActive: role.MCommonEntitiesMaster.isActive
+        isActive: role.MCommonEntitiesMaster.IsActive
       }
     });    
     this.roleDialogHeader = 'Edit Role';
