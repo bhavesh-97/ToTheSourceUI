@@ -177,7 +177,7 @@ export class Login implements AfterViewInit {
       this.notificationService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-    const inactiveField = this.showEmail ? 'UserName' : 'EmailID';
+    const inactiveField = this.showEmail ? 'userName' : 'emailID';
     const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.loginForm, this.inputElements.toArray(), MUser);
     
     if (loginModel && Object.prototype.hasOwnProperty.call(loginModel, inactiveField)) {
@@ -188,7 +188,8 @@ export class Login implements AfterViewInit {
         console.log(res);
         if (!res.isError) {
           debugger;
-          var response = JSON.parse(res.result);
+          // var response = JSON.parse(res.result);
+          const response = res.result;
           this.loginForm.reset();
           this.loginService.storeToken(res.token ?? '');
           this.loginService.storeUserInfo(response.user ?? new MUser());

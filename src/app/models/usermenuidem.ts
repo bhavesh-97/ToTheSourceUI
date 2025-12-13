@@ -14,8 +14,8 @@ export class MUserMenuIDAM {
     icon!: any;
 }
 export class MPageRights {
-    CanInsert: boolean = false;
-    CanUpdate: boolean = false;
-    CanDelete: boolean = false;
-    CanView: boolean = false;
+    canInsert: boolean = false;
+    canUpdate: boolean = false;
+    canDelete: boolean = false;
+    canView: boolean = false;
 }

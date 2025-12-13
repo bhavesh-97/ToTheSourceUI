@@ -25,7 +25,7 @@ export class CommonService {
     private user = this.authenticationService.currentUserValue as MUser;
     public getUserName(){
         if (this.user != null) {
-          return this.user.UserName;
+          return this.user.userName;
         }
         return "";
       }
@@ -44,7 +44,7 @@ export class CommonService {
     public GetUserName() {
 
         if (this.user != null) {
-            return this.user.UserName;
+            return this.user.userName;
         }
         return "";
     }
@@ -60,7 +60,7 @@ export class CommonService {
     }
     public GetUserId() {
         if (this.user != null) {
-            return this.user.UserID;
+            return this.user.userID;
         }
         return 0;
     }

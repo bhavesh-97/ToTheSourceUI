@@ -19,22 +19,22 @@
 
     <div class="profile-wrapper" *ngIf="user">
       <img 
-        [src]="user.ProfileImage || 'assets/images/default-avatar.png'" 
+        [src]="user.profileImage || 'assets/images/default-avatar.png'" 
         class="avatar" 
-        alt="{{ user.FullName }}"
+        alt="{{ user.fullName }}"
         (click)="toggleProfileDropdown()"
       />
       <div class="profile-dropdown" *ngIf="showProfileDropdown" id="profileMenu">
         <div class="profile-header">
-          <img [src]="user.ProfileImage" class="avatar-small" />
+          <img [src]="user.profileImage" class="avatar-small" />
           <div class="profile-info row">
-            <span class="name col-md-12">{{ user.FullName }}</span>
-            <span class="role col-md-12">{{ user.RoleName }}</span>
+            <span class="name col-md-12">{{ user.fullName }}</span>
+            <span class="role col-md-12">{{ user.roleName }}</span>
           </div>
         </div>
 
         <ul class="menu-list">
-          <li *ngFor="let item of user.ProfileMenuList" class="menu-item">
+          <li *ngFor="let item of user.profileMenuList" class="menu-item">
             <i *ngIf="item['icon']" [ngClass]="getIconClass(item['icon'])" class="menu-icon"></i>
 
             <div class="menu-text">

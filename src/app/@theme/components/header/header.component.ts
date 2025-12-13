@@ -44,7 +44,7 @@ export class HeaderComponent implements OnInit {
   showProfileDropdown = false;
 
   ngOnInit(): void {
-    this.user = this.loginService.getUserInfo();
+  this.user = this.loginService.getUserInfo();
   const saved = localStorage.getItem("darkMode") === "1";
   this.isDarkMode = saved;
 

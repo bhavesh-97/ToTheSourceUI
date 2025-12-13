@@ -276,7 +276,7 @@ export class LoginService {
       }
       filterMenu(items: MUserMenuIDAM[]): MUserMenuIDAM[] {
           return items
-              .filter(m => m.permissions?.CanView) 
+              .filter(m => m.permissions?.canView) 
                 .map(m => ({
                   ...m,
                     children: m.children?.length

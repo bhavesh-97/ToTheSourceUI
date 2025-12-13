@@ -90,7 +90,7 @@ export class AuthenticationService {
     const fcmToken = localStorage.getItem('fcmUserToken');
     if (fcmToken) {
       this.http.post(`${environment.CMSUrl}/api/Home/Logout`, {
-        UserID: user.UserID,
+        UserID: user.userID,
         chk: 2,
         macaddress: '',
         token: fcmToken
@@ -100,7 +100,7 @@ export class AuthenticationService {
     const logoutData: MLogout = {
       access_Token: user.token,
       refresh_Token: user.refreshToken,
-      userid: user.UserID,
+      userid: user.userID,
       clientIp: localStorage.getItem('clientIp') || ''
     };
 
