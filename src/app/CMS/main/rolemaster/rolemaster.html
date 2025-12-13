@@ -38,6 +38,7 @@
         <!-- <th style="width: 3.5rem">
           <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
         </th> -->
+        <th style="width: 4rem">#</th>
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Role Name
@@ -72,11 +73,14 @@
     </ng-template>
 
     <!-- Table Body -->
-    <ng-template pTemplate="body" let-role>
+    <ng-template pTemplate="body" let-role let-rowIndex="rowIndex">
       <tr>
         <!-- <td>
           <p-tableCheckbox [value]="role"></p-tableCheckbox>
         </td> -->
+        <td>
+              {{ (dt.first || 0) + rowIndex + 1 }}
+        </td>
         <td>
           <div class="flex align-items-center gap-3">
             <span class="font-medium">{{ role.RoleName }}</span>
@@ -89,8 +93,8 @@
         </td>
         <td>
           <p-tag 
-            [value]="role.MCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
-            [severity]="role.MCommonEntitiesMaster.isActive ? 'success' : 'danger'"
+            [value]="role.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
+            [severity]="role.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -204,4 +208,4 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmDialog></p-confirmDialog>
+<p-confirmDialog key="roleDialog"></p-confirmDialog>

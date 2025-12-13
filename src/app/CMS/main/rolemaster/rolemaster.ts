@@ -72,7 +72,7 @@ export class Rolemaster implements OnInit {
     { name: 'RoleID', isMandatory: false, events: [] },
     { name: 'RoleName', isMandatory: true,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
     { name: 'RoleLevel', isMandatory: true,validationMessage: 'Please enter a valid Role Level.', min:1, max:10, events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.NumberOnly }] },
-    { name: 'MCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor(){
@@ -94,7 +94,7 @@ export class Rolemaster implements OnInit {
               
               console.log(this.roles);
               this.totalRecords = this.roles.length;
-              this.messageService.showMessage(res.strMessage, res.title, res.type);
+              // this.messageService.showMessage(res.strMessage, res.title, res.type);
             } else {
               this.messageService.showMessage(res.strMessage, res.title, res.type);
             }
@@ -154,7 +154,7 @@ export class Rolemaster implements OnInit {
       RoleName: '',
       RoleLevel: 0,
       MCommonEntitiesMaster:{
-        isActive: true
+        IsActive: true
       }
     });
     this.roleDialogHeader = 'Create New Role';
@@ -168,7 +168,7 @@ export class Rolemaster implements OnInit {
       RoleName: role.RoleName,
       RoleLevel:role.RoleLevel,
        MCommonEntitiesMaster:{
-        isActive: role.MCommonEntitiesMaster.IsActive
+        IsActive: role.MCommonEntitiesMaster.IsActive
       }
     });    
     this.roleDialogHeader = 'Edit Role';
@@ -183,33 +183,33 @@ export class Rolemaster implements OnInit {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-    const loginModel = this.FormUtils.getAllFormFieldData(this.formFields, this.roleForm, this.inputElements.toArray(), RoleMaster);
-    // call api for store data      
-  
+    const roleModel = this.FormUtils.getAllFormFieldData(this.formFields, this.roleForm, this.inputElements.toArray(), RoleMaster);
     this.saving = true;
     try {
-      const formValue = this.roleForm.value;
-      const newRole: RoleMaster = {
-        ...formValue
-      };
-
-      if (newRole.RoleID === 0) {
-        newRole.RoleID = Date.now();
-        this.roles = [...this.roles, newRole];
-        this.messageService.showMessage('Role created successfully!', 'Success', PopupMessageType.Success);
-      } else {
-        this.roles = this.roles.map(r => 
-          r.RoleID === newRole.RoleID ? newRole : r
-        );
-        this.messageService.showMessage('Role updated successfully!', 'Success', PopupMessageType.Success);
-      }
-      
-      this.totalRecords = this.roles.length;
-      this.displayDialog = false;
+         this.RoleMasterService.SaveRole(roleModel).subscribe({
+            next: (res) => {
+                console.log(res);
+                if (!res.isError) {
+                  debugger;
+                  // var response = JSON.parse(res.result);
+                  const response = res.result;
+                  this.roleForm.reset();
+                  this.loadData();
+                  this.messageService.showMessage(res.strMessage, res.title, res.type);
+                  this.displayDialog = false;
+                } else {
+                  this.messageService.showMessage(res.strMessage, res.title, res.type);
+              }
+            },
+            error: () => {
+                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
+              }
+          });
     } catch (error) {
       this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
     } finally {
       this.saving = false;
+      this.displayDialog = false;
     }
   }
 
@@ -234,11 +234,32 @@ export class Rolemaster implements OnInit {
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.roles = this.roles.filter(r => r.RoleID !== role.RoleID);
-        this.totalRecords = this.roles.length;
-        this.selectedRoles = this.selectedRoles.filter(r => r.RoleID !== role.RoleID);
-        this.messageService.showMessage('Role deleted successfully!', 'Success', PopupMessageType.Success);
-      }
+            try {
+                  this.RoleMasterService.DeleteRole(role).subscribe({
+                          next: (res) => {
+                                    console.log(res);
+                                    if (!res.isError) {
+                                      debugger;
+                                      // var response = JSON.parse(res.result);
+                                      const response = res.result;
+                                      this.roleForm.reset();
+                                      this.loadData();
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                      this.displayDialog = false;
+                                    } else {
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                  }
+                              },
+                          error: () => {
+                                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
+                              }
+                        });
+              } catch (error) {
+                    this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
+              } finally {
+                    this.displayDialog = false;
+              } 
+        }
     });
   }
 

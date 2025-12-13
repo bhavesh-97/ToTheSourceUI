@@ -21,4 +21,14 @@ export class RolemasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
+    SaveRole(roleModel: RoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/SaveRoleDetails`,roleModel,                    
+                                                          { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+        );
+      }
+    DeleteRole(roleModel: RoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/DeleteRoleDetails`,roleModel,                    
+                                                          { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+        );
+      }
 }

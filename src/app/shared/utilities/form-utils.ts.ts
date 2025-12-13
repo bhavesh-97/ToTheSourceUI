@@ -332,7 +332,8 @@ export class FormUtils {
           }
         }
 
-        (model as any)[fieldName] = value;
+        // (model as any)[fieldName] = value;
+        this.setNestedValue(model as any, fieldName, value);
       } catch (fieldError) {
         this.notificationService.showMessage(
           `Error processing field with name: ${field.name}`,
@@ -350,6 +351,24 @@ export class FormUtils {
   }
 
   return model;
+}
+
+private setNestedValue(obj: any, path: string, value: any): void {
+  if (!path) return;
+
+  const keys = path.split('.');
+  let current = obj;
+
+  keys.forEach((key, index) => {
+    if (index === keys.length - 1) {
+      current[key] = value;
+    } else {
+      if (!current[key] || typeof current[key] !== 'object') {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+  });
 }
 
   // Validate form fields based on configurations
