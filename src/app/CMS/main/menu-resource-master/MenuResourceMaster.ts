@@ -1,8 +1,9 @@
 import { MCommonEntitiesMaster } from "../../../models/MCommonEntitiesMaster";
 
-export class MRoleMaster {
-  RoleID: number = 0;
-  RoleName: string = "";
-  RoleLevel: number = 0;
+export class MMenuResourceMaster {
+  MenuID: number = 0;
+  MenuName: string = "";
+  MenuURL: string = "";
+  Icon: string = "";
   MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }

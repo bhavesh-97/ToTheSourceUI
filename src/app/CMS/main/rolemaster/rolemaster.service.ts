@@ -6,7 +6,7 @@ import { Encryption } from '../../../services/encryption';
 import { JsonResponseModel } from '../../../models/JsonResponseModel';
 import { Observable } from 'rxjs';
 import { ENCRYPTION_CONTEXT } from '../../../interceptors/encryption-interceptor';
-import { RoleMaster } from './MRoleMaster';
+import { MRoleMaster } from './MRoleMaster';
 @Injectable({
   providedIn: 'root'
 })
@@ -17,17 +17,17 @@ export class RolemasterService {
     private baseUrl = environment.CMSUrl;
     
     GetAllRoleDetails(encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.get<JsonResponseModel>(`${this.baseUrl}/RoleMaster/GetAllRoleDetails`,
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/GetAllRoleDetails`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
-    SaveRole(roleModel: RoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/SaveRoleDetails`,roleModel,                    
+    SaveRole(roleModel: MRoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/SaveRoleDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
-    DeleteRole(roleModel: RoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/DeleteRoleDetails`,roleModel,                    
+    DeleteRole(roleModel: MRoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/DeleteRoleDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }

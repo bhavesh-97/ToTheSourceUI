@@ -15,7 +15,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
-import { RoleMaster } from './MRoleMaster';
+import { MRoleMaster } from './MRoleMaster';
 import { ConfirmationService } from 'primeng/api';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
@@ -54,8 +54,8 @@ export class Rolemaster implements OnInit {
   private fb = inject(FormBuilder); 
   private FormUtils = inject(FormUtils);
   private renderer = inject(Renderer2);
-  roles: RoleMaster[] = [];
-  selectedRoles: RoleMaster[] = [];
+  roles: MRoleMaster[] = [];
+  selectedRoles: MRoleMaster[] = [];
   loading: boolean = true;
   saving: boolean = false;
   searchValue: string = '';
@@ -161,7 +161,7 @@ export class Rolemaster implements OnInit {
     this.displayDialog = true;
   }
 
-  editRole(role: RoleMaster) {
+  editRole(role: MRoleMaster) {
     this.roleForm.patchValue({
       RoleID: role.RoleID,
       RoleName: role.RoleName,
@@ -174,7 +174,7 @@ export class Rolemaster implements OnInit {
     this.displayDialog = true;
   }
   
-  deleteRole(role: RoleMaster) {
+  deleteRole(role: MRoleMaster) {
     this.confirmationService.confirm({
       key: 'roleDialog',
       message: `Are you sure you want to delete <b>${role.RoleName}</b>? This action cannot be undone.`,
@@ -216,7 +216,7 @@ export class Rolemaster implements OnInit {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-    const roleModel = this.FormUtils.getAllFormFieldData(this.formFields, this.roleForm, this.inputElements.toArray(), RoleMaster);
+    const roleModel = this.FormUtils.getAllFormFieldData(this.formFields, this.roleForm, this.inputElements.toArray(), MRoleMaster);
     this.saving = true;
     try {
          this.RoleMasterService.SaveRole(roleModel).subscribe({
