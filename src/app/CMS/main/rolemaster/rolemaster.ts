@@ -65,9 +65,6 @@ export class Rolemaster implements OnInit {
   roleDialogHeader: string = '';
   roleForm!: FormGroup; 
 
-  ngOnInit() {
-    this.loadData();
-  }
   private formFields: FormFieldConfig[] = [
     { name: 'RoleID', isMandatory: false, events: [] },
     { name: 'RoleName', isMandatory: true,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
@@ -77,10 +74,13 @@ export class Rolemaster implements OnInit {
 
   constructor(){
     this.roleForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
-   }
-    ngAfterViewInit() {
+  }
+  ngOnInit() {
+    this.loadData();
+  }
+  ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.roleForm);
-    }
+  }
   loadData() {
        this.loading = true;
        this.RoleMasterService.GetAllRoleDetails().subscribe({
@@ -161,7 +161,6 @@ export class Rolemaster implements OnInit {
     this.displayDialog = true;
   }
 
-  // Edit existing role
   editRole(role: RoleMaster) {
     this.roleForm.patchValue({
       RoleID: role.RoleID,
@@ -174,6 +173,40 @@ export class Rolemaster implements OnInit {
     this.roleDialogHeader = 'Edit Role';
     this.displayDialog = true;
   }
+  
+  deleteRole(role: RoleMaster) {
+    this.confirmationService.confirm({
+      key: 'roleDialog',
+      message: `Are you sure you want to delete <b>${role.RoleName}</b>? This action cannot be undone.`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+            try {
+                  this.RoleMasterService.DeleteRole(role).subscribe({
+                          next: (res) => {
+                                    console.log(res);
+                                    if (!res.isError) {
+                                      this.roleForm.reset();
+                                      this.loadData();
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                      this.displayDialog = false;
+                                    } else {
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                  }
+                              },
+                          error: () => {
+                                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
+                              }
+                        });
+              } catch (error) {
+                    this.messageService.showMessage('Failed to delete role. Please try again.', 'Error', PopupMessageType.Error);
+              } finally {
+                    this.displayDialog = false;
+              } 
+        }
+    });
+  }
+
   async saveRole() {
     debugger;
     // Mark all controls as touched to show validation errors
@@ -213,7 +246,13 @@ export class Rolemaster implements OnInit {
     }
   }
 
-  // Helper to mark all form controls as touched
+
+  clear(table: Table) {
+    table.clear();
+    this.searchValue = '';
+    this.rows = 10;
+  }
+
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -223,70 +262,6 @@ export class Rolemaster implements OnInit {
       }
     });
   }
-  onRowsChange(event: any) {
-    this.rows = event.value;
-  }
-
-  deleteRole(role: RoleMaster) {
-    this.confirmationService.confirm({
-      key: 'roleDialog',
-      message: `Are you sure you want to delete <b>${role.RoleName}</b>? This action cannot be undone.`,
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-            try {
-                  this.RoleMasterService.DeleteRole(role).subscribe({
-                          next: (res) => {
-                                    console.log(res);
-                                    if (!res.isError) {
-                                      debugger;
-                                      // var response = JSON.parse(res.result);
-                                      const response = res.result;
-                                      this.roleForm.reset();
-                                      this.loadData();
-                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
-                                      this.displayDialog = false;
-                                    } else {
-                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
-                                  }
-                              },
-                          error: () => {
-                                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
-                              }
-                        });
-              } catch (error) {
-                    this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
-              } finally {
-                    this.displayDialog = false;
-              } 
-        }
-    });
-  }
-
-  deleteSelectedRoles() {
-    if (this.selectedRoles.length === 0) return;
-
-    this.confirmationService.confirm({
-      key: 'roleDialog',
-      message: `Are you sure you want to delete the selected ${this.selectedRoles.length} roles?`,
-      header: 'Confirm Bulk Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        const deletedIds = this.selectedRoles.map(r => r.RoleID);
-        this.roles = this.roles.filter(r => !deletedIds.includes(r.RoleID));
-        this.selectedRoles = [];
-        this.totalRecords = this.roles.length;
-        this.messageService.showMessage(`${this.selectedRoles.length} roles deleted successfully!`, 'Success', PopupMessageType.Success);
-      }
-    });
-  }
-
-  clear(table: Table) {
-    table.clear();
-    this.searchValue = '';
-    this.rows = 10;
-  }
-
   getSeverity(isActive: boolean): 'success' | 'danger' | 'warning' {
     return isActive ? 'success' : 'danger';
   }
