@@ -2,9 +2,9 @@
   position: fixed;
   top: 100px; 
   left: -16px;
-  bottom: 10px;
+  bottom: 0;
   width: 280px;
-  height: 100vh !important;
+  /* height: 100vh !important; */
   background: transparent;
   /* box-shadow: 8px 0 30px rgba(0,0,0,0.08); */
   padding: 40px 0 32px;
@@ -12,7 +12,8 @@
   /* z-index: 1000; */
   /* overflow: hidden; */
   overflow: auto;
-
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 77, 255, 0.3) transparent;
   &.mini {
     width: 72px;
     .logo-img { width: 48px; }
