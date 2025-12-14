@@ -23,7 +23,8 @@ import { ValidationRules } from '../../../shared/utilities/validation-rules.enum
 import { PopupMessageType } from '../../../models/PopupMessageType';
 @Component({
   selector: 'app-menu-resource-master',
-  imports: [   CommonModule, 
+  imports: [   
+    CommonModule, 
     ReactiveFormsModule, 
     RouterModule,
     ButtonModule, 
@@ -38,8 +39,7 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
     ConfirmDialogModule,
     TooltipModule],
   templateUrl: './menu-resource-master.html',
-  styleUrl: './menu-resource-master.css',
-  providers: [ConfirmationService]
+  styleUrl: './menu-resource-master.css'
 })
 export class MenuResourceMaster {
   @ViewChild('dt') dt!: Table;

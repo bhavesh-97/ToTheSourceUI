@@ -7,6 +7,7 @@ import { HeaderComponent } from '../../@theme/components/header/header.component
 import { SidebarComponent } from '../../@theme/components/sidebar/sidebar';
 import { FooterComponent } from '../../@theme/components';
 import { GsapService } from '../../services/gsap.service';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-main',
@@ -19,7 +20,8 @@ import { GsapService } from '../../services/gsap.service';
     FooterComponent
   ],
   templateUrl: './main.html',
-  styleUrl: './main.css'
+  styleUrl: './main.css',
+  providers: [ConfirmationService]
 })
 export class MainComponent{
   constructor(private gsapService: GsapService) {}

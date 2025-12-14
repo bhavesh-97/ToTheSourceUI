@@ -42,8 +42,7 @@ import { RolemasterService } from './rolemaster.service';
     TooltipModule
   ],
   templateUrl: './rolemaster.html',
-  styleUrl: './rolemaster.css',
-  providers: [ConfirmationService]
+  styleUrl: './rolemaster.css'
 })
 export class Rolemaster implements OnInit {
   @ViewChild('dt') dt!: Table;
