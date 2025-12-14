@@ -95,9 +95,16 @@
           </div>
         </td>
         <td>
-          <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ role.Icon }}</span>
-          </div>
+            <div class="flex align-items-center gap-3">
+                <i
+                  [ngClass]="role.Icon"
+                  class="text-lg"
+                  aria-hidden="true"
+                ></i>
+                <span class="font-medium">
+                    {{ role.Icon }}
+                </span>
+            </div>
         </td>
         <td>
           <p-tag 
@@ -195,12 +202,19 @@
           </label>
         </div>
         <div class="col-8">
-          <input pInputText
-                 #inputField
-                 formControlName="Icon"
-                 class="form-control input100"
-                 [class.is-invalid]="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched"
-                 placeholder="e.g. pi pi-home or fa fa-minus-square" />
+         <p-iconfield iconPosition="left" class="w-100">
+            <p-inputicon>
+                <i  class="text-xl"
+                    [ngClass]="MenuResourceForm.get('Icon')?.value || 'pi pi-question-circle'"></i>
+            </p-inputicon>
+            <input
+                pInputText
+                formControlName="Icon"
+                class="w-100"
+                placeholder="e.g. pi pi-home or fa fa-minus-square"
+                [class.is-invalid]="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched"
+              />
+          </p-iconfield>
           <div *ngIf="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched" class="invalid-feedback">
             <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['required']">menu icon is required</div>
               <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['minlength']">
