@@ -120,29 +120,29 @@ export class MenuMappingMaster {
     this.displayDialog = true;
   }
 
-  editMenu(role: MMenuMappingMaster) {
+  editMenu(mapping: MMenuMappingMaster) {
     this.MenuMappingForm.patchValue({
-      MenuID: role.MenuID,
-      MenuName: role.MenuName,
-      MenuURL:role.MenuURL,
-      Icon:role.Icon,
+      MenuID: mapping.MenuID,
+      MenuName: mapping.MenuName,
+      MenuURL:mapping.MenuURL,
+      Icon:mapping.Icon,
        MCommonEntitiesMaster:{
-        IsActive: role.MCommonEntitiesMaster.IsActive
+        IsActive: mapping.MCommonEntitiesMaster.IsActive
       }
     });    
     this.MenuMappingDialogHeader = 'Edit Menu';
     this.displayDialog = true;
   }
   
-  deleteMenu(role: MMenuMappingMaster) {
+  deleteMenu(mapping: MMenuMappingMaster) {
     this.confirmationService.confirm({
       key: 'MenuMappingDialog',
-      message: `Are you sure you want to delete <b>${role.MenuName}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${mapping.MenuName}</b>? This action cannot be undone.`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
             try {
-                  this.MenuMappingMasterService.DeleteMenuMapping(role).subscribe({
+                  this.MenuMappingMasterService.DeleteMenuMapping(mapping).subscribe({
                           next: (res) => {
                                     console.log(res);
                                     if (!res.isError) {
@@ -167,7 +167,7 @@ export class MenuMappingMaster {
     });
   }
 
-  async saveRole() {
+  async savemapping() {
     debugger;
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.MenuMappingForm);
@@ -176,10 +176,10 @@ export class MenuMappingMaster {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-    const roleModel = this.FormUtils.getAllFormFieldData(this.formFields, this.MenuMappingForm, this.inputElements.toArray(), MMenuMappingMaster);
+    const mappingModel = this.FormUtils.getAllFormFieldData(this.formFields, this.MenuMappingForm, this.inputElements.toArray(), MMenuMappingMaster);
     this.saving = true;
     try {
-         this.MenuMappingMasterService.SaveMenuMapping(roleModel).subscribe({
+         this.MenuMappingMasterService.SaveMenuMapping(mappingModel).subscribe({
             next: (res) => {
                 console.log(res);
                 if (!res.isError) {
@@ -199,7 +199,7 @@ export class MenuMappingMaster {
               }
           });
     } catch (error) {
-      this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
+      this.messageService.showMessage('Failed to save Mapping. Please try again.', 'Error', PopupMessageType.Error);
     } finally {
       this.saving = false;
       this.displayDialog = false;

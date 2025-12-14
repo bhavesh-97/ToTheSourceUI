@@ -76,33 +76,33 @@
     </ng-template>
 
     <!-- Table Body -->
-    <ng-template pTemplate="body" let-role let-rowIndex="rowIndex">
+    <ng-template pTemplate="body" let-mapping let-rowIndex="rowIndex">
       <tr>
         <!-- <td>
-          <p-tableCheckbox [value]="role"></p-tableCheckbox>
+          <p-tableCheckbox [value]="mapping"></p-tableCheckbox>
         </td> -->
         <td>
               {{ (dt.first || 0) + rowIndex + 1 }}
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ role.MenuName }}</span>
+            <span class="font-medium">{{ mapping.MenuName }}</span>
           </div>
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ role.MenuURL }}</span>
+            <span class="font-medium">{{ mapping.MenuURL }}</span>
           </div>
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ role.Icon }}</span>
+            <span class="font-medium">{{ mapping.Icon }}</span>
           </div>
         </td>
         <td>
           <p-tag 
-            [value]="role.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
-            [severity]="role.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
+            [value]="mapping.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
+            [severity]="mapping.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -112,13 +112,13 @@
                     icon="pi pi-pencil" 
                     class="p-button-rounded p-button-text p-button-info" 
                     pTooltip="Edit" 
-                    (click)="editMenu(role)">
+                    (click)="editMenu(mapping)">
             </button>
             <button pButton 
                     icon="pi pi-trash" 
                     class="p-button-rounded p-button-text p-button-danger" 
                     pTooltip="Delete" 
-                    (click)="deleteMenu(role)">
+                    (click)="deleteMenu(mapping)">
             </button>
           </div>
         </td>
@@ -131,7 +131,7 @@
         <td colspan="5" class="text-center py-6 text-600">
           <i class="pi pi-inbox text-4xl mb-3"></i>
           <div class="text-lg">No Menu Resource found</div>
-          <p-button label="Add First Role" icon="pi pi-plus" class="mt-3 p-button-success" (click)="openNew()"></p-button>
+          <p-button label="Add First mapping" icon="pi pi-plus" class="mt-3 p-button-success" (click)="openNew()"></p-button>
         </td>
       </tr>
     </ng-template>
@@ -139,7 +139,7 @@
 </div>
 <p-dialog [(visible)]="displayDialog" [header]="MenuMappingDialogHeader" [modal]="true"
           [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
-  <form [formGroup]="MenuMappingForm" id="MenuMappingForm" (ngSubmit)="saveRole()"> 
+  <form [formGroup]="MenuMappingForm" id="MenuMappingForm" (ngSubmit)="savemapping()"> 
     <div class="container-fluid">
       <input pInputText #inputField formControlName="MenuID"  hidden/>
       <div class="row mb-3 align-items-center">
@@ -224,7 +224,7 @@
   <ng-template pTemplate="footer">
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false">
     </button>
-    <button type="submit" pButton label="Save Role" icon="pi pi-check" [loading]="saving" 
+    <button type="submit" pButton label="Save Mapping" icon="pi pi-check" [loading]="saving" 
             [disabled]="MenuMappingForm.invalid" class="p-button-success"form="MenuMappingForm">
     </button>
   </ng-template>
