@@ -154,7 +154,7 @@
                  formControlName="MenuName"
                  class="form-control input100"
                  [class.is-invalid]="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched"
-                 placeholder="e.g. Administrator" />
+                 placeholder="e.g. Admin Master" />
           <div *ngIf="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched" class="invalid-feedback">
             <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['required']">menu resource name is required</div>
               <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['minlength']">
@@ -164,7 +164,7 @@
         </div>
          <div class="col-8 mt-3 ">
           <label class="form-label fw-medium mb-0">
-            Role Level <span class="text-danger">*</span>
+            Menu URL<span class="text-danger">*</span>
           </label>
         </div>
          <div class="col-8">
@@ -173,7 +173,7 @@
               formControlName="MenuURL"
               class="form-control input100"
               [class.is-invalid]="MenuResourceForm.get('MenuURL')?.invalid && MenuResourceForm.get('MenuURL')?.touched"
-              placeholder="e.g. 1" />
+              placeholder="e.g. /main/users/list" />
 
             <div *ngIf="MenuResourceForm.get('MenuURL')?.invalid && MenuResourceForm.get('MenuURL')?.touched"class="invalid-feedback">
                 <div *ngIf="MenuResourceForm.get('MenuURL')?.errors?.['required']">
@@ -200,7 +200,7 @@
                  formControlName="Icon"
                  class="form-control input100"
                  [class.is-invalid]="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched"
-                 placeholder="e.g. Administrator" />
+                 placeholder="e.g. pi pi-home or fa fa-minus-square" />
           <div *ngIf="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched" class="invalid-feedback">
             <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['required']">menu icon is required</div>
               <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['minlength']">

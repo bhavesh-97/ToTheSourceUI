@@ -4,7 +4,7 @@
       <a *ngIf="item.children.length === 0"
          [routerLink]="item.link"
          routerLinkActive="active">
-        <i [class]="item.icon"></i>
+        <i [class]="item.icon" aria-hidden="true"></i>
         <span>{{ item.title }}</span>
       </a>
       <div *ngIf="item.children.length > 0" class="parent-menu">
@@ -18,13 +18,13 @@
             <a *ngIf="!child.children || child.children.length === 0"
               [routerLink]="child.link"
               routerLinkActive="active">
-                <i [class]="child.icon"></i>
+                <i [class]="child.icon" aria-hidden="true"></i>
                 <span>{{ child.title }}</span>
             </a>
 
           <div *ngIf="child.children && child.children.length > 0" class="parent-menu">
             <a (click)="toggleChild(child.title, true)" class="has-children">
-            <i [class]="child.icon"></i>
+            <i [class]="child.icon" aria-hidden="true"></i>
             <span>{{ child.title }}</span>
             <i class="pi" [ngClass]="opened[child.title] ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
           </a>
@@ -32,7 +32,7 @@
               <a *ngFor="let grandChild of child.children"
                 [routerLink]="grandChild.link"
                 routerLinkActive="active">
-                <i [class]="grandChild.icon"></i>
+                <i [class]="grandChild.icon" aria-hidden="true"></i>
                 <span>{{ grandChild.title }}</span>
               </a>
           </div>

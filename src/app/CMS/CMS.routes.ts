@@ -38,6 +38,11 @@ export const CMSRoutes: Routes = [
                             path: 'rolemaster',
                             loadComponent: () => import('./main/rolemaster/rolemaster').then(m => m.Rolemaster),
                         },
+                        
+                         {
+                            path: 'menuresoursemaster',
+                            loadComponent: () => import('./main/menu-resource-master/menu-resource-master').then(m => m.MenuResourceMaster),
+                        },
                       ],
           },
 ];

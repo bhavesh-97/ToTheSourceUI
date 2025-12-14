@@ -17,17 +17,17 @@ export class RolemasterService {
     private baseUrl = environment.CMSUrl;
     
     GetAllRoleDetails(encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/GetAllRoleDetails`,
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/RoleMaster/GetAllRoleDetails`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
     SaveRole(roleModel: MRoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/SaveRoleDetails`,roleModel,                    
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/SaveRoleDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
     DeleteRole(roleModel: MRoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/MRoleMaster/DeleteRoleDetails`,roleModel,                    
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/DeleteRoleDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
