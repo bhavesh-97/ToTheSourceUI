@@ -118,29 +118,29 @@ export class MenuResourceMaster {
     this.displayDialog = true;
   }
 
-  editMenu(role: MMenuResourceMaster) {
+  editMenu(menuresource: MMenuResourceMaster) {
     this.MenuResourceForm.patchValue({
-      MenuID: role.MenuID,
-      MenuName: role.MenuName,
-      MenuURL:role.MenuURL,
-      Icon:role.Icon,
+      MenuID: menuresource.MenuID,
+      MenuName: menuresource.MenuName,
+      MenuURL:menuresource.MenuURL,
+      Icon:menuresource.Icon,
        MCommonEntitiesMaster:{
-        IsActive: role.MCommonEntitiesMaster.IsActive
+        IsActive: menuresource.MCommonEntitiesMaster.IsActive
       }
     });    
     this.MenuResourceDialogHeader = 'Edit Menu';
     this.displayDialog = true;
   }
   
-  deleteMenu(role: MMenuResourceMaster) {
+  deleteMenu(menuresource: MMenuResourceMaster) {
     this.confirmationService.confirm({
       key: 'MenuResourceDialog',
-      message: `Are you sure you want to delete <b>${role.MenuName}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${menuresource.MenuName}</b>? This action cannot be undone.`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
             try {
-                  this.MenuResourceMasterService.DeleteMenuResource(role).subscribe({
+                  this.MenuResourceMasterService.DeleteMenuResource(menuresource).subscribe({
                           next: (res) => {
                                     console.log(res);
                                     if (!res.isError) {
@@ -165,7 +165,7 @@ export class MenuResourceMaster {
     });
   }
 
-  async saveRole() {
+  async saveMenuResource() {
     debugger;
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.MenuResourceForm);
@@ -174,10 +174,10 @@ export class MenuResourceMaster {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
-    const roleModel = this.FormUtils.getAllFormFieldData(this.formFields, this.MenuResourceForm, this.inputElements.toArray(), MMenuResourceMaster);
+    const menuresourceModel = this.FormUtils.getAllFormFieldData(this.formFields, this.MenuResourceForm, this.inputElements.toArray(), MMenuResourceMaster);
     this.saving = true;
     try {
-         this.MenuResourceMasterService.SaveMenuResource(roleModel).subscribe({
+         this.MenuResourceMasterService.SaveMenuResource(menuresourceModel).subscribe({
             next: (res) => {
                 console.log(res);
                 if (!res.isError) {
@@ -197,7 +197,7 @@ export class MenuResourceMaster {
               }
           });
     } catch (error) {
-      this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
+      this.messageService.showMessage('Failed to save menuresource. Please try again.', 'Error', PopupMessageType.Error);
     } finally {
       this.saving = false;
       this.displayDialog = false;
