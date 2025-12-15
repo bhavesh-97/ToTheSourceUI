@@ -27,8 +27,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
      provideHttpClient(
       withInterceptors([
-        encryptionInterceptor,
-        tokenInterceptor
+        tokenInterceptor,
+        encryptionInterceptor
       ]),
       withInterceptorsFromDi()
     ),

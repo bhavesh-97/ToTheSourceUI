@@ -1,65 +1,75 @@
 // token.interceptor.ts
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, throwError } from 'rxjs';
 import { LoginService } from '../authentication/login/login.service';
 import { NotificationService } from '../services/notification.service';
 import { PopupMessageType } from '../models/PopupMessageType';
-import { error } from 'console';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(LoginService);
   const notificationService = inject(NotificationService);
+  const router = inject(Router);
+  
+  // Get the token
   const token = authService.getToken();
-  // Add token if exists
+  
+  console.log('Token Interceptor - Processing request to:', req.url);
+  console.log('Token Interceptor - Token exists:', !!token);
+  
+  // Clone request and add token if it exists
+  let authReq = req;
   if (token) {
-    req = req.clone({
+    authReq = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
+    console.log('Token Interceptor - Authorization header added');
+  } else {
+    console.log('Token Interceptor - No token found');
   }
-
-  return next(req).pipe(
+  
+  // Handle the request and catch 401 errors
+  return next(authReq).pipe(
     catchError((error: any) => {
-      if(error instanceof HttpErrorResponse) {
-        if (error.status === 401) {
-          notificationService.showMessage("Please login again", "Session Expired", PopupMessageType.SessionExpired);
-          authService.logout();
-        // return handle401Error(req, next);
+      console.log('Token Interceptor - Error occurred:', error);
+      
+      if (error instanceof HttpErrorResponse) {
+        switch (error.status) {
+          case 401: // Unauthorized
+            console.log('Token Interceptor - 401 Unauthorized detected');
+            notificationService.showMessage(
+              'Your session has expired. Please log in again.',
+              'Session Expired',
+              PopupMessageType.Error
+            );
+            authService.logout();
+            router.navigate(['/login']);
+            break;
+            
+          case 403: // Forbidden
+            console.log('Token Interceptor - 403 Forbidden detected');
+            notificationService.showMessage(
+              'You do not have permission to access this resource.',
+              'Access Denied',
+              PopupMessageType.Error
+            );
+            break;
+            
+          case 0: // Network error or CORS issue
+            console.log('Token Interceptor - Network error detected');
+            notificationService.showMessage(
+              'Unable to connect to the server. Please check your internet connection.',
+              'Connection Error',
+              PopupMessageType.Error
+            );
+            break;
         }
       }
+      
       return throwError(() => error);
     })
   );
-
-  // Handle 401 + refresh token
-  // function handle401Error(request: any, next: any) {
-  //   const tokenModel = new TokenApiModel();
-  //   tokenModel.accessToken = authService.getToken()!;
-  //   // tokenModel.refreshToken = authService.getRefreshToken()!;
-
-  //   return authService.renewToken(tokenModel).pipe(
-  //     switchMap((data: TokenApiModel) => {
-  //       authService.storeToken(data.accessToken);
-  //       // authService.storeRefreshToken(data.refreshToken);
-
-  //       // Retry original request with new token
-  //       const cloned = request.clone({
-  //         setHeaders: {
-  //           Authorization: `Bearer ${data.accessToken}`
-  //         }
-  //       });
-
-  //       return next(cloned);
-  //     }),
-  //     catchError(refreshError => {
-  //       // Refresh failed → force logout
-  //       notificationService.showMessage(PopupMessageType.SessionExpired, "Session Expired", "Please login again");
-  //       authService.logout(); 
-  //       return throwError(() => refreshError);
-  //     })
-  //   );
-  // }
 };

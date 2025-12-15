@@ -25,26 +25,32 @@ export const CMSRoutes: Routes = [
                         {
                             path: 'dashboard',
                             loadComponent: () => import('./main/dashboard/dashboard').then(m => m.Dashboard),
+                            canActivate: [authGuard]
                         },
                         {
                             path: 'gsap',
                             loadComponent: () => import('./main/gsap-master/gsap-master').then(m => m.GsapMaster),
+                            canActivate: [authGuard]
                         },                        
                         {
                             path: 'template',
                             loadComponent: () => import('./main/template-master/template-master').then(m => m.TemplateMaster),
+                            canActivate: [authGuard]
                         },
                          {
                             path: 'rolemaster',
                             loadComponent: () => import('./main/rolemaster/rolemaster').then(m => m.Rolemaster),
+                            canActivate: [authGuard]
                         },
                          {
                             path: 'menuresoursemaster',
                             loadComponent: () => import('./main/menu-resource-master/menu-resource-master').then(m => m.MenuResourceMaster),
+                            canActivate: [authGuard]
                         },
                         {
                             path: 'menumappingmaster',
                             loadComponent: () => import('./main/menu-mapping-master/menu-mapping-master').then(m => m.MenuMappingMaster),
+                            canActivate: [authGuard]
                         },
                       ],
           },

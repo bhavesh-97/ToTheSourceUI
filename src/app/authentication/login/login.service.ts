@@ -20,6 +20,10 @@ export class LoginService {
     private router = inject(Router);
     private encryption = inject(Encryption);
     private baseUrl = environment.CMSUrl;
+    private readonly TOKEN_KEY = 'auth_token';
+    private readonly USER_INFO_KEY= 'user_info';
+    private readonly USER_Menu_INFO_KEY= 'user_menu_info';
+
     protected demoLoginResponse: JsonResponseModel = {
         isError: false,
         strMessage: "Login successful",
@@ -235,9 +239,12 @@ export class LoginService {
           // return of(this.demoLoginResponse).pipe(delay(500));
       }
       isLoggedIn(): boolean {
-          return this.getToken() !== null;
+          return !!this.getToken();
       }
       logout(): void {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_INFO_KEY);
+        localStorage.removeItem(this.USER_Menu_INFO_KEY);
         localStorage.clear();
         this.router.navigate(['login']);
       }
@@ -248,20 +255,20 @@ export class LoginService {
       storeUserInfo(user: MUser) {
         const json = JSON.stringify(user);
         const encrypted = this.encryption.frontEncryptEncode(json);
-        localStorage.setItem('user', encrypted);
+        localStorage.setItem(this.USER_INFO_KEY, encrypted);
       }
       getUserInfo(): MUser | null {
-        const encrypted = localStorage.getItem('user');
+        const encrypted = localStorage.getItem(this.USER_INFO_KEY);
         if (!encrypted) return null;
         return JSON.parse(this.encryption.frontDecryptDecode(encrypted));
       }
       storeMenuList(menu: MUserMenuIDAM[]) {
         const json = JSON.stringify(menu);
         const encrypted = this.encryption.frontEncryptEncode(json);
-        localStorage.setItem('menu', encrypted);
+        localStorage.setItem(this.USER_Menu_INFO_KEY, encrypted);
       }
       getMenuList(): MUserMenuIDAM[] {
-          const encrypted = localStorage.getItem('menu');
+          const encrypted = localStorage.getItem(this.USER_Menu_INFO_KEY);
           if (!encrypted) return [];
 
           try {
@@ -290,12 +297,17 @@ export class LoginService {
           localStorage.setItem("permissions", encrypted);
       }
       storeToken(token: string): void {
-        // localStorage.setItem('token', token);
           const encrypted = this.encryption.frontEncryptEncode(token);
-          localStorage.setItem('token', encrypted);
+          localStorage.setItem(this.TOKEN_KEY, encrypted);
       }
+      // storeToken(token: string): void {
+      //   // localStorage.setItem('token', token);
+      //     const encrypted = this.encryption.frontEncryptEncode(token);
+      //     localStorage.setItem('token', encrypted);
+      // }
+     
       getToken(): string | null {
-          const encrypted = localStorage.getItem('token');
+          const encrypted = localStorage.getItem(this.TOKEN_KEY);
           if (!encrypted) return '';
 
           const decrypted = this.encryption.frontDecryptDecode(encrypted);
