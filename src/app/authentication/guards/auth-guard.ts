@@ -9,12 +9,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const loginService = inject(LoginService);
   const notificationService = inject(NotificationService);
   const router = inject(Router);
-  
-  console.log('AuthGuard - Checking authentication for route:', route.routeConfig?.path);
-  
-  // Check if user is logged in
   if (!loginService.isLoggedIn()) {
-    console.log('AuthGuard - User not logged in, redirecting to login');
     notificationService.showMessage(
       'You need to log in to access this page.',
       'Authentication Required',
@@ -27,13 +22,11 @@ export const authGuard: CanActivateFn = (route, state) => {
   // Get token and check expiration
   const token = loginService.getToken();
   if (!token) {
-    console.log('AuthGuard - Token not found');
     loginService.logout();
     router.navigate(['/login']);
     return false;
   }
   
-  // Decode token to check expiration
   try {
     const tokenPayload = JSON.parse(atob(token.split('.')[1]));
     const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
@@ -46,7 +39,6 @@ export const authGuard: CanActivateFn = (route, state) => {
     });
     
     if (expirationTime < currentTime) {
-      console.log('AuthGuard - Token expired');
       notificationService.showMessage(
         'Your session has expired. Please log in again.',
         'Session Expired',
@@ -57,7 +49,6 @@ export const authGuard: CanActivateFn = (route, state) => {
       return false;
     }
     
-    // Check if token will expire soon (within 5 minutes)
     const fiveMinutes = 5 * 60 * 1000;
     if (expirationTime - currentTime < fiveMinutes) {
       console.log('AuthGuard - Token will expire soon');

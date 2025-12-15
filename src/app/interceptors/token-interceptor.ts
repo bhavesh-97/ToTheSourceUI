@@ -12,13 +12,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const notificationService = inject(NotificationService);
   const router = inject(Router);
   
-  // Get the token
   const token = authService.getToken();
-  
-  console.log('Token Interceptor - Processing request to:', req.url);
-  console.log('Token Interceptor - Token exists:', !!token);
-  
-  // Clone request and add token if it exists
   let authReq = req;
   if (token) {
     authReq = req.clone({
@@ -26,16 +20,12 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
         Authorization: `Bearer ${token}`
       }
     });
-    console.log('Token Interceptor - Authorization header added');
   } else {
     console.log('Token Interceptor - No token found');
   }
   
-  // Handle the request and catch 401 errors
   return next(authReq).pipe(
     catchError((error: any) => {
-      console.log('Token Interceptor - Error occurred:', error);
-      
       if (error instanceof HttpErrorResponse) {
         switch (error.status) {
           case 401: // Unauthorized
