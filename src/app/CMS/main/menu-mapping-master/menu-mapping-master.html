@@ -55,7 +55,7 @@
         <tr>
             <th class="col-serial" ttResizableColumn>#</th>
             <th class="col-menu" ttResizableColumn>Menu</th>
-            <th class="col-url" ttResizableColumn>URL</th>
+            <!-- <th class="col-url" ttResizableColumn>URL</th> -->
             <th class="col-type" ttResizableColumn>Type</th>
             <th class="col-rank" ttResizableColumn>Rank</th>
             <th class="col-parent" ttResizableColumn>Parent</th>
@@ -84,12 +84,12 @@
                 </div>
             </td>
 
-            <td class="col-url">
+            <!-- <td class="col-url">
                 <span class="text-color-secondary" 
                       pTooltip="{{ rowData.MenuURL }}" tooltipPosition="top">
                     {{ rowData.MenuURL || '#' }}
                 </span>
-            </td>
+            </td> -->
 
             <td class="col-type">
                 <i [class]="getMenuTypeIcon(rowData.MenuType) + ' mr-1'"></i>
