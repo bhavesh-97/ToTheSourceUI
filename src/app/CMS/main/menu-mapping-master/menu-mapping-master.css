@@ -63,3 +63,7 @@
 .menu-stat.warning .value {
   color: var(--purple-500);
 }
+.p-treetable .p-column-resizer {
+  background: var(--primary-color);
+  width: 3px;
+}

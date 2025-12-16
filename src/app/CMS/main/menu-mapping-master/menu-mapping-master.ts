@@ -23,7 +23,8 @@ import { SelectModule } from 'primeng/select';
 import { MMenuResourceMaster } from '../menu-resource-master/MenuResourceMaster';
 import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
-import { Card, CardModule } from "primeng/card";
+import { CardModule } from "primeng/card";
+import { MessageModule } from 'primeng/message';
 
 @Component({
   selector: 'app-menu-mapping-master',
@@ -38,6 +39,7 @@ import { Card, CardModule } from "primeng/card";
     DialogModule,
     ConfirmDialogModule,
     TagModule,
+    MessageModule,
     SelectModule,
     InputNumberModule,
     ToggleSwitchModule,
@@ -54,48 +56,34 @@ import { Card, CardModule } from "primeng/card";
 })
 export class MenuMappingMaster implements OnInit {
   @ViewChild('tt') tt!: TreeTable;
-
   private menuMappingService = inject(MenuMappingMasterService);
   private menuResourceService = inject(MenuResourceMasterService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
   private fb = inject(FormBuilder);
-
-  // Data
   menuMappings: TreeNode<MMenuMappingMaster>[] = [];
   filteredMenuMappings: TreeNode<MMenuMappingMaster>[] = [];
   menuResources: MMenuResourceMaster[] = [];
   parentMenuOptions: ParentMenuOption[] = [];
   filteredMenuResources: MMenuResourceMaster[] = [];
-
-  // UI State
   loading: boolean = true;
   saving: boolean = false;
   displayDialog: boolean = false;
   dialogHeader: string = '';
   selectedNode: TreeNode<MMenuMappingMaster> | null = null;
   globalFilter: string = '';
-  
-  // Filter state
   selectedStatus: boolean | null = null;
   selectedMenuType: number | null = null;
-
-  // Form
   menuMappingForm: FormGroup;
-
-  // Dropdown Options
   menuTypes: MenuTypeOption[] = [
     { label: 'Main Menu', value: 1, icon: 'pi pi-home' },
     { label: 'Sub Menu', value: 2, icon: 'pi pi-folder' },
     { label: 'Action', value: 3, icon: 'pi pi-cog' }
   ];
-
   statusOptions: StatusOption[] = [
     { label: 'Active', value: true },
     { label: 'Inactive', value: false }
   ];
-
-  // Stats
   activeMenuCount: number = 0;
   mainMenuCount: number = 0;
   maxLevel: number = 0;
@@ -113,13 +101,9 @@ export class MenuMappingMaster implements OnInit {
       MenuRank: [1, [Validators.required, Validators.min(1), Validators.max(999)]],
       IsActive: [true]
     });
-
-    // Watch for MenuID changes to populate Menu details
     this.menuMappingForm.get('MenuID')?.valueChanges.subscribe(menuId => {
       this.onMenuSelected(menuId);
     });
-
-    // Watch for MenuType changes to adjust ParentID
     this.menuMappingForm.get('MenuType')?.valueChanges.subscribe(menuType => {
       this.onMenuTypeChanged(menuType);
     });
@@ -128,6 +112,29 @@ export class MenuMappingMaster implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadMenuResources();
+  }
+  private getVisibleNodes(): TreeNode<MMenuMappingMaster>[] {
+  const visible: TreeNode<MMenuMappingMaster>[] = [];
+
+  const traverse = (nodes: TreeNode<MMenuMappingMaster>[]) => {
+    for (const node of nodes) {
+      visible.push(node);
+
+      if (node.expanded && node.children?.length) {
+        traverse(node.children);
+      }
+    }
+  };
+
+  traverse(this.filteredMenuMappings);
+  return visible;
+}
+
+  getNodeIndex(row: any): number {
+    const node = this.resolveTreeNode(row);
+    if (!node) return 0;
+    const visibleNodes = this.getVisibleNodes();
+    return visibleNodes.findIndex(n => n.key === node.key) + 1;
   }
 
   loadData() {
@@ -177,160 +184,75 @@ export class MenuMappingMaster implements OnInit {
     });
   }
 
-  // buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
-  //   const tree: TreeNode<MMenuMappingMaster>[] = [];
-  //   const map: { [key: number]: TreeNode<MMenuMappingMaster> } = {};
-
-  //   // First pass: create map
-  //   flatData.forEach(item => {
-  //     map[item.MappingID] = {
-  //       data: item,
-  //       children: [],
-  //       key: item.MappingID.toString(),
-  //       label: item.MenuName,
-  //       expanded: false // Initialize expanded state
-  //     };
-  //   });
-
-  //   // Second pass: build tree
-  //   flatData.forEach(item => {
-  //     const node = map[item.MappingID];
-  //     if (item.ParentID === 0) {
-  //       tree.push(node);
-  //     } else {
-  //       if (map[item.ParentID]) {
-  //         map[item.ParentID].children!.push(node);
-  //       } else {
-  //         // Orphan node - add to root
-  //         tree.push(node);
-  //       }
-  //     }
-  //   });
-
-  //   // Sort tree by MenuRank
-  //   const sortTree = (nodes: TreeNode<MMenuMappingMaster>[]): TreeNode<MMenuMappingMaster>[] => {
-  //     return nodes
-  //       .sort((a, b) => (a.data!.MenuRank - b.data!.MenuRank))
-  //       .map(node => {
-  //         if (node.children && node.children.length > 0) {
-  //           node.children = sortTree(node.children);
-  //         }
-  //         return node;
-  //       });
-  //   };
-
-  //   return sortTree(tree);
-  // }
-buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
-  const roots: TreeNode<MMenuMappingMaster>[] = [];
-
-  // Map by MenuID (IMPORTANT)
-  const map = new Map<number, TreeNode<MMenuMappingMaster>>();
-
-  // Step 1: Create nodes
-  flatData.forEach(item => {
-    map.set(item.MenuID, {
-      key: item.MenuID.toString(),
-      data: item,
-      children: [],
-      expanded: false
-    });
-  });
-
-  // Step 2: Link parent → child using ParentID → MenuID
-  flatData.forEach(item => {
-    const node = map.get(item.MenuID)!;
-
-    if (item.ParentID === 0 || item.ParentID === null) {
-      // ROOT MENU
-      roots.push(node);
-    } else {
-      const parentNode = map.get(item.ParentID);
-      if (parentNode) {
-        parentNode.children!.push(node);
-      } else {
-        // Safety fallback (orphan)
-        roots.push(node);
-      }
-    }
-  });
-
-  // Step 3: Sort by MenuRank recursively
-  const sortRecursive = (nodes: TreeNode<MMenuMappingMaster>[]) => {
-    nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
-    nodes.forEach(n => n.children && sortRecursive(n.children));
-  };
-
-  sortRecursive(roots);
-  return roots;
-}
-isRootMenu(menu: MMenuMappingMaster): boolean {
-  return menu.ParentID === 0 || menu.ParentID === null;
-}
-
-  // buildParentMenuOptions() {
-  //   const flattenTree = (nodes: TreeNode<MMenuMappingMaster>[], level = 0): ParentMenuOption[] => {
-  //     let result: ParentMenuOption[] = [];
-  //     nodes.forEach(node => {
-  //       const prefix = '—'.repeat(level * 2);
-  //       result.push({
-  //         label: `${prefix} ${node.data!.MenuName} (${this.getMenuTypeLabel(node.data!.MenuType)})`,
-  //         value: node.data!.MappingID,
-  //         data: node.data!
-  //       });
-  //       if (node.children && node.children.length > 0) {
-  //         result = result.concat(flattenTree(node.children, level + 1));
-  //       }
-  //     });
-  //     return result;
-  //   };
-
-  //   const rootOption: ParentMenuOption = {
-  //     label: '🏠 Root (Top Level)',
-  //     value: 0,
-  //     data: null
-  //   };
-
-  //   this.parentMenuOptions = [rootOption, ...flattenTree(this.menuMappings)];
-  // }
-buildParentMenuOptions() {
-  const options: ParentMenuOption[] = [
-    { label: '🏠 Root (Top Level)', value: 0, data: null }
-  ];
-
-  const traverse = (nodes: TreeNode<MMenuMappingMaster>[], level = 0) => {
-    nodes.forEach(node => {
-      options.push({
-        label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
-        value: node.data!.MenuID, // IMPORTANT
-        data: node.data!
+  buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
+    const roots: TreeNode<MMenuMappingMaster>[] = [];
+    const map = new Map<number, TreeNode<MMenuMappingMaster>>();
+    flatData.forEach(item => {
+      map.set(item.MenuID, {
+        key: item.MenuID.toString(),
+        data: item,
+        children: [],
+        expanded: false
       });
+    });
 
-      if (node.children?.length) {
-        traverse(node.children, level + 1);
+    flatData.forEach(item => {
+      const node = map.get(item.MenuID)!;
+      if (item.ParentID === 0 || item.ParentID === null) {
+        roots.push(node);
+      } else {
+        const parentNode = map.get(item.ParentID);
+        if (parentNode) {
+          parentNode.children!.push(node);
+        } else {
+          roots.push(node);
+        }
       }
     });
-  };
 
-  traverse(this.menuMappings);
-  this.parentMenuOptions = options;
-}
+    const sortRecursive = (nodes: TreeNode<MMenuMappingMaster>[]) => {
+      nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
+      nodes.forEach(n => n.children && sortRecursive(n.children));
+    };
+    sortRecursive(roots);
+    return roots;
+  }
+
+  isRootMenu(menu: MMenuMappingMaster): boolean {
+    return menu.ParentID === 0 || menu.ParentID === null;
+  }
+
+  buildParentMenuOptions() {
+    const options: ParentMenuOption[] = [
+      { label: '🏠 Root (Top Level)', value: 0, data: null }
+    ];
+
+    const traverse = (nodes: TreeNode<MMenuMappingMaster>[], level = 0) => {
+      nodes.forEach(node => {
+        options.push({
+          label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
+          value: node.data!.MenuID, // IMPORTANT
+          data: node.data!
+        });
+
+        if (node.children?.length) {
+          traverse(node.children, level + 1);
+        }
+      });
+    };
+
+    traverse(this.menuMappings);
+    this.parentMenuOptions = options;
+  }
 
   calculateStats() {
-    // Calculate total menus
     this.totalMenus = this.countNodes(this.menuMappings);
-
-    // Calculate active menu count
     this.activeMenuCount = this.countNodesByCondition(this.menuMappings, 
       node => node.data!.MCommonEntitiesMaster.IsActive
     );
-
-    // Calculate main menu count
     this.mainMenuCount = this.countNodesByCondition(this.menuMappings,
       node => node.data!.MenuType === 1
     );
-
-    // Calculate max level
     const calculateMaxLevel = (nodes: TreeNode<MMenuMappingMaster>[], currentLevel: number): number => {
       let maxLevel = currentLevel;
       nodes.forEach(node => {
@@ -341,7 +263,6 @@ buildParentMenuOptions() {
       });
       return maxLevel;
     };
-    
     this.maxLevel = calculateMaxLevel(this.menuMappings, 0);
   }
 
@@ -386,43 +307,27 @@ buildParentMenuOptions() {
     this.displayDialog = true;
   }
 
-  // openNewChild(parentNode: TreeNode<MMenuMappingMaster>) {
-  //   this.selectedNode = parentNode;
-  //   this.menuMappingForm.reset({
-  //     MappingID: 0,
-  //     MenuID: null,
-  //     MenuName: '',
-  //     MenuURL: '',
-  //     Icon: '',
-  //     MenuType: 2,
-  //     ParentID: parentNode.data!.MappingID,
-  //     MenuRank: (parentNode.children?.length || 0) + 1,
-  //     IsActive: true
-  //   });
-  //   this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
-  //   this.displayDialog = true;
-  // }
-openNewChild(row: any) {
-  const parentNode = this.resolveTreeNode(row);
-  if (!parentNode) return;
+  openNewChild(row: any) {
+    const parentNode = this.resolveTreeNode(row);
+    if (!parentNode) return;
 
-  this.selectedNode = parentNode;
+    this.selectedNode = parentNode;
 
-  this.menuMappingForm.reset({
-    MappingID: 0,
-    MenuID: null,
-    MenuName: '',
-    MenuURL: '',
-    Icon: '',
-    MenuType: 2,
-    ParentID: parentNode.data!.MenuID, // ✅ MenuID
-    MenuRank: (parentNode.children?.length || 0) + 1,
-    IsActive: true
-  });
+    this.menuMappingForm.reset({
+      MappingID: 0,
+      MenuID: null,
+      MenuName: '',
+      MenuURL: '',
+      Icon: '',
+      MenuType: 2,
+      ParentID: parentNode.data!.MenuID, 
+      MenuRank: (parentNode.children?.length || 0) + 1,
+      IsActive: true
+    });
 
-  this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
-  this.displayDialog = true;
-}
+    this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
+    this.displayDialog = true;
+  }
 
   editMenu(row: any) {
     const node = this.resolveTreeNode(row);
@@ -475,7 +380,7 @@ openNewChild(row: any) {
       }
     });
   }
-private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
+  private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
   if (!row) return null;
   if (row.node && row.node.data) {
     return row.node as TreeNode<MMenuMappingMaster>;
@@ -483,10 +388,9 @@ private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
   if (row.data) {
     return row as TreeNode<MMenuMappingMaster>;
   }
-
   console.error('Invalid TreeTable row passed:', row);
   return null;
-}
+  }
 
   onMenuSelected(menuId: number) {
     const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
@@ -500,7 +404,7 @@ private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
   }
 
   onMenuTypeChanged(menuType: number) {
-    if (menuType === 1) { // Main Menu
+    if (menuType === 1) {
       this.menuMappingForm.patchValue({ ParentID: 0 });
     }
   }
@@ -596,20 +500,13 @@ private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
       this.filteredMenuMappings = [...this.menuMappings];
       return;
     }
-
     let filteredData = this.menuMappings;
-    
-    // Apply menu type filter
     if (this.selectedMenuType !== null) {
       filteredData = this.filterTreeByType(filteredData, this.selectedMenuType);
     }
-    
-    // Apply status filter
     if (this.selectedStatus !== null) {
       filteredData = this.filterTreeByStatus(filteredData, this.selectedStatus);
     }
-    
-    // Apply global filter
     if (this.globalFilter.trim()) {
       filteredData = this.filterTreeByText(filteredData, this.globalFilter.trim());
     }
@@ -620,13 +517,10 @@ private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
   private filterTreeByType(nodes: TreeNode<MMenuMappingMaster>[], menuType: number): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
       if (node.data!.MenuType === menuType) {
-        // Include node and all its children
         result.push(node);
       } else if (node.children && node.children.length > 0) {
-        // Check children
         const filteredChildren = this.filterTreeByType(node.children, menuType);
         if (filteredChildren.length > 0) {
-          // Include parent if any child matches
           result.push({
             ...node,
             children: filteredChildren
@@ -741,38 +635,17 @@ private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
     this.filteredMenuMappings = [...this.filteredMenuMappings];
   }
 
+  getSerialNumber(rowIndex: number): number {
+    const first = this.tt?.first ?? 0;
+    return first + rowIndex + 1;
+  }
   exportToCSV() {
     this.exportToCSVCustom();
   }
-getSerialNumber(index: number): number {
-  const page = this.tt?.first ?? 0;
-  const rows = this.tt?.rows ?? 10;
-  return page + index + 1;
-}
-getNodeIndex(rowNode: TreeNode): number {
-  const flat: TreeNode[] = [];
-
-  const flatten = (nodes: TreeNode[]) => {
-    for (const n of nodes) {
-      flat.push(n);
-      if (n.children?.length) {
-        flatten(n.children);
-      }
-    }
-  };
-
-  flatten(this.filteredMenuMappings);
-  return flat.indexOf(rowNode) + 1;
-}
-
   private exportToCSVCustom() {
     let csvContent = "data:text/csv;charset=utf-8,";
-    
-    // Headers
     const headers = ['Menu Name', 'URL', 'Type', 'Rank', 'Parent', 'Status', 'Level'];
     csvContent += headers.join(',') + '\n';
-    
-    // Data
     const addNodeToCSV = (node: TreeNode<MMenuMappingMaster>, level: number) => {
       const row = [
         `"${node.data!.MenuName}"`,
@@ -791,8 +664,6 @@ getNodeIndex(rowNode: TreeNode): number {
     };
     
     this.menuMappings.forEach(node => addNodeToCSV(node, 0));
-    
-    // Create download link
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -813,11 +684,8 @@ getNodeIndex(rowNode: TreeNode): number {
     const menu = this.menuResources.find(m => m.MenuID === menuId);
     return menu?.MenuName || 'Select Menu';
   }
-
-  // Manually toggle row expansion
   toggleRow(node: TreeNode<MMenuMappingMaster>) {
     node.expanded = !node.expanded;
-    // Force change detection
     this.filteredMenuMappings = [...this.filteredMenuMappings];
   }
 }
