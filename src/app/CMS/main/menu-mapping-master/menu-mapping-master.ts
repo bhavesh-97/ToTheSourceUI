@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ViewChildren, QueryList, ElementRef, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ConfirmationService, TreeNode, MessageService } from 'primeng/api';
@@ -25,6 +25,9 @@ import { MenuResourceMasterService } from '../menu-resource-master/menu-resource
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
 import { CardModule } from "primeng/card";
 import { MessageModule } from 'primeng/message';
+import { FormUtils } from '../../../shared/utilities/form-utils.ts';
+import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
+import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 
 @Component({
   selector: 'app-menu-mapping-master',
@@ -56,11 +59,14 @@ import { MessageModule } from 'primeng/message';
 })
 export class MenuMappingMaster implements OnInit {
   @ViewChild('tt') tt!: TreeTable;
+  @ViewChildren('inputField') inputElements!: QueryList<any>;
   private menuMappingService = inject(MenuMappingMasterService);
   private menuResourceService = inject(MenuResourceMasterService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
   private fb = inject(FormBuilder);
+  private FormUtils = inject(FormUtils);
+  private renderer = inject(Renderer2);
   menuMappings: TreeNode<MMenuMappingMaster>[] = [];
   filteredMenuMappings: TreeNode<MMenuMappingMaster>[] = [];
   menuResources: MMenuResourceMaster[] = [];
@@ -74,7 +80,11 @@ export class MenuMappingMaster implements OnInit {
   globalFilter: string = '';
   selectedStatus: boolean | null = null;
   selectedMenuType: number | null = null;
-  menuMappingForm: FormGroup;
+  menuMappingForm!: FormGroup;
+  activeMenuCount: number = 0;
+  mainMenuCount: number = 0;
+  maxLevel: number = 0;
+  totalMenus: number = 0;
   menuTypes: MenuTypeOption[] = [
     { label: 'Main Menu', value: 1, icon: 'pi pi-home' },
     { label: 'Sub Menu', value: 2, icon: 'pi pi-folder' },
@@ -84,23 +94,17 @@ export class MenuMappingMaster implements OnInit {
     { label: 'Active', value: true },
     { label: 'Inactive', value: false }
   ];
-  activeMenuCount: number = 0;
-  mainMenuCount: number = 0;
-  maxLevel: number = 0;
-  totalMenus: number = 0;
+  private formFields: FormFieldConfig[] = [
+    { name: 'MappingID', isMandatory: false, events: [] },
+    { name: 'MenuID', isMandatory: true, validationMessage: 'Please Select Menu',events: [] },
+    { name: 'MenuType', isMandatory: true, validationMessage: 'Please Select Menu Type',events: [] },
+    { name: 'MenuRank', isMandatory: true, min:1, max:99 ,validationMessage: 'Please enter a valid Menu Rank.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly}, { type: 'focusout', validationRule: ValidationRules.NumberOnly }]},
+    { name: 'ParentID', isMandatory: false, validationMessage: 'Please Select Parent Menu',events: [] },
+    { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+  ];
 
   constructor() {
-    this.menuMappingForm = this.fb.group({
-      MappingID: [0],
-      MenuID: [null, Validators.required],
-      MenuName: [''],
-      MenuURL: [''],
-      Icon: [''],
-      MenuType: [1, Validators.required],
-      ParentID: [0],
-      MenuRank: [1, [Validators.required, Validators.min(1), Validators.max(999)]],
-      IsActive: [true]
-    });
+    this.menuMappingForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
     this.menuMappingForm.get('MenuID')?.valueChanges.subscribe(menuId => {
       this.onMenuSelected(menuId);
     });
@@ -112,6 +116,9 @@ export class MenuMappingMaster implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadMenuResources();
+  }
+  ngAfterViewInit() {
+      this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.menuMappingForm);
   }
   private getVisibleNodes(): TreeNode<MMenuMappingMaster>[] {
   const visible: TreeNode<MMenuMappingMaster>[] = [];
@@ -414,20 +421,17 @@ export class MenuMappingMaster implements OnInit {
       this.markFormGroupTouched(this.menuMappingForm);
       return;
     }
-
-    const formValue = this.menuMappingForm.value;
-    const mapping: SaveMenuMappingRequest = {
-      MappingID: formValue.MappingID > 0 ? formValue.MappingID : undefined,
-      MenuID: formValue.MenuID,
-      MenuType: formValue.MenuType,
-      ParentID: formValue.ParentID,
-      MenuRank: formValue.MenuRank,
-      IsActive: formValue.IsActive
-    };
-
+     const outcome = this.FormUtils.validateFormFields(this.formFields, this.menuMappingForm, this.inputElements.toArray(), this.renderer);
+    if (outcome.isError) {
+      this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
+      return;
+    }  
+    const menumappingModel = this.FormUtils.getAllFormFieldData(this.formFields, this.menuMappingForm, this.inputElements.toArray(), SaveMenuMappingRequest);
+    console.log(menumappingModel);
     this.saving = true;
-    this.menuMappingService.SaveMenuMapping(mapping).subscribe({
+    this.menuMappingService.SaveMenuMapping(menumappingModel).subscribe({
       next: (res) => {
+        debugger;
         this.saving = false;
         if (!res.isError) {
           this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Success);

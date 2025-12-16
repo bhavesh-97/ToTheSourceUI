@@ -148,8 +148,13 @@ export class FormUtils {
     renderer: Renderer2,
     formGroup: FormGroup
   ): void {
+    debugger;
     formFields.forEach((field, index) => {
-      const element = elementRefs[index]?.nativeElement as HTMLInputElement;        
+      // const element = elementRefs[index]?.nativeElement as HTMLInputElement;        
+      //const element = elementRefs[index]?.nativeElement as HTMLElement;      
+      const ref = elementRefs[index];
+      const element = this.resolveNativeElement(ref);
+    
       if (!element) {
          console.warn(`⚠️ UI Element not found for form field '${field.name}'`);
          return;
@@ -170,7 +175,8 @@ export class FormUtils {
   private handleEvent(
     event: Event,
     rule: ValidationRules,
-    element: HTMLInputElement,
+    element: HTMLElement,
+    // element: HTMLInputElement,
     renderer: Renderer2,
     field: FormFieldConfig,
     formControl: AbstractControl
@@ -185,8 +191,11 @@ export class FormUtils {
     }
 
     if (event.type === 'focusout') {
-      const isEmpty = !element.value;
-      const isValid = regex.test(element.value);
+       const value = this.getElementValue(element);
+      if (value === null) return;
+
+      const isEmpty = !value;
+      const isValid = regex.test(value);
 
       if (field.isMandatory && isEmpty) {
             if(field.isMandatory){
@@ -207,10 +216,32 @@ export class FormUtils {
       }
     }
   }
-  
+  private getElementValue(element: HTMLElement): string | null {
+      if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement ||
+          element instanceof HTMLSelectElement
+        ) {
+          return element.value;
+      }
+    return null;
+    }
+  private resolveNativeElement(ref: any): HTMLElement | null {
+    if (ref instanceof ElementRef) {
+      return ref.nativeElement;
+    }
+
+    if (ref?.el?.nativeElement) {
+      return ref.el.nativeElement;
+    }
+
+    return null;
+  }
+
   // Attach Event Listener on element
   private attachEventListener(
-    element: HTMLInputElement,
+    element: HTMLElement,
+    // element: HTMLInputElement,
     eventType: string,
     handler: (event: any) => void,
     renderer: Renderer2
@@ -224,7 +255,8 @@ export class FormUtils {
 
   // Update validation rule for a specific element
   public updateValidationRule(
-  element: HTMLInputElement,
+  element: HTMLElement,
+  // element: HTMLInputElement,
   field: FormFieldConfig,
   isMandatory: boolean,
   renderer: Renderer2,

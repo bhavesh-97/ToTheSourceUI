@@ -29,13 +29,13 @@ export interface StatusOption {
 export interface ParentMenuOption {
   label: string;
   value: number;
-  data: MMenuMappingMaster | null; // The entire menu object, null for root
+  data: MMenuMappingMaster | null; 
 }
-export interface SaveMenuMappingRequest {
-  MappingID?: number; // Optional because for new mapping we don't have an ID
-  MenuID: number;
-  MenuType: number;
-  ParentID: number;
-  MenuRank: number;
-  IsActive: boolean;
+export class SaveMenuMappingRequest {
+  MappingID: number = 0;
+  MenuID: number = 0;
+  MenuType: number = 0;
+  ParentID: number = 0;
+  MenuRank: number = 0;
+  MCommonEntitiesMaster?: MCommonEntitiesMaster;
 }

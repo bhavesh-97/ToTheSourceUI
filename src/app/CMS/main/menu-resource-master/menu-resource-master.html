@@ -149,32 +149,32 @@
   <form [formGroup]="MenuResourceForm" id="MenuResourceForm" (ngSubmit)="saveMenuResource()"> 
     <div class="container-fluid">
       <input pInputText #inputField formControlName="MenuID"  hidden/>
-      <div class="row mb-3 align-items-center">
-        <div class="col-8">
-          <label class="form-label fw-medium mb-0">
-            Menu Resource Name <span class="text-danger">*</span>
-          </label>
-        </div>
-        <div class="col-8">
-          <input pInputText
+        <div class="row mb-3 align-items-center">
+          <div class="col-8">
+            <label class="form-label fw-medium mb-0">
+              Menu Resource Name <span class="text-danger">*</span>
+            </label>
+          </div>
+          <div class="col-8">
+            <input pInputText
                  #inputField
                  formControlName="MenuName"
                  class="form-control input100"
                  [class.is-invalid]="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched"
                  placeholder="e.g. Admin Master" />
-          <div *ngIf="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched" class="invalid-feedback">
-            <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['required']">menu resource name is required</div>
-              <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['minlength']">
-                menu resource name must be at least {{MenuResourceForm.get('MenuName')?.errors?.['minlength']?.requiredLength}} characters
-              </div>
+            <div *ngIf="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched" class="invalid-feedback">
+              <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['required']">menu resource name is required</div>
+                <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['minlength']">
+                  menu resource name must be at least {{MenuResourceForm.get('MenuName')?.errors?.['minlength']?.requiredLength}} characters
+                </div>
+            </div>
           </div>
-        </div>
-         <div class="col-8 mt-3 ">
+          <div class="col-8 mt-3 ">
           <label class="form-label fw-medium mb-0">
             Menu URL<span class="text-danger">*</span>
           </label>
-        </div>
-         <div class="col-8">
+          </div>
+          <div class="col-8">
           <input pInputText
               #inputField
               formControlName="MenuURL"
@@ -194,7 +194,7 @@
                     menu url cannot exceed {{ MenuResourceForm.get('MenuURL')?.errors?.['max']?.max }}
                 </div>
             </div>
-         </div>
+          </div>
         </div>
          <div class="col-8">
           <label class="form-label fw-medium mb-0">
@@ -209,6 +209,7 @@
             </p-inputicon>
             <input
                 pInputText
+                #inputField
                 formControlName="Icon"
                 class="w-100"
                 placeholder="e.g. pi pi-home or fa fa-minus-square"
@@ -222,16 +223,16 @@
               </div>
           </div>
         </div>
-      <div class="row mb-3 align-items-center">
+        <div class="row mb-3 align-items-center">
         <div class="col-8">
           <label class="form-label fw-medium mb-0">Status</label>
         </div>
         <div class="col-8 d-flex align-items-center gap-3" formGroupName="MCommonEntitiesMaster">
-            <p-toggleswitch formControlName="IsActive"></p-toggleswitch>
+            <p-toggleswitch  #inputField formControlName="IsActive"></p-toggleswitch>
             <span>{{ MenuResourceForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
 
-      </div>
+        </div>
 
     </div>
   </form>
