@@ -1,39 +1,21 @@
 @import '../../../shared/styles/datatable.scss';
 
-/* * 1. CRITICAL CHANGE: Allow content to fully show and columns to adjust.
-* We remove forced truncation (hidden overflow, ellipsis) and fixed table layout.
-*/
 :host ::ng-deep .p-treetable table {
-    /* Change from 'fixed' to 'auto' to allow columns to size based on content */
     table-layout: auto; 
 }
 
 :host ::ng-deep .p-treetable td,
 :host ::ng-deep .p-treetable th {
-    /* Allow text to wrap if the column is sized very narrowly by PrimeNG/browser */
     white-space: normal !important; 
-    word-break: break-word; /* Helps with long words */
-    
-    /* REMOVE: overflow: hidden; */
-    /* REMOVE: text-overflow: ellipsis; */
+    word-break: break-word;
 }
-
-/*
-* 2. Column Sizing: Use 'min-width' instead of 'width'
-* This ensures the column takes up AT LEAST the specified size 
-* but can expand to fit content or share remaining space.
-*/
 .col-serial { 
     min-width: 60px; 
     text-align: center; 
 }
 .col-menu { 
-    /* Ensure enough room for the Menu, icon, and toggler. */
     min-width: 300px; 
 }
-/* URL column removed from HTML, so we remove the CSS too
-.col-url { min-width: 220px; } 
-*/
 .col-type { 
     min-width: 120px; 
 }
@@ -48,13 +30,9 @@
     min-width: 120px; 
 }
 .col-actions { 
-    /* Must have enough room for 3 buttons */
     min-width: 140px; 
     text-align: center; 
 }
-
-
-/* --- Other Component-Specific Styles (Keep these) --- */
 
 .menu-stats {
     display: flex;
@@ -85,7 +63,6 @@
     color: var(--text-color);
 }
 
-/* Accent colors */
 .menu-stat.success .value {
     color: var(--green-500);
 }
@@ -102,4 +79,13 @@
 .p-treetable .p-column-resizer {
     background: var(--primary-color);
     width: 3px;
+}
+.p-inputgroup {
+    display: flex;
+    align-items: stretch;
+    width: 300px;
+    background: transparent;
+}
+.p-inputgroupaddon:first-child{
+    background: transparent;
 }

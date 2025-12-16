@@ -1,43 +1,59 @@
 <div class="card">
-  <div class="flex flex-column gap-4">
+   <div class="flex flex-column gap-4">
+      
     <div class="flex flex-wrap align-items-center justify-content-between gap-3">
-      <div>
-        <h1 class="text-2xl font-bold m-0">Menu Mapping Master</h1>
-        <p class="text-color-secondary m-0 mt-1">
-          Manage hierarchical menu structure
-        </p>
-      </div>
-      <div class="flex flex-wrap align-items-center gap-2">
-        <p-iconField iconPosition="left" class="w-16rem">
-          <p-inputIcon>
-            <i class="pi pi-search"></i>
-          </p-inputIcon>
-          <input pInputText type="text" placeholder="Search menus"
-                 [value]="globalFilter" (input)="onGlobalFilter($event)" />
-        </p-iconField>
-
+        <div style="display:flex; align-items:center; width:100%;">
+            <h1 style="margin:0; font-size:1.75rem; font-weight:700;">Menu Mapping Master</h1>
+            <div style="margin-left:auto;">
+              <p-button label="Add New Mapping" icon="pi pi-plus" class="p-button-success" (click)="openNew()">
+              </p-button>
+            </div>
+        </div>
+  <div class="flex align-items-center justify-content-between gap-3 flex-wrap">
+    
+    <div class="flex align-items-center gap-2 flex-wrap">
+        
         <p-select [options]="statusOptions" optionLabel="label" optionValue="value"
-                  placeholder="Status" [showClear]="true" class="w-12rem"
+                  placeholder="Status" [showClear]="true" 
+                  class="w-10rem" 
                   [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
         </p-select>
 
         <p-select [options]="menuTypes" optionLabel="label" optionValue="value"
-                  placeholder="Type" [showClear]="true" class="w-12rem"
+                  placeholder="Type" [showClear]="true" 
+                  class="w-10rem" 
                   [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
         </p-select>
 
         <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"
-                  (click)="clearFilters()"
-                  [disabled]="!globalFilter && selectedStatus === null && selectedMenuType === null" />
+                  (click)="clearFilters()" 
+                  [disabled]="!globalFilter && selectedStatus === null && selectedMenuType === null" 
+                  [text]="true" [rounded]="true" />
+
         <p-button icon="pi pi-download" severity="secondary" pTooltip="Export CSV"
-                  (click)="exportToCSV()" />
+                  (click)="exportToCSV()" 
+                  [text]="true" [rounded]="true" />
+
         <p-button icon="pi pi-plus-circle" severity="secondary" pTooltip="Expand All"
-                  (click)="expandAll()" />
+                  (click)="expandAll()" 
+                  [text]="true" [rounded]="true" />
+
         <p-button icon="pi pi-minus-circle" severity="secondary" pTooltip="Collapse All"
-                  (click)="collapseAll()" />
-        <p-button icon="pi pi-plus" severity="success" label="Add"
-                  (click)="openNew()" />
-      </div>
+                  (click)="collapseAll()" 
+                  [text]="true" [rounded]="true" />
+                  
+    <div class="w-14rem">
+        <p-inputGroup>
+            <p-inputGroupAddon class="search-icon-transparent"> 
+                <i class="pi pi-search"></i>
+            </p-inputGroupAddon>
+            <input pInputText type="text"
+                   placeholder="Search menus" [value]="globalFilter" (input)="onGlobalFilter($event)"/>
+        </p-inputGroup>
+    </div>
+    </div>
+
+</div>
     </div>
 <p-treeTable #tt 
     [value]="filteredMenuMappings" 

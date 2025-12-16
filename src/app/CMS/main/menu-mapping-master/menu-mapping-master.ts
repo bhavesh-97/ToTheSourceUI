@@ -29,7 +29,8 @@ import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { TableModule } from "primeng/table";
-
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 @Component({
   selector: 'app-menu-mapping-master',
   standalone: true,
@@ -40,6 +41,8 @@ import { TableModule } from "primeng/table";
     ButtonModule,
     TreeTableModule,
     InputTextModule,
+    InputGroupModule,
+    InputGroupAddonModule,
     DialogModule,
     ConfirmDialogModule,
     TagModule,
