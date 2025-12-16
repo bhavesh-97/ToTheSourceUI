@@ -1,1 +1,24 @@
 @import '../../../shared/styles/datatable.scss';
+:host ::ng-deep .p-treetable th,
+:host ::ng-deep .p-treetable td {
+  white-space: nowrap;
+}
+
+.col-serial { width: 60px; text-align: center; }
+.col-menu { min-width: 280px; }
+.col-url { width: 220px; }
+.col-type { width: 120px; }
+.col-rank { width: 80px; text-align: center; }
+.col-parent { width: 160px; }
+.col-status { width: 120px; }
+.col-actions { width: 140px; text-align: center; }
+:host ::ng-deep .p-treetable table {
+  table-layout: fixed;
+}
+
+:host ::ng-deep .p-treetable td,
+:host ::ng-deep .p-treetable th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

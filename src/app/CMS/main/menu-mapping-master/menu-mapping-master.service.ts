@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ENCRYPTION_CONTEXT } from '../../../interceptors/encryption-interceptor';
 import { JsonResponseModel } from '../../../models/JsonResponseModel';
-import { MMenuMappingMaster } from './MenuMappingMaster';
+import { MMenuMappingMaster, SaveMenuMappingRequest } from './MenuMappingMaster';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +19,7 @@ export class MenuMappingMasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
-    SaveMenuMapping(Model: MMenuMappingMaster, encryptPayload = false): Observable<JsonResponseModel> {
+    SaveMenuMapping(Model: SaveMenuMappingRequest, encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/SaveMenuMappingDetails`,Model,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );

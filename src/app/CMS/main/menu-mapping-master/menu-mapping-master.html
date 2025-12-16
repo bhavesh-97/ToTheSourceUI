@@ -1,233 +1,343 @@
 <div class="card">
-  <p-table #dt 
-           [value]="MenuMapping" 
-           dataKey="MenuID" 
-           [rows]="10" 
-           [rowsPerPageOptions]="[10, 25, 50]" 
-           [loading]="loading" 
-           [paginator]="true" 
-           [globalFilterFields]="['MenuName']" 
-           [showGridlines]="true"
-           styleClass="p-datatable-sm">
+  <div class="flex flex-column gap-4">
 
-    <ng-template pTemplate="caption">
-      <div style="display:flex; align-items:center; width:100%;">
-          <h1 style="margin:0; font-size:1.75rem; font-weight:700;">Menu Mapping Master</h1>
-          <div style="margin-left:auto;">
-              <p-button label="Add New Menu" icon="pi pi-plus" class="p-button-success" (click)="openNew()">
-              </p-button>
-          </div>
+    <!-- Header + Filters (Single Row) -->
+    <div class="flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h1 class="text-2xl font-bold m-0">Menu Mapping Master</h1>
+        <p class="text-color-secondary m-0 mt-1">
+          Manage hierarchical menu structure and permissions
+        </p>
       </div>
 
-      <div class="flex mt-3">
-        <p-iconField iconPosition="left" class="ml-auto">
+      <div class="flex flex-wrap align-items-center gap-2">
+        <p-iconField iconPosition="left" class="w-16rem">
           <p-inputIcon>
             <i class="pi pi-search"></i>
           </p-inputIcon>
-          <input pInputText 
-                 type="text" 
-                 (input)="dt.filterGlobal($event.target.value, 'contains')" 
-                 placeholder="Search Menus..." />
+          <input pInputText type="text" placeholder="Search menus"
+                 [value]="globalFilter" (input)="onGlobalFilter($event)" />
         </p-iconField>
+
+        <p-select [options]="statusOptions" optionLabel="label" optionValue="value"
+                  placeholder="Status" [showClear]="true" class="w-12rem"
+                  [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
+        </p-select>
+
+        <p-select [options]="menuTypes" optionLabel="label" optionValue="value"
+                  placeholder="Type" [showClear]="true" class="w-12rem"
+                  [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
+        </p-select>
+
+        <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"
+                  (click)="clearFilters()"
+                  [disabled]="!globalFilter && selectedStatus === null && selectedMenuType === null" />
+        <p-button icon="pi pi-download" severity="secondary" pTooltip="Export CSV"
+                  (click)="exportToCSV()" />
+        <p-button icon="pi pi-plus-circle" severity="secondary" pTooltip="Expand All"
+                  (click)="expandAll()" />
+        <p-button icon="pi pi-minus-circle" severity="secondary" pTooltip="Collapse All"
+                  (click)="collapseAll()" />
+        <p-button icon="pi pi-plus" severity="success" label="Add"
+                  (click)="openNew()" />
       </div>
-    </ng-template>
+    </div>
 
-    <!-- Table Header -->
-    <ng-template pTemplate="header">
-      <tr>
-        <th style="width: 4rem">#</th>
-        <th style="min-width: 16rem">
-          <div class="flex align-items-center justify-content-between">
-            Menu Name
-            <p-columnFilter type="text" field="MenuName" display="menu"></p-columnFilter>
-          </div>
-        </th>
-        <th style="min-width: 16rem">
-          <div class="flex align-items-center justify-content-between">
-            Menu URL
-            <p-columnFilter type="text" field="MenuURL" display="menu"></p-columnFilter>
-          </div>
-        </th>
-        <th style="min-width: 16rem">
-          <div class="flex align-items-center justify-content-between">
-            Menu Icon
-            <p-columnFilter type="text" field="Icon" display="menu"></p-columnFilter>
-          </div>
-        </th>
-        <th style="min-width: 10rem">
-          <div class="flex align-items-center justify-content-between">
-            Status
-            <p-columnFilter field="isActive" matchMode="equals" display="menu">
-              <ng-template pTemplate="filter" let-filter="filterCallback">
-                <p-select [options]="[
-                    { label: 'All', value: null },
-                    { label: 'Active', value: true },
-                    { label: 'Inactive', value: false }
-                  ]" 
-                  (onChange)="filter($event.value)" 
-                  placeholder="All">
-                </p-select>
-              </ng-template>
-            </p-columnFilter>
-          </div>
-        </th>
-        <th style="width: 8rem">Actions</th>
-      </tr>
-    </ng-template>
+    <!-- Tree Table -->
+    <p-treetable #tt [value]="filteredMenuMappings" [loading]="loading"
+                 [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
+                 [scrollable]="true" scrollHeight="420px" class="shadow-1">
 
-    <!-- Table Body -->
-    <ng-template pTemplate="body" let-mapping let-rowIndex="rowIndex">
-      <tr>
-        <!-- <td>
-          <p-tableCheckbox [value]="mapping"></p-tableCheckbox>
-        </td> -->
-        <td>
-              {{ (dt.first || 0) + rowIndex + 1 }}
-        </td>
-        <td>
-          <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ mapping.MenuName }}</span>
-          </div>
-        </td>
-        <td>
-          <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ mapping.MenuURL }}</span>
-          </div>
-        </td>
-        <td>
-          <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ mapping.Icon }}</span>
-          </div>
-        </td>
-        <td>
-          <p-tag 
-            [value]="mapping.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
-            [severity]="mapping.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
-            class="text-sm">
-          </p-tag>
-        </td>
-        <td>
-          <div class="flex gap-2">
-            <button pButton 
-                    icon="pi pi-pencil" 
-                    class="p-button-rounded p-button-text p-button-info" 
-                    pTooltip="Edit" 
-                    (click)="editMenu(mapping)">
-            </button>
-            <button pButton 
-                    icon="pi pi-trash" 
-                    class="p-button-rounded p-button-text p-button-danger" 
-                    pTooltip="Delete" 
-                    (click)="deleteMenu(mapping)">
-            </button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
+   <ng-template pTemplate="header">
+  <tr>
+    <th class="col-serial">#</th>
+    <th class="col-menu">Menu</th>
+    <th class="col-url">URL</th>
+    <th class="col-type">Type</th>
+    <th class="col-rank">Rank</th>
+    <th class="col-parent">Parent</th>
+    <th class="col-status">Status</th>
+    <th class="col-actions">Actions</th>
+  </tr>
+</ng-template>
 
-    <!-- Empty State -->
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="5" class="text-center py-6 text-600">
-          <i class="pi pi-inbox text-4xl mb-3"></i>
-          <div class="text-lg">No Menu Resource found</div>
-          <p-button label="Add First mapping" icon="pi pi-plus" class="mt-3 p-button-success" (click)="openNew()"></p-button>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+
+      <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-rowIndex="rowIndex">
+        <tr [ttRow]="rowNode">
+          <td class="col-serial">
+  {{ getNodeIndex(rowNode) }}
+</td>
+
+          <!-- Menu Column -->
+      <td class="col-menu">
+  <div class="flex align-items-center gap-2">
+    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+
+    <i [class]="rowData.Icon" class="text-primary"></i>
+
+    <span class="font-medium text-ellipsis">
+      {{ rowData.MenuName }}
+    </span>
+
+    <p-tag *ngIf="rowData.ParentID === 0"
+           value="ROOT"
+           severity="info"
+           class="ml-2 text-xs" />
+  </div>
+</td>
+
+
+         <td class="col-url">
+  <span class="text-color-secondary text-ellipsis"
+        pTooltip="{{ rowData.MenuURL }}"
+        tooltipPosition="top">
+    {{ rowData.MenuURL || '—' }}
+  </span>
+</td>
+
+
+          <td>
+            <i [class]="getMenuTypeIcon(rowData.MenuType) + ' mr-1'"></i>
+            {{ getMenuTypeLabel(rowData.MenuType) }}
+          </td>
+
+          <td class="text-center">
+            <p-badge [value]="rowData.MenuRank" severity="contrast" />
+          </td>
+
+          <td>
+            <span *ngIf="rowData.ParentID === 0" class="text-color-secondary">—</span>
+            <span *ngIf="rowData.ParentID > 0">{{ rowData.ParentMenuName || getParentName(rowData.ParentID) }}</span>
+          </td>
+
+          <td>
+            <p-tag [value]="getStatusLabel(rowData.MCommonEntitiesMaster.IsActive)"
+                   [severity]="getStatusSeverity(rowData.MCommonEntitiesMaster.IsActive)" />
+          </td>
+
+ <td class="col-actions">
+  <div class="flex justify-content-center gap-1">
+    <p-button icon="pi pi-plus"
+              severity="success"
+              text rounded
+              pTooltip="Add Child"
+              (click)="openNewChild(rowNode)" />
+
+    <p-button icon="pi pi-pencil"
+              severity="info"
+              text rounded
+              pTooltip="Edit"
+              (click)="editMenu(rowNode)" />
+
+    <p-button icon="pi pi-trash"
+              severity="danger"
+              text rounded
+              pTooltip="Delete"
+              (click)="deleteMenu(rowNode)" />
+  </div>
+</td>
+
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="text-center py-6">
+            <i class="pi pi-inbox text-4xl text-400 mb-3"></i>
+            <div class="text-lg font-medium">No Menu Mappings Found</div>
+            <p class="text-500 mt-2">Adjust filters or create a new menu</p>
+            <p-button label="Add Menu" icon="pi pi-plus" severity="success"
+                      (click)="openNew()" />
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-treetable>
+
+    <!-- Stats Summary (Single Row) -->
+  <div class="grid mt-4">
+  <div class="col">
+    <p-card>
+      <small>Total Menus</small>
+      <h3>{{ totalMenus }}</h3>
+    </p-card>
+  </div>
+  <div class="col">
+    <p-card>
+      <small>Active</small>
+      <h3 class="text-green-500">{{ activeMenuCount }}</h3>
+    </p-card>
+  </div>
+  <div class="col">
+    <p-card>
+      <small>Main Menus</small>
+      <h3 class="text-blue-500">{{ mainMenuCount }}</h3>
+    </p-card>
+  </div>
+  <div class="col">
+    <p-card>
+      <small>Levels</small>
+      <h3 class="text-purple-500">{{ maxLevel + 1 }}</h3>
+    </p-card>
+  </div>
 </div>
-<p-dialog [(visible)]="displayDialog" [header]="MenuMappingDialogHeader" [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
-  <form [formGroup]="MenuMappingForm" id="MenuMappingForm" (ngSubmit)="savemapping()"> 
-    <div class="container-fluid">
-      <input pInputText #inputField formControlName="MenuID"  hidden/>
-      <div class="row mb-3 align-items-center">
-        <div class="col-8">
-          <label class="form-label fw-medium mb-0">
-            Menu Resource Name <span class="text-danger">*</span>
-          </label>
-        </div>
-        <div class="col-8">
-          <input pInputText
-                 #inputField
-                 formControlName="MenuName"
-                 class="form-control input100"
-                 [class.is-invalid]="MenuMappingForm.get('MenuName')?.invalid && MenuMappingForm.get('MenuName')?.touched"
-                 placeholder="e.g. Admin Master" />
-          <div *ngIf="MenuMappingForm.get('MenuName')?.invalid && MenuMappingForm.get('MenuName')?.touched" class="invalid-feedback">
-            <div *ngIf="MenuMappingForm.get('MenuName')?.errors?.['required']">menu resource name is required</div>
-              <div *ngIf="MenuMappingForm.get('MenuName')?.errors?.['minlength']">
-                menu resource name must be at least {{MenuMappingForm.get('MenuName')?.errors?.['minlength']?.requiredLength}} characters
-              </div>
-          </div>
-        </div>
-         <div class="col-8 mt-3 ">
-          <label class="form-label fw-medium mb-0">
-            Menu URL<span class="text-danger">*</span>
-          </label>
-        </div>
-         <div class="col-8">
-          <input pInputText
-              #inputField
-              formControlName="MenuURL"
-              class="form-control input100"
-              [class.is-invalid]="MenuMappingForm.get('MenuURL')?.invalid && MenuMappingForm.get('MenuURL')?.touched"
-              placeholder="e.g. /main/users/list" />
 
-            <div *ngIf="MenuMappingForm.get('MenuURL')?.invalid && MenuMappingForm.get('MenuURL')?.touched"class="invalid-feedback">
-                <div *ngIf="MenuMappingForm.get('MenuURL')?.errors?.['required']">
-                    menu url level is required
-                </div>
-                <div *ngIf="MenuMappingForm.get('MenuURL')?.errors?.['min']">
-                    menu url must be at least {{ MenuMappingForm.get('MenuURL')?.errors?.['min']?.min }}
-                </div>
+
+  </div>
+</div>
+
+<!-- Dialog for Add/Edit -->
+<p-dialog [(visible)]="displayDialog" [header]="dialogHeader" [modal]="true" 
+          [style]="{ width: '90vw', maxWidth: '700px' }" [draggable]="false" [resizable]="false">
   
-                <div *ngIf="MenuMappingForm.get('MenuURL')?.errors?.['max']">
-                    menu url cannot exceed {{ MenuMappingForm.get('MenuURL')?.errors?.['max']?.max }}
-                </div>
-            </div>
-         </div>
-        </div>
-         <div class="col-8">
-          <label class="form-label fw-medium mb-0">
-            Menu Icon <span class="text-danger">*</span>
+  <form [formGroup]="menuMappingForm" (ngSubmit)="saveMapping()" class="p-fluid">
+    <div class="grid">
+      
+      <div class="col-12">
+        <div class="field">
+          <label for="MenuID" class="font-medium block mb-2">
+            Menu Resource <span class="text-red-500">*</span>
           </label>
-        </div>
-        <div class="col-8">
-          <input pInputText
-                 #inputField
-                 formControlName="Icon"
-                 class="form-control input100"
-                 [class.is-invalid]="MenuMappingForm.get('Icon')?.invalid && MenuMappingForm.get('Icon')?.touched"
-                 placeholder="e.g. pi pi-home or fa fa-minus-square" />
-          <div *ngIf="MenuMappingForm.get('Icon')?.invalid && MenuMappingForm.get('Icon')?.touched" class="invalid-feedback">
-            <div *ngIf="MenuMappingForm.get('Icon')?.errors?.['required']">menu icon is required</div>
-              <div *ngIf="MenuMappingForm.get('Icon')?.errors?.['minlength']">
-                menu icon must be at least {{MenuMappingForm.get('Icon')?.errors?.['minlength']?.requiredLength}} characters
+          <p-select [options]="filteredMenuResources" formControlName="MenuID" 
+                     optionLabel="MenuName" optionValue="MenuID" placeholder="Select Menu Resource"
+                     [filter]="true" filterBy="MenuName" [showClear]="true" class="w-full">
+            <ng-template pTemplate="selectedItem">
+              <div *ngIf="menuMappingForm.get('MenuID')?.value" class="flex align-items-center gap-2">
+                <i [class]="menuMappingForm.get('Icon')?.value || 'pi pi-file'"></i>
+                <div>{{ menuMappingForm.get('MenuName')?.value }}</div>
               </div>
+            </ng-template>
+            <ng-template let-menu pTemplate="item">
+              <div class="flex align-items-center gap-3">
+                <i [class]="menu.Icon || 'pi pi-file'"></i>
+                <div>
+                  <div class="font-medium">{{ menu.MenuName }}</div>
+                  <div class="text-sm text-color-secondary">{{ menu.MenuURL }}</div>
+                </div>
+              </div>
+            </ng-template>
+          </p-select>
+          <small *ngIf="menuMappingForm.get('MenuID')?.invalid && menuMappingForm.get('MenuID')?.touched" 
+                 class="p-error block">Please select a menu resource</small>
+        </div>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <div class="field">
+          <label for="MenuType" class="font-medium block mb-2">
+            Menu Type <span class="text-red-500">*</span>
+          </label>
+          <p-selectButton [options]="menuTypes" formControlName="MenuType" optionLabel="label" 
+                         optionValue="value" class="w-full">
+            <ng-template let-item>
+              <div class="flex align-items-center gap-2">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+              </div>
+            </ng-template>
+          </p-selectButton>
+          <small *ngIf="menuMappingForm.get('MenuType')?.invalid && menuMappingForm.get('MenuType')?.touched" 
+                 class="p-error block">Please select a menu type</small>
+        </div>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <div class="field">
+          <label for="MenuRank" class="font-medium block mb-2">
+            Display Order <span class="text-red-500">*</span>
+          </label>
+          <p-inputNumber formControlName="MenuRank" [showButtons]="true" buttonLayout="horizontal"
+                        [min]="1" [max]="999" spinnerMode="horizontal" class="w-full">
+            <ng-template pTemplate="incrementbuttonicon">
+              <i class="pi pi-plus"></i>
+            </ng-template>
+            <ng-template pTemplate="decrementbuttonicon">
+              <i class="pi pi-minus"></i>
+            </ng-template>
+          </p-inputNumber>
+          <small *ngIf="menuMappingForm.get('MenuRank')?.invalid && menuMappingForm.get('MenuRank')?.touched" 
+                 class="p-error block">Please enter a valid display order (1-999)</small>
+          <small class="text-color-secondary block">Lower numbers appear first</small>
+        </div>
+      </div>
+
+      <div class="col-12" *ngIf="menuMappingForm.get('MenuType')?.value !== 1">
+        <div class="field">
+          <label for="ParentID" class="font-medium block mb-2">Parent Menu</label>
+          <p-select [options]="parentMenuOptions" formControlName="ParentID" optionLabel="label" 
+                     optionValue="value" placeholder="Select Parent Menu" class="w-full">
+            <ng-template let-parent pTemplate="item">
+              <div class="flex align-items-center gap-2">
+                <i *ngIf="parent.value === 0" class="pi pi-home"></i>
+                <i *ngIf="parent.value !== 0" [class]="parent.data?.Icon || 'pi pi-folder'"></i>
+                <div>{{ parent.label }}</div>
+              </div>
+            </ng-template>
+          </p-select>
+          <small class="text-color-secondary block">Select "Root" for top-level menu</small>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="field">
+          <label class="font-medium block mb-2">Status</label>
+          <div class="flex align-items-center gap-3">
+            <p-toggleswitch formControlName="IsActive" />
+            <span class="font-medium">
+              {{ menuMappingForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+            </span>
           </div>
         </div>
-      <div class="row mb-3 align-items-center">
-        <div class="col-8">
-          <label class="form-label fw-medium mb-0">Status</label>
-        </div>
-        <div class="col-8 d-flex align-items-center gap-3" formGroupName="MCommonEntitiesMaster">
-            <p-toggleswitch formControlName="IsActive"></p-toggleswitch>
-            <span>{{ MenuMappingForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
-        </div>
+      </div>
 
+      <!-- Preview Section -->
+      <div class="col-12" *ngIf="menuMappingForm.get('MenuID')?.value">
+        <p-panel header="Preview" [toggleable]="true" [collapsed]="true">
+          <div class="surface-ground border-round p-4">
+            <div class="flex align-items-center gap-3 mb-3">
+              <i [class]="menuMappingForm.get('Icon')?.value || 'pi pi-question'" class="text-xl"></i>
+              <div>
+                <div class="font-bold text-lg">{{ menuMappingForm.get('MenuName')?.value }}</div>
+                <div class="text-color-secondary">{{ menuMappingForm.get('MenuURL')?.value || 'No URL' }}</div>
+              </div>
+            </div>
+            <div class="grid">
+              <div class="col-6">
+                <div class="text-sm text-color-secondary">Type</div>
+                <div class="font-medium">{{ getMenuTypeLabel(menuMappingForm.get('MenuType')?.value) }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-sm text-color-secondary">Order</div>
+                <div class="font-medium">{{ menuMappingForm.get('MenuRank')?.value }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-sm text-color-secondary">Parent</div>
+                <div class="font-medium">{{ getParentName(menuMappingForm.get('ParentID')?.value) }}</div>
+              </div>
+              <div class="col-6">
+                <div class="text-sm text-color-secondary">Status</div>
+                <div class="font-medium">
+                  <p-tag [value]="menuMappingForm.get('IsActive')?.value ? 'Active' : 'Inactive'"
+                        [severity]="menuMappingForm.get('IsActive')?.value ? 'success' : 'danger'"
+                        class="text-xs" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-panel>
       </div>
 
     </div>
   </form>
+  
   <ng-template pTemplate="footer">
-    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false">
-    </button>
-    <button type="submit" pButton label="Save Mapping" icon="pi pi-check" [loading]="saving" 
-            [disabled]="MenuMappingForm.invalid" class="p-button-success"form="MenuMappingForm">
-    </button>
+    <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" 
+            (click)="displayDialog = false"></button>
+    <button pButton label="Save" icon="pi pi-check" [loading]="saving" 
+            [disabled]="menuMappingForm.invalid" severity="success" 
+            (click)="saveMapping()"></button>
   </ng-template>
 </p-dialog>
 
-<p-confirmDialog key="MenuMappingDialog"></p-confirmDialog>
+<!-- Confirm Dialog (used by confirmationService) -->
+<p-confirmDialog></p-confirmDialog>
