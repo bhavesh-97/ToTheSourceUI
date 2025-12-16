@@ -148,7 +148,6 @@ export class FormUtils {
     renderer: Renderer2,
     formGroup: FormGroup
   ): void {
-    debugger;
     formFields.forEach((field, index) => {
       // const element = elementRefs[index]?.nativeElement as HTMLInputElement;        
       //const element = elementRefs[index]?.nativeElement as HTMLElement;      

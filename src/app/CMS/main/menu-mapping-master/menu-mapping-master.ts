@@ -19,7 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { PanelModule } from 'primeng/panel';
 import { BadgeModule } from 'primeng/badge';
-import { SelectModule } from 'primeng/select';
+import { Select, SelectModule } from 'primeng/select';
 import { MMenuResourceMaster } from '../menu-resource-master/MenuResourceMaster';
 import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
@@ -28,6 +28,7 @@ import { MessageModule } from 'primeng/message';
 import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
+import { TableModule } from "primeng/table";
 
 @Component({
   selector: 'app-menu-mapping-master',
@@ -52,7 +53,8 @@ import { ValidationRules } from '../../../shared/utilities/validation-rules.enum
     SelectButtonModule,
     PanelModule,
     BadgeModule,
-    CardModule
+    CardModule,
+    TableModule
 ],
   templateUrl: './menu-mapping-master.html',
   styleUrls: ['./menu-mapping-master.css']
@@ -180,17 +182,64 @@ export class MenuMappingMaster implements OnInit {
   loadMenuResources() {
     this.menuResourceService.GetAllMenuResourceDetails().subscribe({
       next: (res) => {
+        debugger;
+        let menuData: any[] = [];
         if (!res.isError) {
-          this.menuResources = res.result;
+          const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+          if (Array.isArray(rawResult)) {
+            menuData = rawResult;
+          } else {
+            console.error('API response successful, but result is not an array after parsing:', rawResult);
+          }
+          this.menuResources = menuData;
           this.filteredMenuResources = [...this.menuResources];
-        }
+          console.log('Menu Resources Type:', typeof this.menuResources);
+          console.log('Menu Resources Length:', this.menuResources.length);
+        } else if (!res.isError) {
+        this.menuResources = []; 
+        this.filteredMenuResources = [];
+      }
       },
       error: (err) => {
+        this.menuResources = [];
+        this.filteredMenuResources = [];
         console.error('Failed to load menu resources:', err);
       }
     });
   }
+  onMenuResourceChange(event: any) {
+    const menuId = event.value;
+    const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
 
+    if (selectedMenu) {
+      this.menuMappingForm.patchValue({
+        Icon: selectedMenu.Icon,
+        MenuName: selectedMenu.MenuName 
+      });
+    }
+  }
+  preventParentScroll() {
+    // Use a slight delay to ensure ALL dropdown overlays are rendered
+    setTimeout(() => {
+      this.inputElements.forEach((pSelectComponent: Select) => {
+        const overlay = document.querySelector('.p-select-overlay.p-connected-overlay-enter') || 
+                        document.querySelector('.p-dropdown-panel.p-connected-overlay-enter');
+        
+        if (overlay) {
+          const listContainer = overlay.querySelector('.p-select-items-wrapper') || overlay.querySelector('.p-dropdown-items-wrapper');
+          if (listContainer) {
+            this.renderer.listen(listContainer, 'wheel', (event) => {
+              event.stopPropagation();
+            });
+            this.renderer.listen(listContainer, 'touchmove', (event) => {
+              event.stopPropagation();
+            });
+            return; 
+          }
+        }
+      });
+    }, 0); 
+  }
   buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
     const roots: TreeNode<MMenuMappingMaster>[] = [];
     const map = new Map<number, TreeNode<MMenuMappingMaster>>();
@@ -237,8 +286,9 @@ export class MenuMappingMaster implements OnInit {
     const traverse = (nodes: TreeNode<MMenuMappingMaster>[], level = 0) => {
       nodes.forEach(node => {
         options.push({
-          label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
-          value: node.data!.MenuID, // IMPORTANT
+          // label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
+          label: node.data!.MenuName,
+          value: node.data!.MenuID, 
           data: node.data!
         });
 
@@ -400,13 +450,17 @@ export class MenuMappingMaster implements OnInit {
   }
 
   onMenuSelected(menuId: number) {
-    const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
-    if (selectedMenu) {
-      this.menuMappingForm.patchValue({
-        MenuName: selectedMenu.MenuName,
-        MenuURL: selectedMenu.MenuURL,
-        Icon: selectedMenu.Icon
-      }, { emitEvent: false });
+    if (Array.isArray(this.menuResources)) { 
+        const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
+        if (selectedMenu) {
+            this.menuMappingForm.patchValue({
+                  MenuName: selectedMenu.MenuName,
+                  MenuURL: selectedMenu.MenuURL,
+                  Icon: selectedMenu.Icon
+                }, { emitEvent: false });
+            }
+    } else {
+          console.error('menuResources is not an array in onMenuSelected');
     }
   }
 
@@ -494,8 +548,7 @@ export class MenuMappingMaster implements OnInit {
   filterMenuResources(event: any) {
     const query = (event.query || '').toLowerCase();
     this.filteredMenuResources = this.menuResources.filter(menu =>
-      menu.MenuName.toLowerCase().includes(query) ||
-      (menu.MenuURL || '').toLowerCase().includes(query) 
+      menu.MenuName.toLowerCase().includes(query)
     );
   }
 

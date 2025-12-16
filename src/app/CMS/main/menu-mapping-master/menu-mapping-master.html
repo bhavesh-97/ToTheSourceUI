@@ -177,22 +177,22 @@
                     </label>
                 </div>  
                 <div class="col-8">
-                    <p-select #inputField [options]="filteredMenuResources" formControlName="MenuID" 
-                                optionLabel="MenuName" optionValue="MenuID" placeholder="Select Menu Resource"
-                                [filter]="true" filterBy="MenuName, MenuURL" [showClear]="true" styleClass="w-full">
-                        <ng-template pTemplate="selectedItem">
-                            <div *ngIf="menuMappingForm.get('MenuID')?.value" class="flex align-items-center gap-2">
-                                <i [class]="menuMappingForm.get('Icon')?.value || 'pi pi-file'"></i>
-                                <span class="font-medium">{{ menuMappingForm.get('MenuName')?.value }}</span>
+                    <p-select #inputField [options]="menuResources" 
+                              formControlName="MenuID" optionLabel="MenuName" optionValue="MenuID" 
+                              placeholder="Select Menu Resource" [filter]="true" filterBy="MenuName" 
+                              [showClear]="true" class="w-100"
+                              (onShow)="preventParentScroll()">
+
+                        <ng-template let-selectedMenu pTemplate="selectedItem">
+                            <div *ngIf="selectedMenu" class="flex align-items-center gap-2">
+                                <i [class]="selectedMenu.Icon || 'pi pi-file'" style="margin-right: 10px;"></i>
+                                <span class="font-medium">{{ selectedMenu.MenuName }}</span>
                             </div>
                         </ng-template>
                         <ng-template let-menu pTemplate="item">
                             <div class="flex align-items-center gap-3">
-                                <i [class]="menu.Icon || 'pi pi-file'" class="text-xl"></i>
-                                <div>
-                                    <div class="font-medium">{{ menu.MenuName }}</div>
-                                    <div class="text-sm text-color-secondary">{{ menu.MenuURL }}</div>
-                                </div>
+                                <i [class]="menu.Icon || 'pi pi-file'" class="text-xl" style="margin-right: 10px;"></i>
+                                <span class="font-medium">{{ menu.MenuName }}</span>
                             </div>
                         </ng-template>
                     </p-select>
@@ -201,14 +201,15 @@
                     </div>
                 </div>
             </div>
-            <div class="col-8">
+            <div class="row mb-3 align-items-center">
+                <div class="col-8">
                   <label for="MenuType" class="font-bold block mb-2">
                       Menu Type <span class="text-red-500">*</span>
                   </label>
-            </div>  
-            <div class="col-8">
+                </div>  
+                <div class="col-8">
                     <p-select #inputField [options]="menuTypes" formControlName="MenuType" optionLabel="label" 
-                                optionValue="value" placeholder="Select Menu Type" styleClass="w-full">
+                                optionValue="value" placeholder="Select Menu Type" class="w-100">
                         <ng-template let-item pTemplate="selectedItem">
                             <div *ngIf="item" class="flex align-items-center gap-2">
                                 <i [class]="item.icon"></i>
@@ -225,15 +226,17 @@
                     <div *ngIf="menuMappingForm.get('MenuType')?.invalid && menuMappingForm.get('MenuType')?.touched" class="invalid-feedback">
                         <small class="p-error block">Please select a menu type</small>
                     </div>
+                </div>
             </div>
-            <div class="col-8">
+            <div class="row mb-3 align-items-center">
+                <div class="col-8">
                   <label for="MenuRank" class="font-bold block mb-2">
                        Display Order <span class="text-red-500">*</span>
                   </label>
-            </div>
-            <div class="col-8">
+                </div>
+                <div class="col-8">
                     <p-inputNumber #inputField formControlName="MenuRank" [showButtons]="true" buttonLayout="horizontal"
-                                 [min]="1" [max]="999" spinnerMode="horizontal" styleClass="w-full">
+                                 [min]="1" [max]="999" spinnerMode="horizontal" class="w-100">
                         <ng-template pTemplate="incrementbuttonicon">
                             <i class="pi pi-plus"></i>
                         </ng-template>
@@ -244,26 +247,33 @@
                     <small *ngIf="menuMappingForm.get('MenuRank')?.invalid && menuMappingForm.get('MenuRank')?.touched" 
                            class="p-error block">Please enter a valid display order (1-999)</small>
                     <small class="text-color-secondary block">Lower numbers appear first</small>
+                </div>
             </div>
-            <div class="col-8" *ngIf="menuMappingForm.get('MenuType')?.value !== 1">
-                    <label for="ParentID" class="font-bold block mb-2">Parent Menu</label>
+            <div class="row mb-3 align-items-center" *ngIf="menuMappingForm.get('MenuType')?.value !== 1">
+                <div class="col-8">
+                  <label for="MenuRank" class="font-bold block mb-2">
+                       Parent Menu <span class="text-red-500">*</span>
+                  </label>
+                </div>
+                <div class="col-8">
                     <p-select #inputField [options]="parentMenuOptions" formControlName="ParentID" optionLabel="label"  
-                                optionValue="value" placeholder="Select Parent Menu" styleClass="w-full">
+                               class="mt-2 input100" optionValue="value" placeholder="Select Parent Menu" class="w-100"
+                               (onShow)="preventParentScroll()">
+                               
                         <ng-template let-parent pTemplate="item">
                             <div class="flex align-items-center gap-2">
-                                <i *ngIf="parent.value === 0" class="pi pi-home text-lg"></i>
-                                <i *ngIf="parent.value !== 0" [class]="parent.data?.Icon || 'pi pi-folder'"></i>
-                                <div>{{ parent.label }}</div>
+                                <i *ngIf="parent.value !== 0" style="margin-right: 10px;" [class]="parent.data?.Icon || 'pi pi-folder'"></i>
+                                <span class="font-medium">{{ parent.label }}</span>
                             </div>
                         </ng-template>
                     </p-select>
-                    <small class="text-color-secondary block">Select "Root" for top-level menu (Menu Type: Main Menu)</small>
+                    <small class="text-color-secondary block">Select "Root" for top-level menu</small>
                     
                     <p-message severity="info" *ngIf="menuMappingForm.get('MenuType')?.value === 1 && menuMappingForm.get('ParentID')?.value !== 0"
                                text="Parent Menu should typically be 'Root' for Main Menu types." class="mt-2" />
+                </div>
             </div>
-        </div>
-        <div class="row mb-3 align-items-center">
+            <div class="row mb-3 align-items-center">
             <div class="col-8">
                 <label class="form-label fw-medium mb-0">Status</label>
             </div>
@@ -272,6 +282,7 @@
                 <span>{{ menuMappingForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
             </div>
 
+            </div>
         </div>
     </form>
     

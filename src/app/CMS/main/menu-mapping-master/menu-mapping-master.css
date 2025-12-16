@@ -55,7 +55,9 @@
 .menu-stat.success .value {
   color: var(--green-500);
 }
-
+.text-red-500 {
+  color: #ff0000 !important;
+}
 .menu-stat.info .value {
   color: var(--blue-500);
 }
