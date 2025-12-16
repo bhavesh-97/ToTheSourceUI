@@ -22,3 +22,44 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.menu-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: var(--surface-card);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+.menu-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.menu-stat .label {
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+.menu-stat .value {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+/* Accent colors */
+.menu-stat.success .value {
+  color: var(--green-500);
+}
+
+.menu-stat.info .value {
+  color: var(--blue-500);
+}
+
+.menu-stat.warning .value {
+  color: var(--purple-500);
+}

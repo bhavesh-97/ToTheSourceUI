@@ -23,7 +23,7 @@ import { SelectModule } from 'primeng/select';
 import { MMenuResourceMaster } from '../menu-resource-master/MenuResourceMaster';
 import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
-import { Card } from "primeng/card";
+import { Card, CardModule } from "primeng/card";
 
 @Component({
   selector: 'app-menu-mapping-master',
@@ -47,7 +47,7 @@ import { Card } from "primeng/card";
     SelectButtonModule,
     PanelModule,
     BadgeModule,
-    Card
+    CardModule
 ],
   templateUrl: './menu-mapping-master.html',
   styleUrls: ['./menu-mapping-master.css']
@@ -177,76 +177,144 @@ export class MenuMappingMaster implements OnInit {
     });
   }
 
-  buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
-    const tree: TreeNode<MMenuMappingMaster>[] = [];
-    const map: { [key: number]: TreeNode<MMenuMappingMaster> } = {};
+  // buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
+  //   const tree: TreeNode<MMenuMappingMaster>[] = [];
+  //   const map: { [key: number]: TreeNode<MMenuMappingMaster> } = {};
 
-    // First pass: create map
-    flatData.forEach(item => {
-      map[item.MappingID] = {
-        data: item,
-        children: [],
-        key: item.MappingID.toString(),
-        label: item.MenuName,
-        expanded: false // Initialize expanded state
-      };
+  //   // First pass: create map
+  //   flatData.forEach(item => {
+  //     map[item.MappingID] = {
+  //       data: item,
+  //       children: [],
+  //       key: item.MappingID.toString(),
+  //       label: item.MenuName,
+  //       expanded: false // Initialize expanded state
+  //     };
+  //   });
+
+  //   // Second pass: build tree
+  //   flatData.forEach(item => {
+  //     const node = map[item.MappingID];
+  //     if (item.ParentID === 0) {
+  //       tree.push(node);
+  //     } else {
+  //       if (map[item.ParentID]) {
+  //         map[item.ParentID].children!.push(node);
+  //       } else {
+  //         // Orphan node - add to root
+  //         tree.push(node);
+  //       }
+  //     }
+  //   });
+
+  //   // Sort tree by MenuRank
+  //   const sortTree = (nodes: TreeNode<MMenuMappingMaster>[]): TreeNode<MMenuMappingMaster>[] => {
+  //     return nodes
+  //       .sort((a, b) => (a.data!.MenuRank - b.data!.MenuRank))
+  //       .map(node => {
+  //         if (node.children && node.children.length > 0) {
+  //           node.children = sortTree(node.children);
+  //         }
+  //         return node;
+  //       });
+  //   };
+
+  //   return sortTree(tree);
+  // }
+buildTree(flatData: MMenuMappingMaster[]): TreeNode<MMenuMappingMaster>[] {
+  const roots: TreeNode<MMenuMappingMaster>[] = [];
+
+  // Map by MenuID (IMPORTANT)
+  const map = new Map<number, TreeNode<MMenuMappingMaster>>();
+
+  // Step 1: Create nodes
+  flatData.forEach(item => {
+    map.set(item.MenuID, {
+      key: item.MenuID.toString(),
+      data: item,
+      children: [],
+      expanded: false
     });
+  });
 
-    // Second pass: build tree
-    flatData.forEach(item => {
-      const node = map[item.MappingID];
-      if (item.ParentID === 0) {
-        tree.push(node);
+  // Step 2: Link parent → child using ParentID → MenuID
+  flatData.forEach(item => {
+    const node = map.get(item.MenuID)!;
+
+    if (item.ParentID === 0 || item.ParentID === null) {
+      // ROOT MENU
+      roots.push(node);
+    } else {
+      const parentNode = map.get(item.ParentID);
+      if (parentNode) {
+        parentNode.children!.push(node);
       } else {
-        if (map[item.ParentID]) {
-          map[item.ParentID].children!.push(node);
-        } else {
-          // Orphan node - add to root
-          tree.push(node);
-        }
+        // Safety fallback (orphan)
+        roots.push(node);
+      }
+    }
+  });
+
+  // Step 3: Sort by MenuRank recursively
+  const sortRecursive = (nodes: TreeNode<MMenuMappingMaster>[]) => {
+    nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
+    nodes.forEach(n => n.children && sortRecursive(n.children));
+  };
+
+  sortRecursive(roots);
+  return roots;
+}
+isRootMenu(menu: MMenuMappingMaster): boolean {
+  return menu.ParentID === 0 || menu.ParentID === null;
+}
+
+  // buildParentMenuOptions() {
+  //   const flattenTree = (nodes: TreeNode<MMenuMappingMaster>[], level = 0): ParentMenuOption[] => {
+  //     let result: ParentMenuOption[] = [];
+  //     nodes.forEach(node => {
+  //       const prefix = '—'.repeat(level * 2);
+  //       result.push({
+  //         label: `${prefix} ${node.data!.MenuName} (${this.getMenuTypeLabel(node.data!.MenuType)})`,
+  //         value: node.data!.MappingID,
+  //         data: node.data!
+  //       });
+  //       if (node.children && node.children.length > 0) {
+  //         result = result.concat(flattenTree(node.children, level + 1));
+  //       }
+  //     });
+  //     return result;
+  //   };
+
+  //   const rootOption: ParentMenuOption = {
+  //     label: '🏠 Root (Top Level)',
+  //     value: 0,
+  //     data: null
+  //   };
+
+  //   this.parentMenuOptions = [rootOption, ...flattenTree(this.menuMappings)];
+  // }
+buildParentMenuOptions() {
+  const options: ParentMenuOption[] = [
+    { label: '🏠 Root (Top Level)', value: 0, data: null }
+  ];
+
+  const traverse = (nodes: TreeNode<MMenuMappingMaster>[], level = 0) => {
+    nodes.forEach(node => {
+      options.push({
+        label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
+        value: node.data!.MenuID, // IMPORTANT
+        data: node.data!
+      });
+
+      if (node.children?.length) {
+        traverse(node.children, level + 1);
       }
     });
+  };
 
-    // Sort tree by MenuRank
-    const sortTree = (nodes: TreeNode<MMenuMappingMaster>[]): TreeNode<MMenuMappingMaster>[] => {
-      return nodes
-        .sort((a, b) => (a.data!.MenuRank - b.data!.MenuRank))
-        .map(node => {
-          if (node.children && node.children.length > 0) {
-            node.children = sortTree(node.children);
-          }
-          return node;
-        });
-    };
-
-    return sortTree(tree);
-  }
-
-  buildParentMenuOptions() {
-    const flattenTree = (nodes: TreeNode<MMenuMappingMaster>[], level = 0): ParentMenuOption[] => {
-      let result: ParentMenuOption[] = [];
-      nodes.forEach(node => {
-        const prefix = '—'.repeat(level * 2);
-        result.push({
-          label: `${prefix} ${node.data!.MenuName} (${this.getMenuTypeLabel(node.data!.MenuType)})`,
-          value: node.data!.MappingID,
-          data: node.data!
-        });
-        if (node.children && node.children.length > 0) {
-          result = result.concat(flattenTree(node.children, level + 1));
-        }
-      });
-      return result;
-    };
-
-    const rootOption: ParentMenuOption = {
-      label: '🏠 Root (Top Level)',
-      value: 0,
-      data: null
-    };
-
-    this.parentMenuOptions = [rootOption, ...flattenTree(this.menuMappings)];
-  }
+  traverse(this.menuMappings);
+  this.parentMenuOptions = options;
+}
 
   calculateStats() {
     // Calculate total menus
@@ -318,26 +386,49 @@ export class MenuMappingMaster implements OnInit {
     this.displayDialog = true;
   }
 
-  openNewChild(parentNode: TreeNode<MMenuMappingMaster>) {
-    this.selectedNode = parentNode;
-    this.menuMappingForm.reset({
-      MappingID: 0,
-      MenuID: null,
-      MenuName: '',
-      MenuURL: '',
-      Icon: '',
-      MenuType: 2,
-      ParentID: parentNode.data!.MappingID,
-      MenuRank: (parentNode.children?.length || 0) + 1,
-      IsActive: true
-    });
-    this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
-    this.displayDialog = true;
-  }
+  // openNewChild(parentNode: TreeNode<MMenuMappingMaster>) {
+  //   this.selectedNode = parentNode;
+  //   this.menuMappingForm.reset({
+  //     MappingID: 0,
+  //     MenuID: null,
+  //     MenuName: '',
+  //     MenuURL: '',
+  //     Icon: '',
+  //     MenuType: 2,
+  //     ParentID: parentNode.data!.MappingID,
+  //     MenuRank: (parentNode.children?.length || 0) + 1,
+  //     IsActive: true
+  //   });
+  //   this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
+  //   this.displayDialog = true;
+  // }
+openNewChild(row: any) {
+  const parentNode = this.resolveTreeNode(row);
+  if (!parentNode) return;
 
-  editMenu(node: TreeNode<MMenuMappingMaster>) {
-    this.selectedNode = node;
+  this.selectedNode = parentNode;
+
+  this.menuMappingForm.reset({
+    MappingID: 0,
+    MenuID: null,
+    MenuName: '',
+    MenuURL: '',
+    Icon: '',
+    MenuType: 2,
+    ParentID: parentNode.data!.MenuID, // ✅ MenuID
+    MenuRank: (parentNode.children?.length || 0) + 1,
+    IsActive: true
+  });
+
+  this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
+  this.displayDialog = true;
+}
+
+  editMenu(row: any) {
+    const node = this.resolveTreeNode(row);
+    if (!node) return;
     const menuData = node.data!;
+    this.selectedNode = node;
     this.menuMappingForm.patchValue({
       MappingID: menuData.MappingID,
       MenuID: menuData.MenuID,
@@ -353,9 +444,10 @@ export class MenuMappingMaster implements OnInit {
     this.displayDialog = true;
   }
 
-  deleteMenu(node: TreeNode<MMenuMappingMaster>) {
+  deleteMenu(row: any) {
+    const node = this.resolveTreeNode(row);
+    if (!node) return;
     const menuData = node.data!;
-    
     this.confirmationService.confirm({
       message: `Are you sure you want to delete <strong>"${menuData.MenuName}"</strong>?`,
       header: 'Confirm Deletion',
@@ -383,6 +475,18 @@ export class MenuMappingMaster implements OnInit {
       }
     });
   }
+private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
+  if (!row) return null;
+  if (row.node && row.node.data) {
+    return row.node as TreeNode<MMenuMappingMaster>;
+  }
+  if (row.data) {
+    return row as TreeNode<MMenuMappingMaster>;
+  }
+
+  console.error('Invalid TreeTable row passed:', row);
+  return null;
+}
 
   onMenuSelected(menuId: number) {
     const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);

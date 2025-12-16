@@ -48,97 +48,73 @@
                  [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,25,50]"
                  [scrollable]="true" scrollHeight="420px" class="shadow-1">
 
-   <ng-template pTemplate="header">
-  <tr>
-    <th class="col-serial">#</th>
-    <th class="col-menu">Menu</th>
-    <th class="col-url">URL</th>
-    <th class="col-type">Type</th>
-    <th class="col-rank">Rank</th>
-    <th class="col-parent">Parent</th>
-    <th class="col-status">Status</th>
-    <th class="col-actions">Actions</th>
-  </tr>
-</ng-template>
+          <ng-template pTemplate="header">
+             <tr>
+                <th class="col-serial">#</th>
+                <th class="col-menu">Menu</th>
+                <th class="col-url">URL</th>
+                <th class="col-type">Type</th>
+                <th class="col-rank">Rank</th>
+                <th class="col-parent">Parent</th>
+                <th class="col-status">Status</th>
+                <th class="col-actions">Actions</th>
+             </tr>
+          </ng-template>
 
 
-      <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-rowIndex="rowIndex">
-        <tr [ttRow]="rowNode">
-          <td class="col-serial">
-  {{ getNodeIndex(rowNode) }}
-</td>
+          <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-rowIndex="rowIndex">
+                <tr [ttRow]="rowNode">
+                    <td class="col-serial">
+                        {{ getNodeIndex(rowNode) }}
+                    </td>
+                    <td class="col-menu">
+                        <div class="flex align-items-center gap-2">
+                            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                            <i [class]="rowData.Icon" class="text-primary"></i>
+                            <span class="font-medium text-ellipsis">
+                                {{ rowData.MenuName }}
+                            </span>
 
-          <!-- Menu Column -->
-      <td class="col-menu">
-  <div class="flex align-items-center gap-2">
-    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-
-    <i [class]="rowData.Icon" class="text-primary"></i>
-
-    <span class="font-medium text-ellipsis">
-      {{ rowData.MenuName }}
-    </span>
-
-    <p-tag *ngIf="rowData.ParentID === 0"
-           value="ROOT"
-           severity="info"
-           class="ml-2 text-xs" />
-  </div>
-</td>
-
-
-         <td class="col-url">
-  <span class="text-color-secondary text-ellipsis"
-        pTooltip="{{ rowData.MenuURL }}"
-        tooltipPosition="top">
-    {{ rowData.MenuURL || '—' }}
-  </span>
-</td>
-
-
-          <td>
-            <i [class]="getMenuTypeIcon(rowData.MenuType) + ' mr-1'"></i>
-            {{ getMenuTypeLabel(rowData.MenuType) }}
-          </td>
-
-          <td class="text-center">
-            <p-badge [value]="rowData.MenuRank" severity="contrast" />
-          </td>
-
-          <td>
-            <span *ngIf="rowData.ParentID === 0" class="text-color-secondary">—</span>
-            <span *ngIf="rowData.ParentID > 0">{{ rowData.ParentMenuName || getParentName(rowData.ParentID) }}</span>
-          </td>
-
-          <td>
-            <p-tag [value]="getStatusLabel(rowData.MCommonEntitiesMaster.IsActive)"
-                   [severity]="getStatusSeverity(rowData.MCommonEntitiesMaster.IsActive)" />
-          </td>
-
- <td class="col-actions">
-  <div class="flex justify-content-center gap-1">
-    <p-button icon="pi pi-plus"
-              severity="success"
-              text rounded
-              pTooltip="Add Child"
-              (click)="openNewChild(rowNode)" />
-
-    <p-button icon="pi pi-pencil"
-              severity="info"
-              text rounded
-              pTooltip="Edit"
-              (click)="editMenu(rowNode)" />
-
-    <p-button icon="pi pi-trash"
-              severity="danger"
-              text rounded
-              pTooltip="Delete"
-              (click)="deleteMenu(rowNode)" />
-  </div>
-</td>
-
-        </tr>
-      </ng-template>
+                            <p-tag *ngIf="isRootMenu(rowData)"
+                                      value="ROOT"
+                                      severity="info"
+                                      class="ml-2 text-xs" />
+                          </div>
+                      </td>
+                      <td class="col-url">
+                          <span class="text-color-secondary text-ellipsis"
+                            pTooltip="{{ rowData.MenuURL }}"
+                            tooltipPosition="top">
+                            {{ rowData.MenuURL || '#' }}
+                          </span>
+                      </td>
+                      <td>
+                          <i [class]="getMenuTypeIcon(rowData.MenuType) + ' mr-1'"></i>
+                          {{ getMenuTypeLabel(rowData.MenuType) }}
+                      </td>
+                      <td class="text-center">
+                          <p-badge [value]="rowData.MenuRank" severity="contrast" />
+                      </td>
+                      <td>
+                          <span *ngIf="rowData.ParentID === 0" class="text-color-secondary">—</span>
+                          <span *ngIf="rowData.ParentID > 0">{{ rowData.ParentMenuName || getParentName(rowData.ParentID) }}</span>
+                      </td>
+                      <td>
+                          <p-tag [value]="getStatusLabel(rowData.MCommonEntitiesMaster.IsActive)"
+                            [severity]="getStatusSeverity(rowData.MCommonEntitiesMaster.IsActive)" />
+                      </td>
+                      <td class="col-actions">
+                          <div class="flex justify-content-center gap-1">
+                                <p-button icon="pi pi-plus" severity="success" text rounded
+                                      pTooltip="Add Child" (click)="openNewChild(rowNode)" />
+                                <p-button icon="pi pi-pencil" severity="info" text rounded
+                                      pTooltip="Edit" (click)="editMenu(rowNode)" />
+                                <p-button icon="pi pi-trash" severity="danger" text rounded
+                                      pTooltip="Delete"(click)="deleteMenu(rowNode)" />
+                            </div>
+                        </td>
+                </tr>
+        </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
@@ -146,43 +122,32 @@
             <i class="pi pi-inbox text-4xl text-400 mb-3"></i>
             <div class="text-lg font-medium">No Menu Mappings Found</div>
             <p class="text-500 mt-2">Adjust filters or create a new menu</p>
-            <p-button label="Add Menu" icon="pi pi-plus" severity="success"
+            <p-button label="Add Mapping" icon="pi pi-plus" severity="success"
                       (click)="openNew()" />
           </td>
         </tr>
       </ng-template>
 
     </p-treetable>
-
-    <!-- Stats Summary (Single Row) -->
-  <div class="grid mt-4">
-  <div class="col">
-    <p-card>
-      <small>Total Menus</small>
-      <h3>{{ totalMenus }}</h3>
-    </p-card>
-  </div>
-  <div class="col">
-    <p-card>
-      <small>Active</small>
-      <h3 class="text-green-500">{{ activeMenuCount }}</h3>
-    </p-card>
-  </div>
-  <div class="col">
-    <p-card>
-      <small>Main Menus</small>
-      <h3 class="text-blue-500">{{ mainMenuCount }}</h3>
-    </p-card>
-  </div>
-  <div class="col">
-    <p-card>
-      <small>Levels</small>
-      <h3 class="text-purple-500">{{ maxLevel + 1 }}</h3>
-    </p-card>
-  </div>
-</div>
-
-
+<!-- 
+    <div class="menu-stats mt-3">
+        <div class="menu-stat">
+            <span class="label">Total</span>
+            <span class="value">{{ totalMenus }}</span>
+        </div>
+        <div class="menu-stat success">
+            <span class="label">Active</span>
+            <span class="value">{{ activeMenuCount }}</span>
+        </div>
+        <div class="menu-stat info">
+            <span class="label">Main</span>
+            <span class="value">{{ mainMenuCount }}</span>
+        </div>
+        <div class="menu-stat warning">
+            <span class="label">Levels</span>
+            <span class="value">{{ maxLevel + 1 }}</span>
+        </div>
+    </div> -->
   </div>
 </div>
 
