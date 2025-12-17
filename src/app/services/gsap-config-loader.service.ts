@@ -19,7 +19,7 @@ export class GsapConfigLoaderService {
       );
       this.config = data;
       this.loaded = true;
-      console.log('GSAP Config Loaded Successfully', data);
+      // console.log('GSAP Config Loaded Successfully', data);
     } catch (err) {
       console.error('Failed to load GSAP config:', err);
     }

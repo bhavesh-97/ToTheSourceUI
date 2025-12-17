@@ -81,7 +81,6 @@ export class MenuResourceMaster {
        this.loading = true;
        this.MenuResourceMasterService.GetAllMenuResourceDetails().subscribe({
           next: (res) => {
-            console.log(res);
             if (!res.isError) {
               debugger;
               var response = JSON.parse(res.result);
@@ -142,7 +141,6 @@ export class MenuResourceMaster {
             try {
                   this.MenuResourceMasterService.DeleteMenuResource(menuresource).subscribe({
                           next: (res) => {
-                                    console.log(res);
                                     if (!res.isError) {
                                       this.MenuResourceForm.reset();
                                       this.loadData();
@@ -179,7 +177,6 @@ export class MenuResourceMaster {
     try {
          this.MenuResourceMasterService.SaveMenuResource(menuresourceModel).subscribe({
             next: (res) => {
-                console.log(res);
                 if (!res.isError) {
                   debugger;
                   // var response = JSON.parse(res.result);

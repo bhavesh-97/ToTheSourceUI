@@ -32,11 +32,6 @@ export const authGuard: CanActivateFn = (route, state) => {
     const expirationTime = tokenPayload.exp * 1000; // Convert to milliseconds
     const currentTime = Date.now();
     
-    console.log('AuthGuard - Token expiration check:', {
-      expiresAt: new Date(expirationTime),
-      currentTime: new Date(currentTime),
-      isExpired: expirationTime < currentTime
-    });
     
     if (expirationTime < currentTime) {
       notificationService.showMessage(
@@ -51,15 +46,12 @@ export const authGuard: CanActivateFn = (route, state) => {
     
     const fiveMinutes = 5 * 60 * 1000;
     if (expirationTime - currentTime < fiveMinutes) {
-      console.log('AuthGuard - Token will expire soon');
       // You could trigger token refresh here
     }
     
-    console.log('AuthGuard - Access granted');
     return true;
     
   } catch (error) {
-    console.error('AuthGuard - Error parsing token:', error);
     notificationService.showMessage(
       'Authentication error. Please log in again.',
       'Authentication Error',

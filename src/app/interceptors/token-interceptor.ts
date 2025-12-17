@@ -21,7 +21,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
       }
     });
   } else {
-    console.log('Token Interceptor - No token found');
   }
   
   return next(authReq).pipe(
@@ -29,7 +28,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse) {
         switch (error.status) {
           case 401: // Unauthorized
-            console.log('Token Interceptor - 401 Unauthorized detected');
             notificationService.showMessage(
               'Your session has expired. Please log in again.',
               'Session Expired',
@@ -40,7 +38,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
             break;
             
           case 403: // Forbidden
-            console.log('Token Interceptor - 403 Forbidden detected');
             notificationService.showMessage(
               'You do not have permission to access this resource.',
               'Access Denied',
@@ -49,7 +46,6 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
             break;
             
           case 0: // Network error or CORS issue
-            console.log('Token Interceptor - Network error detected');
             notificationService.showMessage(
               'Unable to connect to the server. Please check your internet connection.',
               'Connection Error',

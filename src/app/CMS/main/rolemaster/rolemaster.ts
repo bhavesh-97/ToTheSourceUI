@@ -84,14 +84,11 @@ export class Rolemaster implements OnInit {
        this.loading = true;
        this.RoleMasterService.GetAllRoleDetails().subscribe({
           next: (res) => {
-            console.log(res);
             if (!res.isError) {
               debugger;
               var response = JSON.parse(res.result);
               this.loading = false;
               this.roles = response;
-              
-              console.log(this.roles);
               this.totalRecords = this.roles.length;
               // this.messageService.showMessage(res.strMessage, res.title, res.type);
             } else {
@@ -183,7 +180,6 @@ export class Rolemaster implements OnInit {
             try {
                   this.RoleMasterService.DeleteRole(role).subscribe({
                           next: (res) => {
-                                    console.log(res);
                                     if (!res.isError) {
                                       this.roleForm.reset();
                                       this.loadData();
@@ -220,7 +216,6 @@ export class Rolemaster implements OnInit {
     try {
          this.RoleMasterService.SaveRole(roleModel).subscribe({
             next: (res) => {
-                console.log(res);
                 if (!res.isError) {
                   debugger;
                   // var response = JSON.parse(res.result);

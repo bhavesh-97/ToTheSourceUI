@@ -201,8 +201,6 @@ export class MenuMappingMaster implements OnInit {
           }
           this.menuResources = menuData;
           this.filteredMenuResources = [...this.menuResources];
-          console.log('Menu Resources Type:', typeof this.menuResources);
-          console.log('Menu Resources Length:', this.menuResources.length);
         } else if (!res.isError) {
         this.menuResources = []; 
         this.filteredMenuResources = [];
@@ -319,11 +317,21 @@ export class MenuMappingMaster implements OnInit {
         }
       }
     });
+    const MAX_DEPTH = 100; 
+    const sortRecursive = (nodes: TreeNode<MMenuMappingMaster>[],depth = 0) => {
+        if (depth > MAX_DEPTH) {
+          console.error('Max recursion depth exceeded at depth:', depth);
+          return;
+        }
 
-    const sortRecursive = (nodes: TreeNode<MMenuMappingMaster>[]) => {
-      nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
-      nodes.forEach(n => n.children && sortRecursive(n.children));
-    };
+        nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
+  
+        for (const node of nodes) {
+            if (node.children?.length) {
+              sortRecursive(node.children, depth + 1);
+            }
+          }
+      };
     sortRecursive(roots);
     return roots;
   }
@@ -412,18 +420,26 @@ export class MenuMappingMaster implements OnInit {
       MenuTypeID: 1,
       ParentID: 0,
       MenuRank: 1,
-      IsActive: true
+      MCommonEntitiesMaster: {
+        IsActive: false
+      }
     });
     this.dialogHeader = 'Create New Menu Mapping';
     this.displayDialog = true;
   }
 
   openNewChild(row: any) {
-    console.log(row)
     debugger
     const parentNode = this.resolveTreeNode(row);
     if (!parentNode) return;
-
+    if(!parentNode.data!.MCommonEntitiesMaster.IsActive){
+        this.messageService.showMessage(
+          'Parent menu must be active to add sub-items.',
+          'Error',
+          PopupMessageType.Error
+        );
+        return
+    }
     this.selectedNode = parentNode;
 
     this.menuMappingForm.reset({
@@ -436,7 +452,9 @@ export class MenuMappingMaster implements OnInit {
       SiteAreaID: parentNode.data!.SiteAreaID,
       ParentID: parentNode.data!.MenuID, 
       MenuRank: (parentNode.children?.length || 0) + 1,
-      IsActive: true
+      MCommonEntitiesMaster: {
+        IsActive: false
+      }
     });
 
     this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
@@ -454,10 +472,13 @@ export class MenuMappingMaster implements OnInit {
       MenuName: menuData.MenuName,
       MenuURL: menuData.MenuURL,
       Icon: menuData.Icon,
+      SiteAreaID: menuData.SiteAreaID,
       MenuTypeID: menuData.MenuTypeID,
       ParentID: menuData.ParentID,
       MenuRank: menuData.MenuRank,
-      IsActive: menuData.MCommonEntitiesMaster.IsActive
+      MCommonEntitiesMaster: {
+        IsActive: menuData.MCommonEntitiesMaster.IsActive
+      }
     });
     this.dialogHeader = `Edit "${menuData.MenuName}"`;
     this.displayDialog = true;
@@ -495,15 +516,15 @@ export class MenuMappingMaster implements OnInit {
     });
   }
   private resolveTreeNode(row: any): TreeNode<MMenuMappingMaster> | null {
-  if (!row) return null;
-  if (row.node && row.node.data) {
-    return row.node as TreeNode<MMenuMappingMaster>;
-  }
-  if (row.data) {
-    return row as TreeNode<MMenuMappingMaster>;
-  }
-  console.error('Invalid TreeTable row passed:', row);
-  return null;
+      if (!row) return null;
+      if (row.node && row.node.data) {
+        return row.node as TreeNode<MMenuMappingMaster>;
+      }
+      if (row.data) {
+        return row as TreeNode<MMenuMappingMaster>;
+      }
+      console.error('Invalid TreeTable row passed:', row);
+      return null;
   }
 
   onMenuSelected(menuId: number) {
@@ -539,7 +560,6 @@ export class MenuMappingMaster implements OnInit {
       return;
     }  
     const menumappingModel = this.FormUtils.getAllFormFieldData(this.formFields, this.menuMappingForm, this.inputElements.toArray(), SaveMenuMappingRequest);
-    console.log(menumappingModel);
     this.saving = true;
     this.menuMappingService.SaveMenuMapping(menumappingModel).subscribe({
       next: (res) => {

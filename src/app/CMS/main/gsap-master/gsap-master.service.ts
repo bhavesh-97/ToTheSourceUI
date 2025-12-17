@@ -177,7 +177,7 @@ getDefaultConfig(): GsapConfig {
 
   // Mock save (just logs for now)
   saveConfig(projectCode: string, config: GsapConfig): Observable<any> {
-    console.log('Mock save for project:', projectCode, config);
+    // console.log('Mock save for project:', projectCode, config);
     return of({ success: true });
   }
   killCurrent() {

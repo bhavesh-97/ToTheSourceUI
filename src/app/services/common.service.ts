@@ -118,7 +118,7 @@ export class CommonService {
         }
         // var data2 = [];
         var data: any[][] = [];
-        console.log(griddata, gridheader)
+        // console.log(griddata, gridheader)
         if(griddata != "undefined" && griddata.length > 0){
           griddata.forEach((item: { [x: string]: any; }) => {
             let row: any[]  = [];
@@ -133,7 +133,7 @@ export class CommonService {
             worksheet.addRow(row);
             data.push(row);
           });
-          console.log(data);
+          // console.log(data);
         }
       //   if(griddata != "undefined" && griddata.hasOwnProperty("data") && griddata.data != "undefined"  && griddata.data.total > 0){
       //       alert(2)

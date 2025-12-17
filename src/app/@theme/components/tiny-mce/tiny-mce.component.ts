@@ -108,7 +108,7 @@ export class TinyMCEComponent implements AfterViewInit, OnDestroy {
         this.editor = editor;
 
         editor.on('init', () => {
-          console.log('TinyMCE 7.3.0 Ready!');
+          // console.log('TinyMCE 7.3.0 Ready!');
         });
 
         editor.on('keyup change undo redo', () => {
