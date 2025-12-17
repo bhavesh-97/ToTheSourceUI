@@ -5,55 +5,43 @@
         <div style="display:flex; align-items:center; width:100%;">
             <h1 style="margin:0; font-size:1.75rem; font-weight:700;">Menu Mapping Master</h1>
             <div style="margin-left:auto;">
-              <p-button label="Add New Mapping" icon="pi pi-plus" class="p-button-success" (click)="openNew()">
-              </p-button>
+                <div class="d-flex justify-content-lg-end">
+                        <div class="w-100" style="max-width: 250px;">
+                             <p-iconField iconPosition="left" class="ml-auto">
+                                <p-inputIcon>
+                                    <i class="pi pi-search"></i>
+                                </p-inputIcon>
+                                <input pInputText type="text" (input)="onGlobalFilter($event)"placeholder="Search Menus..." />
+                            </p-iconField>
+                        </div>
+                    </div>
             </div>
         </div>
-  <div class="flex align-items-center justify-content-between gap-3 flex-wrap">
-    
-    <div class="flex align-items-center gap-2 flex-wrap">
-        
-        <p-select [options]="statusOptions" optionLabel="label" optionValue="value"
-                  placeholder="Status" [showClear]="true" 
-                  class="w-10rem" 
-                  [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
-        </p-select>
-
-        <p-select [options]="menuTypes" optionLabel="label" optionValue="value"
-                  placeholder="Type" [showClear]="true" 
-                  class="w-10rem" 
-                  [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
-        </p-select>
-
-        <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"
-                  (click)="clearFilters()" 
-                  [disabled]="!globalFilter && selectedStatus === null && selectedMenuType === null" 
-                  [text]="true" [rounded]="true" />
-
-        <p-button icon="pi pi-download" severity="secondary" pTooltip="Export CSV"
-                  (click)="exportToCSV()" 
-                  [text]="true" [rounded]="true" />
-
-        <p-button icon="pi pi-plus-circle" severity="secondary" pTooltip="Expand All"
-                  (click)="expandAll()" 
-                  [text]="true" [rounded]="true" />
-
-        <p-button icon="pi pi-minus-circle" severity="secondary" pTooltip="Collapse All"
-                  (click)="collapseAll()" 
-                  [text]="true" [rounded]="true" />
-                  
-    <div class="w-14rem">
-        <p-inputGroup>
-            <p-inputGroupAddon class="search-icon-transparent"> 
-                <i class="pi pi-search"></i>
-            </p-inputGroupAddon>
-            <input pInputText type="text"
-                   placeholder="Search menus" [value]="globalFilter" (input)="onGlobalFilter($event)"/>
-        </p-inputGroup>
-    </div>
-    </div>
-
-</div>
+       <div class="container-fluid p-0 pt-3 pb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-lg-8">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <p-select [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Status" 
+                                  [showClear]="true" class="w-10rem" [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
+                        </p-select>
+                        <p-select [options]="menuTypes" optionLabel="label" optionValue="value" placeholder="Type" [showClear]="true" 
+                                  class="w-10rem" [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
+                        </p-select>
+                        <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"(click)="clearFilters()" 
+                          [disabled]="!globalFilter && selectedStatus === null && selectedMenuType === null" [text]="true" [rounded]="true" />
+                        <p-button icon="pi pi-download" severity="secondary" pTooltip="Export CSV" (click)="exportToCSV()" [text]="true" [rounded]="true" />
+                        <p-button icon="pi pi-plus-circle" severity="secondary" pTooltip="Expand All" (click)="expandAll()" [text]="true" [rounded]="true" />
+                        <p-button icon="pi pi-minus-circle" severity="secondary" pTooltip="Collapse All" (click)="collapseAll()" [text]="true" [rounded]="true" />
+                        <p-button icon="pi pi-plus" severity="secondary" pTooltip="Add New Mapping" (click)="openNew()" [text]="true" [rounded]="true" />
+                    
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <!-- <p-button label="Add New Mapping" icon="pi pi-plus" class="p-button-success" (click)="openNew()"> -->
+                    <!-- </p-button> -->
+                </div>
+            </div>
+        </div> 
     </div>
 <p-treeTable #tt 
     [value]="filteredMenuMappings" 
