@@ -38,7 +38,8 @@ export class App implements OnInit{
   }
   
   ngAfterViewInit() {
-    // this.cdr.detectChanges();console.log('AppComponent: ngAfterViewInit fired → GSAP will start now');
+    this.cdr.detectChanges();
+    // console.log('AppComponent: ngAfterViewInit fired → GSAP will start now');
     (this.gsap as any).run?.();
   }
  setFavicon(iconUrl: string, size: string = '32x32') {
