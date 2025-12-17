@@ -19,6 +19,24 @@ export class MenuMappingMasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
+      
+    GetMenuResourceDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/GetMenuResourceDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }
+      
+    GetMenuTypeDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/GetMenuTypeDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }
+      
+    GetSiteAreaDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/GetSiteAreaDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }
     SaveMenuMapping(Model: SaveMenuMappingRequest, encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/SaveMenuMappingDetails`,Model,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }

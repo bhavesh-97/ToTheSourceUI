@@ -89,3 +89,16 @@
 .p-inputgroupaddon:first-child{
     background: transparent;
 }
+.custom-upward-panel {
+    transform-origin: bottom !important;
+    top: auto !important;
+    bottom: 100% !important;
+    margin-bottom: 4px; 
+}
+.force-up-panel .p-datepicker-calendar-container,
+.force-up-panel.p-select-overlay {
+    bottom: 100% !important;
+    top: auto !important;
+    transform-origin: bottom !important;
+    margin-bottom: 5px; 
+}

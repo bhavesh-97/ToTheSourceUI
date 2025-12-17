@@ -6,12 +6,16 @@ export class MMenuMappingMaster {
   MenuName: string = "";
   MenuURL: string = "";
   Icon: string = "";
-  MenuType: number = 0;
+  MenuTypeID: number = 0;
+  MenuTypeCode: string = "";
+  MenuTypeName: string = "";
   MenuRank: number = 0;
   ParentID: number = 0;
   ParentMenuName: string = "";
   ParentMenuURL: string = "";
   ParentMenuIcon: string = "";
+  SiteAreaID: number = 0;
+  AreaName: string = "";
   MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }
 
@@ -34,8 +38,9 @@ export interface ParentMenuOption {
 export class SaveMenuMappingRequest {
   MappingID: number = 0;
   MenuID: number = 0;
-  MenuType: number = 0;
+  MenuTypeID: number = 0;
   ParentID: number = 0;
+  SiteAreaID: number = 0;
   MenuRank: number = 0;
   MCommonEntitiesMaster?: MCommonEntitiesMaster;
 }

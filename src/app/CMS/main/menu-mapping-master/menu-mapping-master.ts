@@ -31,6 +31,8 @@ import { ValidationRules } from '../../../shared/utilities/validation-rules.enum
 import { TableModule } from "primeng/table";
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { MMenuTypeMaster } from '../../../models/MMenuTypeMaster';
+import { MSiteAreaMaster } from '../../../models/MSiteAreaMaster';
 @Component({
   selector: 'app-menu-mapping-master',
   standalone: true,
@@ -66,7 +68,6 @@ export class MenuMappingMaster implements OnInit {
   @ViewChild('tt') tt!: TreeTable;
   @ViewChildren('inputField') inputElements!: QueryList<any>;
   private menuMappingService = inject(MenuMappingMasterService);
-  private menuResourceService = inject(MenuResourceMasterService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
   private fb = inject(FormBuilder);
@@ -75,6 +76,8 @@ export class MenuMappingMaster implements OnInit {
   menuMappings: TreeNode<MMenuMappingMaster>[] = [];
   filteredMenuMappings: TreeNode<MMenuMappingMaster>[] = [];
   menuResources: MMenuResourceMaster[] = [];
+  menuTypes: MMenuTypeMaster[] = [];
+  siteAres: MSiteAreaMaster[] = [];
   parentMenuOptions: ParentMenuOption[] = [];
   filteredMenuResources: MMenuResourceMaster[] = [];
   loading: boolean = true;
@@ -90,11 +93,11 @@ export class MenuMappingMaster implements OnInit {
   mainMenuCount: number = 0;
   maxLevel: number = 0;
   totalMenus: number = 0;
-  menuTypes: MenuTypeOption[] = [
-    { label: 'Main Menu', value: 1, icon: 'pi pi-home' },
-    { label: 'Sub Menu', value: 2, icon: 'pi pi-folder' },
-    { label: 'Action', value: 3, icon: 'pi pi-cog' }
-  ];
+  // menuTypes: MenuTypeOption[] = [
+  //   { label: 'Main Menu', value: 1, icon: 'pi pi-home' },
+  //   { label: 'Sub Menu', value: 2, icon: 'pi pi-folder' },
+  //   { label: 'Action', value: 3, icon: 'pi pi-cog' }
+  // ];
   statusOptions: StatusOption[] = [
     { label: 'Active', value: true },
     { label: 'Inactive', value: false }
@@ -102,7 +105,8 @@ export class MenuMappingMaster implements OnInit {
   private formFields: FormFieldConfig[] = [
     { name: 'MappingID', isMandatory: false, events: [] },
     { name: 'MenuID', isMandatory: true, validationMessage: 'Please Select Menu',events: [] },
-    { name: 'MenuType', isMandatory: true, validationMessage: 'Please Select Menu Type',events: [] },
+    { name: 'MenuTypeID', isMandatory: true, validationMessage: 'Please Select Menu Type',events: [] },
+    { name: 'SiteAreaID', isMandatory: true, validationMessage: 'Please Select Site Area',events: [] },
     { name: 'MenuRank', isMandatory: true, min:1, max:99 ,validationMessage: 'Please enter a valid Menu Rank.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly}, { type: 'focusout', validationRule: ValidationRules.NumberOnly }]},
     { name: 'ParentID', isMandatory: false, validationMessage: 'Please Select Parent Menu',events: [] },
     { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
@@ -113,7 +117,7 @@ export class MenuMappingMaster implements OnInit {
     this.menuMappingForm.get('MenuID')?.valueChanges.subscribe(menuId => {
       this.onMenuSelected(menuId);
     });
-    this.menuMappingForm.get('MenuType')?.valueChanges.subscribe(menuType => {
+    this.menuMappingForm.get('MenuTypeID')?.valueChanges.subscribe(menuType => {
       this.onMenuTypeChanged(menuType);
     });
   }
@@ -121,6 +125,8 @@ export class MenuMappingMaster implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadMenuResources();
+    this.loadMenuTypes();
+    this.loadSiteAres();
   }
   ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.menuMappingForm);
@@ -183,9 +189,8 @@ export class MenuMappingMaster implements OnInit {
   }
 
   loadMenuResources() {
-    this.menuResourceService.GetAllMenuResourceDetails().subscribe({
+    this.menuMappingService.GetMenuResourceDetails().subscribe({
       next: (res) => {
-        debugger;
         let menuData: any[] = [];
         if (!res.isError) {
           const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
@@ -207,6 +212,52 @@ export class MenuMappingMaster implements OnInit {
         this.menuResources = [];
         this.filteredMenuResources = [];
         console.error('Failed to load menu resources:', err);
+      }
+    });
+  }
+  loadMenuTypes() {
+    this.menuMappingService.GetMenuTypeDetails().subscribe({
+      next: (res) => {
+        let menutypeData: any[] = [];
+        if (!res.isError) {
+          const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+          if (Array.isArray(rawResult)) {
+            menutypeData = rawResult;
+          } else {
+            console.error('API response successful, but result is not an array after parsing:', rawResult);
+          }
+          this.menuTypes = menutypeData;
+
+        } else if (!res.isError) {
+        this.menuTypes = []; 
+      }
+      },
+      error: (err) => {
+        this.menuTypes = [];
+        console.error('Failed to load menu type:', err);
+      }
+    });
+  }
+  
+  loadSiteAres() {
+    this.menuMappingService.GetSiteAreaDetails().subscribe({
+      next: (res) => {
+        let siteAreData: any[] = [];
+        if (!res.isError) {
+          const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+          if (Array.isArray(rawResult)) {
+            siteAreData = rawResult;
+          } else {
+            console.error('API response successful, but result is not an array after parsing:', rawResult);
+          }
+          this.siteAres = siteAreData;
+        } else if (!res.isError) {
+        this.siteAres = []; 
+      }
+      },
+      error: (err) => {
+        this.siteAres = [];
+        console.error('Failed to load Site Areas:', err);
       }
     });
   }
@@ -311,7 +362,7 @@ export class MenuMappingMaster implements OnInit {
       node => node.data!.MCommonEntitiesMaster.IsActive
     );
     this.mainMenuCount = this.countNodesByCondition(this.menuMappings,
-      node => node.data!.MenuType === 1
+      node => node.data!.MenuTypeID === 1
     );
     const calculateMaxLevel = (nodes: TreeNode<MMenuMappingMaster>[], currentLevel: number): number => {
       let maxLevel = currentLevel;
@@ -358,7 +409,7 @@ export class MenuMappingMaster implements OnInit {
       MenuName: '',
       MenuURL: '',
       Icon: '',
-      MenuType: 1,
+      MenuTypeID: 1,
       ParentID: 0,
       MenuRank: 1,
       IsActive: true
@@ -368,6 +419,8 @@ export class MenuMappingMaster implements OnInit {
   }
 
   openNewChild(row: any) {
+    console.log(row)
+    debugger
     const parentNode = this.resolveTreeNode(row);
     if (!parentNode) return;
 
@@ -379,7 +432,8 @@ export class MenuMappingMaster implements OnInit {
       MenuName: '',
       MenuURL: '',
       Icon: '',
-      MenuType: 2,
+      MenuTypeID: 2, // child menu
+      SiteAreaID: parentNode.data!.SiteAreaID,
       ParentID: parentNode.data!.MenuID, 
       MenuRank: (parentNode.children?.length || 0) + 1,
       IsActive: true
@@ -400,7 +454,7 @@ export class MenuMappingMaster implements OnInit {
       MenuName: menuData.MenuName,
       MenuURL: menuData.MenuURL,
       Icon: menuData.Icon,
-      MenuType: menuData.MenuType,
+      MenuTypeID: menuData.MenuTypeID,
       ParentID: menuData.ParentID,
       MenuRank: menuData.MenuRank,
       IsActive: menuData.MCommonEntitiesMaster.IsActive
@@ -474,6 +528,7 @@ export class MenuMappingMaster implements OnInit {
   }
 
   saveMapping() {
+    debugger;
     if (this.menuMappingForm.invalid) {
       this.markFormGroupTouched(this.menuMappingForm);
       return;
@@ -488,7 +543,6 @@ export class MenuMappingMaster implements OnInit {
     this.saving = true;
     this.menuMappingService.SaveMenuMapping(menumappingModel).subscribe({
       next: (res) => {
-        debugger;
         this.saving = false;
         if (!res.isError) {
           this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Success);
@@ -510,13 +564,13 @@ export class MenuMappingMaster implements OnInit {
   }
 
   getMenuTypeLabel(type: number): string {
-    const menuType = this.menuTypes.find(t => t.value === type);
-    return menuType ? menuType.label : 'Unknown';
+    const menuType = this.menuTypes.find(t => t.MenuTypeID === type);
+    return menuType ? menuType.MenuTypeName : 'Unknown';
   }
 
   getMenuTypeIcon(type: number): string {
-    const menuType = this.menuTypes.find(t => t.value === type);
-    return menuType ? menuType.icon : 'pi pi-question';
+    const menuType = this.menuTypes.find(t => t.MenuTypeID === type);
+    return menuType ? menuType.MenuTypeIcon : 'pi pi-question';
   }
 
   getMenuTypeSeverity(type: number): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
@@ -576,7 +630,7 @@ export class MenuMappingMaster implements OnInit {
 
   private filterTreeByType(nodes: TreeNode<MMenuMappingMaster>[], menuType: number): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
-      if (node.data!.MenuType === menuType) {
+      if (node.data!.MenuTypeID === menuType) {
         result.push(node);
       } else if (node.children && node.children.length > 0) {
         const filteredChildren = this.filterTreeByType(node.children, menuType);
@@ -710,7 +764,7 @@ export class MenuMappingMaster implements OnInit {
       const row = [
         `"${node.data!.MenuName}"`,
         `"${node.data!.MenuURL || ''}"`,
-        `"${this.getMenuTypeLabel(node.data!.MenuType)}"`,
+        `"${this.getMenuTypeLabel(node.data!.MenuTypeID)}"`,
         node.data!.MenuRank,
         `"${node.data!.ParentMenuName || 'Root'}"`,
         `"${this.getStatusLabel(node.data!.MCommonEntitiesMaster.IsActive)}"`,
