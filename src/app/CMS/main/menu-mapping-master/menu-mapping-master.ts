@@ -21,7 +21,6 @@ import { PanelModule } from 'primeng/panel';
 import { BadgeModule } from 'primeng/badge';
 import { Select, SelectModule } from 'primeng/select';
 import { MMenuResourceMaster } from '../menu-resource-master/MenuResourceMaster';
-import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
 import { CardModule } from "primeng/card";
 import { MessageModule } from 'primeng/message';
@@ -88,6 +87,7 @@ export class MenuMappingMaster implements OnInit {
   globalFilter: string = '';
   selectedStatus: boolean | null = null;
   selectedMenuType: number | null = null;
+  selectedSiteArea: number | null = null;
   menuMappingForm!: FormGroup;
   activeMenuCount: number = 0;
   mainMenuCount: number = 0;
@@ -638,6 +638,9 @@ export class MenuMappingMaster implements OnInit {
     if (this.selectedMenuType !== null) {
       filteredData = this.filterTreeByType(filteredData, this.selectedMenuType);
     }
+    if (this.selectedSiteArea !== null) {
+      filteredData = this.filterTreeBySiteArea(filteredData, this.selectedSiteArea);
+    }
     if (this.selectedStatus !== null) {
       filteredData = this.filterTreeByStatus(filteredData, this.selectedStatus);
     }
@@ -646,6 +649,22 @@ export class MenuMappingMaster implements OnInit {
     }
     
     this.filteredMenuMappings = filteredData;
+  }
+  private filterTreeBySiteArea(nodes: TreeNode<MMenuMappingMaster>[], siteArea: number): TreeNode<MMenuMappingMaster>[] {
+    return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
+      if (node.data!.SiteAreaID === siteArea) {
+        result.push(node);
+      } else if (node.children && node.children.length > 0) {
+        const filteredChildren = this.filterTreeBySiteArea(node.children, siteArea);
+        if (filteredChildren.length > 0) {
+          result.push({
+            ...node,
+            children: filteredChildren
+          });
+        }
+      }
+      return result;
+    }, []);
   }
 
   private filterTreeByType(nodes: TreeNode<MMenuMappingMaster>[], menuType: number): TreeNode<MMenuMappingMaster>[] {
@@ -720,6 +739,10 @@ export class MenuMappingMaster implements OnInit {
     this.applyFilters();
   }
 
+  onSiteAreaFilterChange(event: any) {
+    this.selectedSiteArea = event.value;
+    this.applyFilters();
+  }
   onMenuTypeFilterChange(event: any) {
     this.selectedMenuType = event.value;
     this.applyFilters();
@@ -729,6 +752,7 @@ export class MenuMappingMaster implements OnInit {
     this.globalFilter = '';
     this.selectedStatus = null;
     this.selectedMenuType = null;
+    this.selectedSiteArea = null;
     this.filteredMenuMappings = [...this.menuMappings];
   }
 

@@ -24,7 +24,10 @@
                         <p-select [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Status" 
                                   [showClear]="true" class="w-10rem" [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
                         </p-select>
-                        <p-select [options]="menuTypes" optionLabel="label" optionValue="value" placeholder="Type" [showClear]="true" 
+                        <p-select [options]="siteAres" optionLabel="AreaName" optionValue="SiteAreaID" placeholder="Site Area" [showClear]="true" 
+                                  class="w-10rem" [(ngModel)]="selectedSiteArea" (onChange)="onSiteAreaFilterChange($event)">
+                        </p-select>
+                        <p-select [options]="menuTypes" optionLabel="MenuTypeName" optionValue="MenuTypeID" placeholder="Menu Type" [showClear]="true" 
                                   class="w-10rem" [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
                         </p-select>
                         <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"(click)="clearFilters()" 
