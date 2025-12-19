@@ -1,54 +1,108 @@
-<div class="container mt-4">
-  <div class="card shadow-sm p-4">
-    <h4 class="mb-4">Menu Right Master</h4>
+<p-toast />
 
-    <div class="row mb-4">
-      <div class="col-md-4">
-        <label class="form-label fw-bold">Select Role</label>
-        <p-select [options]="roles" [(ngModel)]="selectedRole" 
-                  placeholder="Select a Role" class="w-100" />
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-bold">Select Admin</label>
-        <p-select [options]="admins" [(ngModel)]="selectedAdmin" 
-                  placeholder="Select an Admin" class="w-100" />
+<div class="container-fluid py-4 bg-light min-vh-100">
+  <div class="card border-0 shadow-sm rounded-4">
+    
+    <div class="card-header bg-white border-bottom py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-primary">
+          <i class="pi pi-shield me-2"></i>Access Control Matrix
+        </h5>
+        <div class="d-flex gap-2">
+          <button pButton label="Reset" icon="pi pi-refresh" class="p-button-outlined p-button-secondary"></button>
+          <button pButton label="Save Changes" icon="pi pi-check" (click)="savePermissions()" [disabled]="!selectedRole"></button>
+        </div>
       </div>
     </div>
 
-    <p-treeTable [value]="menuPermissions" [scrollable]="true" scrollHeight="400px">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Menu Name</th>
-          <th class="text-center">View</th>
-          <th class="text-center">Insert</th>
-          <th class="text-center">Update</th>
-          <th class="text-center">Delete</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-        <tr>
-          <td>
-            <p-treeTableToggler [rowNode]="rowNode" />
-            {{ rowData.name }}
-          </td>
-          <td class="text-center">
-            <p-checkbox [(ngModel)]="rowData.view" [binary]="true" />
-          </td>
-          <td class="text-center">
-            <p-checkbox [(ngModel)]="rowData.insert" [binary]="true" />
-          </td>
-          <td class="text-center">
-            <p-checkbox [(ngModel)]="rowData.update" [binary]="true" />
-          </td>
-          <td class="text-center">
-            <p-checkbox [(ngModel)]="rowData.delete" [binary]="true" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-treeTable>
+    <div class="card-body">
+      <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+        <div class="col-md-4">
+          <label class="small fw-bold text-muted mb-1 d-block">System Role</label>
+          <p-select [options]="roles()" [(ngModel)]="selectedRole" placeholder="Select Role" class="w-100" />
+        </div>
+        <div class="col-md-4">
+          <label class="small fw-bold text-muted mb-1 d-block">Administrator</label>
+          <p-select [options]="admins()" [(ngModel)]="selectedAdmin" placeholder="Select User" class="w-100" />
+        </div>
+        <div class="col-md-4">
+          <label class="small fw-bold text-muted mb-1 d-block">Search Menu</label>
+          <p-iconField iconPosition="left">
+            <p-inputIcon styleClass="pi pi-search" />
+            <input type="text" pInputText placeholder="Filter modules..." class="w-100" 
+                   (input)="tt.filterGlobal($any($event.target).value, 'contains')" />
+          </p-iconField>
+        </div>
+      </div>
 
-    <div class="mt-3 text-end">
-      <button class="btn btn-primary px-4">Save Permissions</button>
+      <p-treeTable #tt [value]="menuPermissions" [scrollable]="true" scrollHeight="500px" 
+                   [globalFilterFields]="['name']" class="permission-table">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 40%">Module / Menu Name</th>
+            <th class="text-center">
+              <div class="d-flex flex-column align-items-center gap-1">
+                <span class="small">View</span>
+                <p-checkbox (onChange)="toggleAll('view', $event)" [binary]="true" />
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="d-flex flex-column align-items-center gap-1">
+                <span class="small">Insert</span>
+                <p-checkbox (onChange)="toggleAll('insert', $event)" [binary]="true" />
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="d-flex flex-column align-items-center gap-1">
+                <span class="small">Update</span>
+                <p-checkbox (onChange)="toggleAll('update', $event)" [binary]="true" />
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="d-flex flex-column align-items-center gap-1">
+                <span class="small">Delete</span>
+                <p-checkbox (onChange)="toggleAll('delete', $event)" [binary]="true" />
+              </div>
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+          <tr [ngClass]="{'bg-white': rowNode.level === 0, 'bg-light-row': rowNode.level > 0}">
+            <td>
+              <p-treeTableToggler [rowNode]="rowNode" />
+              <span [class.fw-bold]="rowNode.level === 0">{{ rowData.name }}</span>
+            </td>
+            <td class="text-center">
+              <p-checkbox [(ngModel)]="rowData.view" [binary]="true" 
+                          (onChange)="toggleChildren(rowNode.node, 'view', rowData.view)" />
+            </td>
+            <td class="text-center">
+              <p-checkbox [(ngModel)]="rowData.insert" [binary]="true" 
+                          (onChange)="toggleChildren(rowNode.node, 'insert', rowData.insert)" />
+            </td>
+            <td class="text-center">
+              <p-checkbox [(ngModel)]="rowData.update" [binary]="true" 
+                          (onChange)="toggleChildren(rowNode.node, 'update', rowData.update)" />
+            </td>
+            <td class="text-center">
+              <p-checkbox [(ngModel)]="rowData.delete" [binary]="true" 
+                          (onChange)="toggleChildren(rowNode.node, 'delete', rowData.delete)" />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center p-4 text-muted">No menu items found.</td>
+          </tr>
+        </ng-template>
+      </p-treeTable>
+    </div>
+
+    <div class="card-footer bg-white text-muted small py-2 px-3">
+      <i class="pi pi-info-circle me-1"></i> 
+      Changes made here will take effect upon the next user login.
     </div>
   </div>
 </div>

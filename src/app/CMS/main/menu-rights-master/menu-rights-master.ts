@@ -94,34 +94,55 @@ import { MMenuMappingMaster } from '../menu-mapping-master/MenuMappingMaster';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuRightsMaster implements OnInit {
-  roles = [
-    { label: 'Super Admin', value: 'admin' },
-    { label: 'Editor', value: 'editor' },
-    { label: 'Viewer', value: 'viewer' }
-  ];
-
-  admins = [
-    { label: 'John Doe', value: '1' },
-    { label: 'Jane Smith', value: '2' }
-  ];
-
+  roles = signal([{ label: 'Admin', value: 'adm' }, { label: 'HR Manager', value: 'hr' }]);
+  admins = signal([{ label: 'Robert Fox', value: 'rf' }, { label: 'Cody Fisher', value: 'cf' }]);
+  
   selectedRole: any;
   selectedAdmin: any;
   menuPermissions: TreeNode[] = [];
 
+  constructor(private messageService: MessageService) {}
+
   ngOnInit() {
+    this.loadMockData();
+  }
+
+  loadMockData() {
     this.menuPermissions = [
       {
-        data: { name: 'Dashboard', view: true, insert: false, update: false, delete: false },
-        children: []
+        data: { name: 'Inventory', view: false, insert: false, update: false, delete: false },
+        expanded: true,
+        children: [
+          { data: { name: 'Stock Entry', view: false, insert: false, update: false, delete: false } },
+          { data: { name: 'Warehouse Transfer', view: false, insert: false, update: false, delete: false } }
+        ]
       },
       {
-        data: { name: 'User Management', view: false, insert: false, update: false, delete: false },
-        children: [
-          { data: { name: 'User List', view: false, insert: false, update: false, delete: false } },
-          { data: { name: 'Roles', view: false, insert: false, update: false, delete: false } }
-        ]
+        data: { name: 'Reports', view: false, insert: false, update: false, delete: false },
+        children: [{ data: { name: 'Sales Analysis', view: false, insert: false, update: false, delete: false } }]
       }
     ];
+  }
+
+  // Recursive toggle for child nodes
+  toggleChildren(node: TreeNode, column: string, value: boolean) {
+    node.data[column] = value;
+    if (node.children) {
+      node.children.forEach(child => this.toggleChildren(child, column, value));
+    }
+  }
+
+  // Header "Select All" logic
+  toggleAll(column: string, event: any) {
+    const isChecked = event.checked;
+    this.menuPermissions.forEach(node => this.toggleChildren(node, column, isChecked));
+  }
+
+  savePermissions() {
+    this.messageService.add({ 
+      severity: 'success', 
+      summary: 'Success', 
+      detail: 'Permissions updated for ' + this.selectedRole?.label 
+    });
   }
 }
