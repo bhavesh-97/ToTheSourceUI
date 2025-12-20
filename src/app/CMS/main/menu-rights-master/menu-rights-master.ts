@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ConfirmationService, MessageService, TreeNode, MenuItem } from 'primeng/api';
@@ -39,11 +39,16 @@ import { Tree, TreeModule } from 'primeng/tree';
 import { TreeTableModule, TreeTable } from 'primeng/treetable';
 import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
 import { MRights } from '../../../models/MRights';
-import { MMenuRightsMaster } from './MMenuRightsMaster';
+import { MenuRightItem, MMenuRightsMaster, SaveMenuRightsRequest } from './MMenuRightsMaster';
 import { SelectModule } from 'primeng/select';
 import { MRoleMaster } from '../rolemaster/MRoleMaster';
 import { MUser } from '../../../models/MUser';
 import { MMenuMappingMaster } from '../menu-mapping-master/MenuMappingMaster';
+import { NotificationService } from '../../../services/notification.service';
+import { PopupMessageType } from '../../../models/PopupMessageType';
+import { MenuRightsMasterService } from './menu-rights-master.services';
+import { RolemasterService } from '../rolemaster/rolemaster.service';
+import { LoginService } from '../../../authentication/login/login.service';
 
 @Component({
   selector: 'app-menu-rights-master',
@@ -94,394 +99,507 @@ import { MMenuMappingMaster } from '../menu-mapping-master/MenuMappingMaster';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuRightsMaster implements OnInit {
+    @ViewChild('tt') tt!: TreeTable;
+  
+  private menuRightsService = inject(MenuRightsMasterService);
+  private rolemasterService = inject(RolemasterService);
+  private loginService = inject(LoginService);
+  private messageService = inject(NotificationService);
 
-  @ViewChild('tt') tt!: TreeTable;
-
-  /* ---------------------------------
-     Dropdowns (Selection Only)
-  ----------------------------------*/
-  roles = [
-    { label: 'Admin', value: 1 },
-    { label: 'HR Manager', value: 2 }
-  ];
-
-  admins = [
-    { label: 'Robert Fox', value: 1 },
-    { label: 'Cody Fisher', value: 2 }
-  ];
-
+  // Data properties
+  menuRightsTree: TreeNode<any>[] = [];
+  filteredMenuRightsTree: TreeNode<any>[] = [];
+  roles: any[] = [];
+  admins: any[] = [];
+  menuMappings: any[] = [];
+  
+  // Selection properties
+  selectedRoleId: number | null = 0;
+  selectedAdminId: number | null = 0;
   selectedRole: any = null;
   selectedAdmin: any = null;
-
-  /* ---------------------------------
-     Tree Data
-  ----------------------------------*/
-  menuMappings: TreeNode<MMenuRightsMaster>[] = [];
-  filteredMenuMappings: TreeNode<MMenuRightsMaster>[] = [];
-
+  
+  // UI properties
+  loading: boolean = false;
+  saving: boolean = false;
   globalFilter: string = '';
+  selectedMenuType: number | null = null;
+  
+  // Stats
+  totalMenus: number = 0;
+  menusWithView: number = 0;
+  menusWithFullAccess: number = 0;
 
-  constructor(private messageService: MessageService) {}
+  constructor() {}
 
-  /* ---------------------------------
-     INIT
-  ----------------------------------*/
-  ngOnInit(): void {
-    this.loadMenuTree();
+  ngOnInit() {
+    this.loadRoles();
+    this.loadAdmins();
+    this.loadMenuMappings();
   }
 
-  /* ---------------------------------
-     MOCK / API DATA LOAD
-     (Replace with API later)
-  ----------------------------------*/
-  loadMenuTree(): void {
-   const rawMenus: MMenuRightsMaster[] = [
-  {
-    MappingID: 1,
-    MenuID: 1,
-    RoleID: 1,
-    AdminID: 0,
-    EntityID: 1,
-    EntityType: 'Role',
-    MRights: {
-      CanView: true,
-      CanInsert: true,
-      CanUpdate: false,
-      CanDelete: false
-    },
-    MMenuMappingMaster: {
-      MappingID: 1,
-      MenuID: 1,
-      MenuName: 'Inventory',
-      MenuURL: '/inventory',
-      Icon: 'pi pi-box',
-      MenuTypeID: 1,
-      MenuTypeCode: 'MAIN',
-      MenuTypeName: 'Main Menu',
-      MenuRank: 1,
-      ParentID: 0,
-      ParentMenuName: '',
-      ParentMenuURL: '',
-      ParentMenuIcon: '',
-      SiteAreaID: 1,
-      AreaName: 'Operations',
-      MCommonEntitiesMaster: {
-        IsActive: true
-      } as MCommonEntitiesMaster
-    },
-    MCommonEntitiesMaster: {
-      IsActive: true
-    } as MCommonEntitiesMaster
-  },
-
-  {
-    MappingID: 2,
-    MenuID: 2,
-    RoleID: 1,
-    AdminID: 0,
-    EntityID: 1,
-    EntityType: 'Role',
-    MRights: {
-      CanView: true,
-      CanInsert: false,
-      CanUpdate: false,
-      CanDelete: false
-    },
-    MMenuMappingMaster: {
-      MappingID: 2,
-      MenuID: 2,
-      MenuName: 'Stock Entry',
-      MenuURL: '/inventory/stock-entry',
-      Icon: 'pi pi-database',
-      MenuTypeID: 2,
-      MenuTypeCode: 'SUB',
-      MenuTypeName: 'Sub Menu',
-      MenuRank: 1,
-      ParentID: 1,
-      ParentMenuName: 'Inventory',
-      ParentMenuURL: '/inventory',
-      ParentMenuIcon: 'pi pi-box',
-      SiteAreaID: 1,
-      AreaName: 'Operations',
-      MCommonEntitiesMaster: {
-        IsActive: true
-      } as MCommonEntitiesMaster
-    },
-    MCommonEntitiesMaster: {
-      IsActive: true
-    } as MCommonEntitiesMaster
-  },
-
-  {
-    MappingID: 3,
-    MenuID: 3,
-    RoleID: 1,
-    AdminID: 0,
-    EntityID: 1,
-    EntityType: 'Role',
-    MRights: {
-      CanView: true,
-      CanInsert: true,
-      CanUpdate: true,
-      CanDelete: false
-    },
-    MMenuMappingMaster: {
-      MappingID: 3,
-      MenuID: 3,
-      MenuName: 'Warehouse Transfer',
-      MenuURL: '/inventory/warehouse-transfer',
-      Icon: 'pi pi-send',
-      MenuTypeID: 2,
-      MenuTypeCode: 'SUB',
-      MenuTypeName: 'Sub Menu',
-      MenuRank: 2,
-      ParentID: 1,
-      ParentMenuName: 'Inventory',
-      ParentMenuURL: '/inventory',
-      ParentMenuIcon: 'pi pi-box',
-      SiteAreaID: 1,
-      AreaName: 'Operations',
-      MCommonEntitiesMaster: {
-        IsActive: true
-      } as MCommonEntitiesMaster
-    },
-    MCommonEntitiesMaster: {
-      IsActive: true
-    } as MCommonEntitiesMaster
-  },
-
-  {
-    MappingID: 4,
-    MenuID: 4,
-    RoleID: 1,
-    AdminID: 0,
-    EntityID: 1,
-    EntityType: 'Role',
-    MRights: {
-      CanView: true,
-      CanInsert: false,
-      CanUpdate: false,
-      CanDelete: false
-    },
-    MMenuMappingMaster: {
-      MappingID: 4,
-      MenuID: 4,
-      MenuName: 'Reports',
-      MenuURL: '/reports',
-      Icon: 'pi pi-chart-line',
-      MenuTypeID: 1,
-      MenuTypeCode: 'MAIN',
-      MenuTypeName: 'Main Menu',
-      MenuRank: 2,
-      ParentID: 0,
-      ParentMenuName: '',
-      ParentMenuURL: '',
-      ParentMenuIcon: '',
-      SiteAreaID: 2,
-      AreaName: 'Analytics',
-      MCommonEntitiesMaster: {
-        IsActive: true
-      } as MCommonEntitiesMaster
-    },
-    MCommonEntitiesMaster: {
-      IsActive: true
-    } as MCommonEntitiesMaster
-  },
-
-  {
-    MappingID: 5,
-    MenuID: 5,
-    RoleID: 1,
-    AdminID: 0,
-    EntityID: 1,
-    EntityType: 'Role',
-    MRights: {
-      CanView: true,
-      CanInsert: false,
-      CanUpdate: false,
-      CanDelete: false
-    },
-    MMenuMappingMaster: {
-      MappingID: 5,
-      MenuID: 5,
-      MenuName: 'Sales Analysis',
-      MenuURL: '/reports/sales-analysis',
-      Icon: 'pi pi-chart-bar',
-      MenuTypeID: 2,
-      MenuTypeCode: 'SUB',
-      MenuTypeName: 'Sub Menu',
-      MenuRank: 1,
-      ParentID: 4,
-      ParentMenuName: 'Reports',
-      ParentMenuURL: '/reports',
-      ParentMenuIcon: 'pi pi-chart-line',
-      SiteAreaID: 2,
-      AreaName: 'Analytics',
-      MCommonEntitiesMaster: {
-        IsActive: true
-      } as MCommonEntitiesMaster
-    },
-    MCommonEntitiesMaster: {
-      IsActive: true
-    } as MCommonEntitiesMaster
-  }
-];
-
-    this.menuMappings = this.buildTree(rawMenus);
-    this.filteredMenuMappings = [...this.menuMappings];
+  loadRoles() {
+    this.loading = true;
+    this.rolemasterService.GetRoleDetails().subscribe({
+      next: (res) => {
+        if (!res.isError && res.result) {
+          this.roles = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
+        } else {
+          this.messageService.showMessage(res.strMessage || 'Failed to load roles', 'Error', PopupMessageType.Error);
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load roles:', err);
+        this.messageService.showMessage('Failed to load roles', 'Error', PopupMessageType.Error);
+        this.loading = false;
+      }
+    });
   }
 
-  /* ---------------------------------
-     TREE BUILD
-  ----------------------------------*/
-  private buildTree(data: MMenuRightsMaster[]): TreeNode<MMenuRightsMaster>[] {
-    const map = new Map<number, TreeNode<MMenuRightsMaster>>();
-    const roots: TreeNode<MMenuRightsMaster>[] = [];
+  loadAdmins() {
+    this.loading = true;
+    this.loginService.GetAdminDetails().subscribe({
+      next: (res) => {
+        if (!res.isError && res.result) {
+          this.admins = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
+        } else {
+          this.messageService.showMessage(res.strMessage || 'Failed to load admins', 'Error', PopupMessageType.Error);
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load admins:', err);
+        this.messageService.showMessage('Failed to load admins', 'Error', PopupMessageType.Error);
+        this.loading = false;
+      }
+    });
+  }
 
-    data.forEach(menu => {
-      map.set(menu.MenuID, {
-        key: menu.MenuID.toString(),
-        data: {
-          ...menu,
-          MRights: new MRights()
-        },
+  loadMenuMappings() {
+    this.loading = true;
+    this.menuRightsService.GetAllMenuMappings().subscribe({
+      next: (res) => {
+        if (!res.isError && res.result) {
+          const rawData = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
+          this.menuMappings = rawData;
+        } else {
+          this.messageService.showMessage(res.strMessage || 'Failed to load menu mappings', 'Error', PopupMessageType.Error);
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load menu mappings:', err);
+        this.messageService.showMessage('Failed to load menu mappings', 'Error', PopupMessageType.Error);
+        this.loading = false;
+      }
+    });
+  }
+
+  onRoleSelected(event: any) {
+    this.selectedRoleId = event.value;
+    this.selectedRole = this.roles.find(r => r.RoleID === this.selectedRoleId) || null;
+    
+    // Clear admin selection when role is selected
+    this.selectedAdminId = null;
+    this.selectedAdmin = null;
+    
+    // Load rights for selected role
+    this.loadMenuRightsForEntity(this.selectedRoleId || 0, 0);
+  }
+
+  onAdminSelected(event: any) {
+    this.selectedAdminId = event.value;
+    this.selectedAdmin = this.admins.find(a => a.AdminID === this.selectedAdminId) || 0;
+    
+    // Clear role selection when admin is selected
+    this.selectedRoleId = null;
+    this.selectedRole = null;
+    
+    // Load rights for selected admin
+    this.loadMenuRightsForEntity(0, this.selectedAdminId || 0);
+  }
+
+  loadMenuRightsForEntity(roleId: number, adminId: number) {
+    if (roleId === 0 && adminId === 0) {
+      // If both are 0, clear the tree
+      this.menuRightsTree = [];
+      this.filteredMenuRightsTree = [];
+      return;
+    }
+
+    this.loading = true;
+    this.menuRightsService.GetMenuRights(roleId, adminId).subscribe({
+      next: (res) => {
+        this.loading = false;
+        if (!res.isError) {
+          let rightsData: any[] = [];
+          if (res.result) {
+            rightsData = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
+          }
+          this.updateMenuTreeWithRights(rightsData);
+          this.calculateStats();
+        } else {
+          this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
+          // Initialize with default rights (all false)
+          this.initializeMenuTreeWithDefaultRights();
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Failed to load menu rights:', err);
+        this.messageService.showMessage('Failed to load menu rights', 'Error', PopupMessageType.Error);
+        // Initialize with default rights (all false)
+        this.initializeMenuTreeWithDefaultRights();
+      }
+    });
+  }
+
+  initializeMenuTreeWithDefaultRights() {
+    // Add default MRights (all false) to each menu item
+    const menuWithRights = this.menuMappings.map(menu => ({
+      ...menu,
+      MRights: {
+        CanView: false,
+        CanInsert: false,
+        CanUpdate: false,
+        CanDelete: false
+      }
+    }));
+    
+    this.menuRightsTree = this.buildTree(menuWithRights);
+    this.filteredMenuRightsTree = [...this.menuRightsTree];
+    this.calculateStats();
+  }
+
+  updateMenuTreeWithRights(rightsData: any[]) {
+    // Create a map of MenuID to rights from API response
+    const rightsMap = new Map<number, any>();
+    rightsData.forEach(right => {
+      if (right.MRights) {
+        rightsMap.set(right.MenuID, right.MRights);
+      } else {
+        // If the API returns the rights directly on the object
+        rightsMap.set(right.MenuID, {
+          CanView: right.CanView || false,
+          CanInsert: right.CanInsert || false,
+          CanUpdate: right.CanUpdate || false,
+          CanDelete: right.CanDelete || false
+        });
+      }
+    });
+
+    // Update menu mappings with rights from API or set defaults
+    const updatedMenus = this.menuMappings.map(menu => ({
+      ...menu,
+      MRights: rightsMap.get(menu.MenuID) || {
+        CanView: false,
+        CanInsert: false,
+        CanUpdate: false,
+        CanDelete: false
+      }
+    }));
+
+    this.menuRightsTree = this.buildTree(updatedMenus);
+    this.filteredMenuRightsTree = [...this.menuRightsTree];
+  }
+
+  buildTree(flatData: any[]): TreeNode<any>[] {
+    const roots: TreeNode<any>[] = [];
+    const map = new Map<number, TreeNode<any>>();
+
+    flatData.forEach(item => {
+      map.set(item.MenuID, {
+        key: item.MenuID.toString(),
+        data: item,
         children: [],
         expanded: false
       });
     });
 
-    data.forEach(menu => {
-      const node = map.get(menu.MenuID)!;
-      if (!menu.MMenuMappingMaster.ParentID || menu.MMenuMappingMaster.ParentID === 0) {
+    flatData.forEach(item => {
+      const node = map.get(item.MenuID)!;
+      if (item.ParentID === 0 || item.ParentID === null) {
         roots.push(node);
       } else {
-        const parent = map.get(menu.MMenuMappingMaster.ParentID);
-        parent ? parent.children!.push(node) : roots.push(node);
+        const parentNode = map.get(item.ParentID);
+        if (parentNode) {
+          parentNode.children!.push(node);
+        } else {
+          roots.push(node);
+        }
       }
     });
 
+    // Sort by MenuRank
+    const sortRecursive = (nodes: TreeNode<any>[]) => {
+      nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
+      for (const node of nodes) {
+        if (node.children?.length) {
+          sortRecursive(node.children);
+        }
+      }
+    };
+    
+    sortRecursive(roots);
     return roots;
   }
 
-  /* ---------------------------------
-     GLOBAL FILTER
-  ----------------------------------*/
-  onGlobalFilter(event: Event): void {
-    this.globalFilter = (event.target as HTMLInputElement).value.toLowerCase();
-    this.filteredMenuMappings = this.filterTree(this.menuMappings, this.globalFilter);
+  onRightsChange(node: TreeNode<any>, rightType: string) {
+    if (!node.data) return;
+    
+    // Update the specific right
+    node.data.MRights[rightType] = !node.data.MRights[rightType];
+    
+    // If unchecking View, uncheck all other rights
+    if (rightType === 'CanView' && !node.data.MRights.CanView) {
+      node.data.MRights.CanInsert = false;
+      node.data.MRights.CanUpdate = false;
+      node.data.MRights.CanDelete = false;
+    }
+    
+    // Force change detection
+    this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
+    this.calculateStats();
   }
 
-  private filterTree(nodes: TreeNode<MMenuRightsMaster>[], text: string): TreeNode<MMenuRightsMaster>[] {
-    if (!text) return [...nodes];
+  calculateStats() {
+    this.totalMenus = this.countNodes(this.menuRightsTree);
+    this.menusWithView = this.countNodesByCondition(this.menuRightsTree, 
+      node => node.data!.MRights.CanView
+    );
+    this.menusWithFullAccess = this.countNodesByCondition(this.menuRightsTree,
+      node => node.data!.MRights.CanView && 
+              node.data!.MRights.CanInsert && 
+              node.data!.MRights.CanUpdate && 
+              node.data!.MRights.CanDelete
+    );
+  }
 
-    return nodes.reduce((result: TreeNode<MMenuRightsMaster>[], node) => {
-      const matches = node.data!.MMenuMappingMaster.MenuName.toLowerCase().includes(text);
-      const children = node.children ? this.filterTree(node.children, text) : [];
+  private countNodes(nodes: TreeNode<any>[]): number {
+    let count = 0;
+    nodes.forEach(node => {
+      count++;
+      if (node.children && node.children.length > 0) {
+        count += this.countNodes(node.children);
+      }
+    });
+    return count;
+  }
 
-      if (matches || children.length) {
-        result.push({ ...node, children });
+  private countNodesByCondition(nodes: TreeNode<any>[], condition: (node: TreeNode<any>) => boolean): number {
+    let count = 0;
+    nodes.forEach(node => {
+      if (condition(node)) {
+        count++;
+      }
+      if (node.children && node.children.length > 0) {
+        count += this.countNodesByCondition(node.children, condition);
+      }
+    });
+    return count;
+  }
+
+  saveMenuRights() {
+    // Determine which entity is selected
+    const entityId = this.selectedRoleId || this.selectedAdminId;
+    const entityType = this.selectedRoleId ? 'Role' : 'Admin';
+    
+    if (!entityId) {
+      this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
+      return;
+    }
+
+    // Collect all menu rights from tree
+    const menuRightsItems: any[] = [];
+    const collectRights = (nodes: TreeNode<any>[]) => {
+      nodes.forEach(node => {
+        if (node.data) {
+          menuRightsItems.push({
+            MenuID: node.data.MenuID,
+            MappingID: node.data.MappingID,
+            MRights: node.data.MRights
+          });
+          
+          if (node.children?.length) {
+            collectRights(node.children);
+          }
+        }
+      });
+    };
+    
+    collectRights(this.menuRightsTree);
+
+    const saveRequest: SaveMenuRightsRequest = {
+      EntityID: entityId,
+      EntityType: entityType,
+      MenuRights: menuRightsItems
+    };
+
+    this.saving = true;
+    this.menuRightsService.SaveMenuRights(saveRequest).subscribe({
+      next: (res) => {
+        this.saving = false;
+        if (!res.isError) {
+          this.messageService.showMessage(
+            res.strMessage || 'Menu rights saved successfully', 
+            res.title || 'Success', 
+            PopupMessageType.Success
+          );
+        } else {
+          this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
+        }
+      },
+      error: (err) => {
+        this.saving = false;
+        this.messageService.showMessage(
+          'Failed to save menu rights. Please try again.',
+          'Error',
+          PopupMessageType.Error
+        );
+      }
+    });
+  }
+
+  // Bulk actions
+  selectAllForRight(rightType: string, value: boolean) {
+    const updateNodes = (nodes: TreeNode<any>[]) => {
+      nodes.forEach(node => {
+        if (node.data) {
+          node.data.MRights[rightType] = value;
+          // If unchecking View, uncheck all
+          if (rightType === 'CanView' && !value) {
+            node.data.MRights.CanInsert = false;
+            node.data.MRights.CanUpdate = false;
+            node.data.MRights.CanDelete = false;
+          }
+        }
+        if (node.children?.length) {
+          updateNodes(node.children);
+        }
+      });
+    };
+    
+    updateNodes(this.menuRightsTree);
+    this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
+    this.calculateStats();
+  }
+
+  // Filter methods
+  applyFilters() {
+    let filteredData = this.menuRightsTree;
+    
+    if (this.selectedMenuType !== null) {
+      filteredData = this.filterTreeByType(filteredData, this.selectedMenuType);
+    }
+    
+    if (this.globalFilter.trim()) {
+      filteredData = this.filterTreeByText(filteredData, this.globalFilter.trim());
+    }
+    
+    this.filteredMenuRightsTree = filteredData;
+  }
+
+  private filterTreeByType(nodes: TreeNode<any>[], menuType: number): TreeNode<any>[] {
+    return nodes.reduce((result: TreeNode<any>[], node) => {
+      if (node.data!.MenuTypeID === menuType) {
+        result.push(node);
+      } else if (node.children && node.children.length > 0) {
+        const filteredChildren = this.filterTreeByType(node.children, menuType);
+        if (filteredChildren.length > 0) {
+          result.push({ ...node, children: filteredChildren });
+        }
       }
       return result;
     }, []);
   }
 
-  clearFilters(): void {
-    this.globalFilter = '';
-    this.filteredMenuMappings = [...this.menuMappings];
-  }
-
-  /* ---------------------------------
-     RIGHTS TOGGLING
-  ----------------------------------*/
-  toggleNode(node: TreeNode<MMenuRightsMaster>, right: keyof MRights, value: boolean): void {
-    node.data!.MRights[right] = value;
-    this.propagateDown(node, right, value);
-    this.syncUp(node.parent, right);
-  }
-
-  private propagateDown(node: TreeNode<MMenuRightsMaster>, right: keyof MRights, value: boolean): void {
-    if (!node.children) return;
-    for (const child of node.children) {
-      child.data!.MRights[right] = value;
-      this.propagateDown(child, right, value);
-    }
-  }
-
-  private syncUp(node: TreeNode<MMenuRightsMaster> | undefined, right: keyof MRights): void {
-    if (!node || !node.children) return;
-
-    node.data!.MRights[right] =
-      node.children.every(c => c.data!.MRights[right]);
-
-    this.syncUp(node.parent, right);
-  }
-
-  /* ---------------------------------
-     EXPAND / COLLAPSE
-  ----------------------------------*/
-  expandAll(): void {
-    this.setExpanded(this.menuMappings, true);
-  }
-
-  collapseAll(): void {
-    this.setExpanded(this.menuMappings, false);
-  }
-
-  private setExpanded(nodes: TreeNode<MMenuRightsMaster>[], state: boolean): void {
-    nodes.forEach(node => {
-      node.expanded = state;
-      if (node.children?.length) {
-        this.setExpanded(node.children, state);
+  private filterTreeByText(nodes: TreeNode<any>[], searchText: string): TreeNode<any>[] {
+    const lowerSearch = searchText.toLowerCase();
+    
+    return nodes.reduce((result: TreeNode<any>[], node) => {
+      const matches = 
+        node.data!.MenuName.toLowerCase().includes(lowerSearch) ||
+        (node.data!.MenuURL || '').toLowerCase().includes(lowerSearch);
+      
+      let filteredChildren: TreeNode<any>[] = [];
+      if (node.children && node.children.length > 0) {
+        filteredChildren = this.filterTreeByText(node.children, searchText);
       }
-    });
-    this.filteredMenuMappings = [...this.filteredMenuMappings];
+      
+      if (matches || filteredChildren.length > 0) {
+        result.push({ ...node, children: filteredChildren });
+      }
+      
+      return result;
+    }, []);
   }
 
-  /* ---------------------------------
-     SERIAL NUMBER
-  ----------------------------------*/
-  getNodeIndex(rowNode: any): number {
-    const visible: TreeNode[] = [];
-    const walk = (nodes: TreeNode[]) => {
-      nodes.forEach(n => {
-        visible.push(n);
-        if (n.expanded && n.children?.length) walk(n.children);
-      });
-    };
-    walk(this.filteredMenuMappings);
-    return visible.findIndex(n => n.key === rowNode.key) + 1;
+  onGlobalFilter(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.globalFilter = value;
+    this.applyFilters();
   }
 
-  /* ---------------------------------
-     SAVE
-  ----------------------------------*/
-  savePermissions(): void {
-    const payload: MMenuRightsMaster[] = [];
+  clearFilters() {
+    this.globalFilter = '';
+    this.selectedMenuType = null;
+    this.filteredMenuRightsTree = [...this.menuRightsTree];
+  }
 
-    const walk = (node: TreeNode<MMenuRightsMaster>) => {
-      payload.push({
-        MappingID: 0,
-        MenuID: node.data!.MenuID,
-        RoleID: this.selectedRole?.value || 0,
-        AdminID: this.selectedAdmin?.value || 0,
-        EntityID: this.selectedRole?.value || this.selectedAdmin?.value,
-        EntityType: this.selectedRole ? 'Role' : 'Admin',
-        MRights: node.data!.MRights,
-        MMenuMappingMaster: node.data!.MMenuMappingMaster,
-        MCommonEntitiesMaster: new MCommonEntitiesMaster()
+  expandAll() {
+    const expandNodes = (nodes: TreeNode<any>[]) => {
+      nodes.forEach(node => {
+        node.expanded = true;
+        if (node.children && node.children.length > 0) {
+          expandNodes(node.children);
+        }
       });
-
-      node.children?.forEach(walk);
     };
+    expandNodes(this.menuRightsTree);
+    this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
+  }
 
-    this.filteredMenuMappings.forEach(walk);
+  collapseAll() {
+    const collapseNodes = (nodes: TreeNode<any>[]) => {
+      nodes.forEach(node => {
+        node.expanded = false;
+        if (node.children && node.children.length > 0) {
+          collapseNodes(node.children);
+        }
+      });
+    };
+    collapseNodes(this.menuRightsTree);
+    this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
+  }
 
-    console.log('SAVE PAYLOAD', payload);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Saved',
-      detail: 'Menu rights updated successfully'
-    });
+  // Clear selections
+  clearSelections() {
+    this.selectedRoleId = null;
+    this.selectedAdminId = null;
+    this.selectedRole = null;
+    this.selectedAdmin = null;
+    this.menuRightsTree = [];
+    this.filteredMenuRightsTree = [];
+    this.totalMenus = 0;
+    this.menusWithView = 0;
+    this.menusWithFullAccess = 0;
+  }
+getMenuTypeSeverity(type: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+  switch(type) {
+    case 1: return 'info';      // Main Menu
+    case 2: return 'success';   // Sub Menu
+    case 3: return 'warn';   // Action
+    default: return 'secondary';
+  }
+}
+  // Get selected entity name for display
+  getSelectedEntityName(): string {
+    if (this.selectedRole) {
+      return `Role: ${this.selectedRole.RoleName}`;
+    } else if (this.selectedAdmin) {
+      return `Admin: ${this.selectedAdmin.AdminName}`;
+    }
+    return 'Select Role or Admin';
   }
 }

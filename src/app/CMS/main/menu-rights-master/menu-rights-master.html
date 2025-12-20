@@ -1,181 +1,304 @@
 <div class="card">
   <div class="flex flex-column gap-4">
-
-    <!-- HEADER -->
+    <!-- Header -->
     <div class="flex flex-wrap align-items-center justify-content-between gap-3">
       <div style="display:flex; align-items:center; width:100%;">
-        <h1 style="margin:0; font-size:1.75rem; font-weight:700;">
-          Menu Rights Master
-        </h1>
-
+        <h1 style="margin:0; font-size:1.75rem; font-weight:700;">Menu Rights Master</h1>
         <div style="margin-left:auto;">
           <div class="d-flex justify-content-lg-end">
-            <div class="w-100" style="max-width:250px;">
-              <p-iconField iconPosition="left">
+            <div class="w-100" style="max-width: 250px;">
+              <p-iconField iconPosition="left" class="ml-auto">
                 <p-inputIcon>
                   <i class="pi pi-search"></i>
                 </p-inputIcon>
-                <input
-                  pInputText
-                  type="text"
-                  placeholder="Search Menus..."
-                  (input)="onGlobalFilter($event)" />
+                <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Search Menus..." 
+                       [disabled]="!selectedRoleId && !selectedAdminId" />
               </p-iconField>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- FILTER BAR -->
-      <div class="container-fluid p-0 pt-3 pb-3">
-        <div class="row g-2 align-items-center">
-
-          <div class="col-12 col-lg-8">
-            <div class="d-flex align-items-center flex-wrap gap-2">
-
-              <p-select
-                [options]="roles"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Role"
-                class="w-10rem"
-                [(ngModel)]="selectedRole">
-              </p-select>
-
-              <p-select
-                [options]="admins"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Admin"
-                class="w-10rem"
-                [(ngModel)]="selectedAdmin">
-              </p-select>
-
-              <p-button
-                icon="pi pi-filter-slash"
-                severity="secondary"
-                pTooltip="Clear Filters"
-                (click)="clearFilters()"
-                [text]="true"
-                [rounded]="true" />
-
-              <p-button
-                icon="pi pi-save"
-                severity="success"
-                pTooltip="Save Rights"
-                (click)="savePermissions()"
-                [text]="true"
-                [rounded]="true" />
-
-              <p-button
-                icon="pi pi-plus-circle"
-                severity="secondary"
-                pTooltip="Expand All"
-                (click)="expandAll()"
-                [text]="true"
-                [rounded]="true" />
-
-              <p-button
-                icon="pi pi-minus-circle"
-                severity="secondary"
-                pTooltip="Collapse All"
-                (click)="collapseAll()"
-                [text]="true"
-                [rounded]="true" />
-
+    <!-- Entity Selection Card -->
+    <div class="card">
+      <div class="grid p-fluid">
+        <!-- Role Selection -->
+        <div class="col-12 md:col-6">
+          <label for="roleSelect" class="font-bold block mb-2">Select Role</label>
+          <div class="flex gap-2">
+            <p-select 
+              id="roleSelect"
+              [options]="roles" 
+                optionLabel="roleName" 
+              optionValue="roleID"
+              [(ngModel)]="selectedRoleId"
+              placeholder="Select Role"
+              [showClear]="true"
+              (onChange)="onRoleSelected($event)"
+              [loading]="loading"
+              class="w-full">
+            </p-select>
+            <!-- <p-button 
+              icon="pi pi-times" 
+              severity="secondary" 
+              [disabled]="!selectedRoleId"
+              (onClick)="selectedRoleId = null; selectedRole = null; menuRightsTree = [];"
+              pTooltip="Clear Role"
+              [text]="true"
+              [rounded]="true">
+            </p-button> -->
+          </div>
+        </div>
+        
+        <!-- Admin Selection -->
+        <div class="col-12 md:col-6">
+          <label for="adminSelect" class="font-bold block mb-2">Select Admin</label>
+          <div class="flex gap-2">
+            <p-select 
+              id="adminSelect"
+              [options]="admins" 
+              optionLabel="FullName" 
+              optionValue="UserID"
+              [(ngModel)]="selectedAdminId"
+              placeholder="Select Admin"
+              [showClear]="true"
+              (onChange)="onAdminSelected($event)"
+              [loading]="loading"
+              class="w-full">
+            </p-select>
+            <!-- <p-button 
+              icon="pi pi-times" 
+              severity="secondary" 
+              [disabled]="!selectedAdminId"
+              (onClick)="selectedAdminId = null; selectedAdmin = null; menuRightsTree = [];"
+              pTooltip="Clear Admin"
+              [text]="true"
+              [rounded]="true">
+            </p-button> -->
+          </div>
+        </div>
+        
+        <!-- Save Button -->
+        <div class="col-12 mt-3">
+          <div class="flex justify-content-between align-items-center">
+            <div>
+              <p-button 
+                label="Save Rights" 
+                icon="pi pi-save" 
+                severity="success" 
+                [disabled]="(!selectedRoleId && !selectedAdminId) || saving"
+                [loading]="saving"
+                (onClick)="saveMenuRights()">
+              </p-button>
+              <small class="ml-3 text-color-secondary">
+                {{ getSelectedEntityName() }}
+              </small>
+            </div>
+            <div>
+              <p-button 
+                label="Clear All" 
+                icon="pi pi-times" 
+                severity="secondary" 
+                [disabled]="!selectedRoleId && !selectedAdminId"
+                (onClick)="clearSelections()"
+                [text]="true">
+              </p-button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
 
-    <!-- TREE TABLE -->
-    <p-treeTable
-      #tt
-      [value]="filteredMenuMappings"
-      [scrollable]="true"
-      scrollHeight="420px"
-      [resizableColumns]="true"
-      columnResizeMode="expand"
-      styleClass="shadow-1">
-
-      <!-- HEADER -->
-      <ng-template pTemplate="header">
-        <tr>
-          <th class="col-serial">#</th>
-          <th class="col-menu">Menu</th>
-          <th class="col-right">View</th>
-          <th class="col-right">Insert</th>
-          <th class="col-right">Update</th>
-          <th class="col-right">Delete</th>
-        </tr>
-      </ng-template>
-
-      <!-- BODY -->
-      <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-        <tr [ttRow]="rowNode">
-
-          <td class="col-serial">
-            {{ getNodeIndex(rowNode) }}
-          </td>
-
-          <td class="col-menu">
+    <!-- Selected Entity Info & Bulk Actions -->
+    <div *ngIf="selectedRoleId || selectedAdminId" class="card">
+      <div class="flex align-items-center justify-content-between mb-3">
+        <div>
+          <h3 class="m-0">Managing Rights for: 
+            <span class="text-primary font-bold">{{ getSelectedEntityName() }}</span>
+          </h3>
+        </div>
+        <div class="flex gap-2">
+          <p-button icon="pi pi-filter-slash" severity="secondary" 
+                    pTooltip="Clear Filters" (click)="clearFilters()" 
+                    [text]="true" [rounded]="true" />
+          <p-button icon="pi pi-plus-circle" severity="secondary" 
+                    pTooltip="Expand All" (click)="expandAll()" 
+                    [text]="true" [rounded]="true" />
+          <p-button icon="pi pi-minus-circle" severity="secondary" 
+                    pTooltip="Collapse All" (click)="collapseAll()" 
+                    [text]="true" [rounded]="true" />
+        </div>
+      </div>
+      
+      <!-- Bulk Actions -->
+      <div class="border-top-1 border-300 pt-3">
+        <div class="flex align-items-center justify-content-between">
+          <h4 class="m-0 text-sm">Bulk Actions:</h4>
+          <div class="flex gap-3">
             <div class="flex align-items-center gap-2">
-              <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-              <i [class]="rowData.Icon || 'pi pi-folder'" class="text-primary"></i>
-              <span class="font-medium">
-                {{ rowData.MenuName }}
-              </span>
+              <label class="text-sm">Select All:</label>
+              <p-button label="View" size="small" (onClick)="selectAllForRight('CanView', true)" />
+              <p-button label="Insert" size="small" (onClick)="selectAllForRight('CanInsert', true)" />
+              <p-button label="Update" size="small" (onClick)="selectAllForRight('CanUpdate', true)" />
+              <p-button label="Delete" size="small" (onClick)="selectAllForRight('CanDelete', true)" />
             </div>
-          </td>
+            <div class="flex align-items-center gap-2">
+              <label class="text-sm">Clear All:</label>
+              <p-button label="View" severity="secondary" size="small" 
+                       (onClick)="selectAllForRight('CanView', false)" />
+              <p-button label="Insert" severity="secondary" size="small" 
+                       (onClick)="selectAllForRight('CanInsert', false)" />
+              <p-button label="Update" severity="secondary" size="small" 
+                       (onClick)="selectAllForRight('CanUpdate', false)" />
+              <p-button label="Delete" severity="secondary" size="small" 
+                       (onClick)="selectAllForRight('CanDelete', false)" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-          <td class="col-right text-center">
-            <p-checkbox
-              [binary]="true"
-              [(ngModel)]="rowData.MRights.CanView"
-              (onChange)="toggleNode(rowNode.node,'CanView',rowData.MRights.CanView)">
-            </p-checkbox>
-          </td>
+    <!-- Stats -->
+    <div *ngIf="selectedRoleId || selectedAdminId" class="grid">
+      <div class="col-12 md:col-4">
+        <div class="stat-card">
+          <div class="stat-label">Total Menus</div>
+          <div class="stat-value">{{ totalMenus }}</div>
+        </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div class="stat-card success">
+          <div class="stat-label">With View Access</div>
+          <div class="stat-value">{{ menusWithView }}</div>
+        </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div class="stat-card warning">
+          <div class="stat-label">Full Access</div>
+          <div class="stat-value">{{ menusWithFullAccess }}</div>
+        </div>
+      </div>
+    </div>
 
-          <td class="col-right text-center">
-            <p-checkbox
-              [binary]="true"
-              [(ngModel)]="rowData.MRights.CanInsert"
-              (onChange)="toggleNode(rowNode.node,'CanInsert',rowData.MRights.CanInsert)">
-            </p-checkbox>
-          </td>
+    <!-- Tree Table -->
+    <p-treeTable #tt 
+        [value]="filteredMenuRightsTree" 
+        [loading]="loading"
+        [paginator]="true" 
+        [rows]="10" 
+        [rowsPerPageOptions]="[10,25,50]"
+        [scrollable]="true" 
+        scrollHeight="500px" 
+        styleClass="shadow-1" 
+        [resizableColumns]="true"
+        columnResizeMode="expand"
+        [hidden]="!selectedRoleId && !selectedAdminId">
 
-          <td class="col-right text-center">
-            <p-checkbox
-              [binary]="true"
-              [(ngModel)]="rowData.MRights.CanUpdate"
-              (onChange)="toggleNode(rowNode.node,'CanUpdate',rowData.MRights.CanUpdate)">
-            </p-checkbox>
-          </td>
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="col-serial" ttResizableColumn>#</th>
+                <th class="col-menu" ttResizableColumn>Menu</th>
+                <th class="col-url" ttResizableColumn>URL</th>
+                <th class="col-type" ttResizableColumn>Type</th>
+                <th class="col-view" ttResizableColumn>View</th>
+                <th class="col-insert" ttResizableColumn>Insert</th>
+                <th class="col-update" ttResizableColumn>Update</th>
+                <th class="col-delete" ttResizableColumn>Delete</th>
+                <th class="col-status" ttResizableColumn>Status</th>
+            </tr>
+        </ng-template>
 
-          <td class="col-right text-center">
-            <p-checkbox
-              [binary]="true"
-              [(ngModel)]="rowData.MRights.CanDelete"
-              (onChange)="toggleNode(rowNode.node,'CanDelete',rowData.MRights.CanDelete)">
-            </p-checkbox>
-          </td>
+        <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-rowIndex="rowIndex">
+            <tr [ttRow]="rowNode" [class]="rowData.MRights.CanView ? 'view-enabled' : ''">
+                <td class="col-serial text-center">
+                    {{ rowIndex + 1 }}
+                </td>
 
-        </tr>
-      </ng-template>
+                <td class="col-menu">
+                    <div class="flex align-items-center gap-2">
+                        <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                        <i [class]="rowData.Icon" class="text-primary flex-shrink-0"></i>
+                        <span class="font-medium" [pTooltip]="rowData.MenuName" tooltipPosition="top">
+                            {{ rowData.MenuName }}
+                        </span>
+                        <p-tag *ngIf="rowData.ParentID === 0" 
+                               value="ROOT" severity="info" class="ml-2 text-xs" />
+                    </div>
+                </td>
 
-      <!-- EMPTY -->
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="6" class="text-center py-6">
-            <i class="pi pi-inbox text-4xl text-400 mb-3"></i>
-            <div class="text-lg font-medium">No Menu Rights Found</div>
-          </td>
-        </tr>
-      </ng-template>
+                <td class="col-url">
+                    <span class="text-color-secondary text-sm" 
+                          pTooltip="{{ rowData.MenuURL }}" tooltipPosition="top">
+                        {{ rowData.MenuURL || '#' }}
+                    </span>
+                </td>
 
+                <td class="col-type">
+                    <p-tag [value]="rowData.MenuTypeName" 
+                           [severity]="getMenuTypeSeverity(rowData.MenuTypeID)" />
+                </td>
+
+                <!-- Rights Columns -->
+                <td class="col-view text-center">
+                    <p-checkbox 
+                        [binary]="true" 
+                        [(ngModel)]="rowData.MRights.CanView"
+                        (onChange)="onRightsChange(rowNode, 'CanView')">
+                    </p-checkbox>
+                </td>
+
+                <td class="col-insert text-center">
+                    <p-checkbox 
+                        [binary]="true" 
+                        [(ngModel)]="rowData.MRights.CanInsert"
+                        (onChange)="onRightsChange(rowNode, 'CanInsert')"
+                        [disabled]="!rowData.MRights.CanView">
+                    </p-checkbox>
+                </td>
+
+                <td class="col-update text-center">
+                    <p-checkbox 
+                        [binary]="true" 
+                        [(ngModel)]="rowData.MRights.CanUpdate"
+                        (onChange)="onRightsChange(rowNode, 'CanUpdate')"
+                        [disabled]="!rowData.MRights.CanView">
+                    </p-checkbox>
+                </td>
+
+                <td class="col-delete text-center">
+                    <p-checkbox 
+                        [binary]="true" 
+                        [(ngModel)]="rowData.MRights.CanDelete"
+                        (onChange)="onRightsChange(rowNode, 'CanDelete')"
+                        [disabled]="!rowData.MRights.CanView">
+                    </p-checkbox>
+                </td>
+
+                <td class="col-status">
+                    <p-tag [value]="rowData.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
+                        [severity]="rowData.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'" />
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="9" class="text-center py-6">
+                    <div class="flex flex-column align-items-center">
+                        <i class="pi pi-inbox text-4xl text-400 mb-3"></i>
+                        <div class="text-lg font-medium">
+                            {{ (selectedRoleId || selectedAdminId) ? 'No Menu Rights Found' : 'Please Select a Role or Admin' }}
+                        </div>
+                        <p class="text-500 mt-2">
+                            {{ (selectedRoleId || selectedAdminId) ? 'No menu rights configured for this entity' : 'Select a role or admin to manage menu rights' }}
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
     </p-treeTable>
-
   </div>
 </div>
+
+<p-confirmDialog></p-confirmDialog>

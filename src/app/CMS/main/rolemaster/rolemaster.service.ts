@@ -20,7 +20,13 @@ export class RolemasterService {
         return this.http.get<JsonResponseModel>(`${this.baseUrl}/RoleMaster/GetAllRoleDetails`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
+      } 
+    GetRoleDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/RoleMaster/GetRoleDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
       }
+      
     SaveRole(roleModel: MRoleMaster, encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/RoleMaster/SaveRoleDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }

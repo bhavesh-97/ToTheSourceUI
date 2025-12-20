@@ -32,6 +32,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { MMenuTypeMaster } from '../../../models/MMenuTypeMaster';
 import { MSiteAreaMaster } from '../../../models/MSiteAreaMaster';
+import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
 @Component({
   selector: 'app-menu-mapping-master',
   standalone: true,
@@ -67,6 +68,7 @@ export class MenuMappingMaster implements OnInit {
   @ViewChild('tt') tt!: TreeTable;
   @ViewChildren('inputField') inputElements!: QueryList<any>;
   private menuMappingService = inject(MenuMappingMasterService);
+  private menuresourceService = inject(MenuResourceMasterService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(NotificationService);
   private fb = inject(FormBuilder);
@@ -189,7 +191,7 @@ export class MenuMappingMaster implements OnInit {
   }
 
   loadMenuResources() {
-    this.menuMappingService.GetMenuResourceDetails().subscribe({
+    this.menuresourceService.GetMenuResourceDetails().subscribe({
       next: (res) => {
         let menuData: any[] = [];
         if (!res.isError) {

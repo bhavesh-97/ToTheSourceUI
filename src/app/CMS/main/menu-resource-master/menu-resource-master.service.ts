@@ -20,6 +20,13 @@ export class MenuResourceMasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
+            
+    GetMenuResourceDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuResourceMaster/GetMenuResourceDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }
+      
     SaveMenuResource(Model: MMenuResourceMaster, encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/MenuResourceMaster/SaveMenuResourceDetails`,Model,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }

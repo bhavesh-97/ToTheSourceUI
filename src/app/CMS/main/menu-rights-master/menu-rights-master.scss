@@ -1,34 +1,105 @@
 @import '../../../shared/styles/datatable.scss';
 
 :host ::ng-deep .p-treetable table {
-  table-layout: auto;
-}
-
-:host ::ng-deep .p-treetable td,
-:host ::ng-deep .p-treetable th {
-  white-space: normal !important;
-  word-break: break-word;
+    table-layout: auto;
 }
 
 .col-serial {
-  min-width: 60px;
-  text-align: center;
+    min-width: 50px;
+    text-align: center;
 }
 
 .col-menu {
-  min-width: 320px;
+    min-width: 250px;
 }
 
-.col-right {
-  min-width: 90px;
-  text-align: center;
+.col-url {
+    min-width: 200px;
 }
 
-.p-checkbox {
-  transform: scale(0.95);
+.col-type {
+    min-width: 120px;
 }
 
-.p-treetable .p-column-resizer {
-  background: var(--primary-color);
-  width: 3px;
+.col-view,
+.col-insert,
+.col-update,
+.col-delete {
+    min-width: 80px;
+    text-align: center;
+}
+
+.col-status {
+    min-width: 100px;
+}
+
+/* Highlight rows where View is checked */
+.view-enabled {
+    background-color: rgba(0, 128, 0, 0.05) !important;
+}
+
+/* Style for disabled checkboxes */
+:host ::ng-deep .p-checkbox.p-component.p-checkbox-disabled {
+    opacity: 0.5;
+}
+
+/* Bulk actions styling */
+.bulk-actions {
+    background: var(--surface-card);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+}
+
+/* Stats cards */
+.stat-card {
+    background: var(--surface-card);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+}
+
+.stat-card .stat-label {
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.stat-card.success .stat-value {
+    color: var(--green-500);
+}
+
+.stat-card.warning .stat-value {
+    color: var(--orange-500);
+}
+
+/* Selected entity info */
+.selected-entity {
+    background: linear-gradient(90deg, var(--primary-50), var(--surface-0));
+    border-left: 4px solid var(--primary-500);
+}
+
+/* Clear buttons */
+.clear-btn {
+    margin-top: 1.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-menu {
+        min-width: 200px;
+    }
+    
+    .col-url {
+        min-width: 150px;
+    }
 }

@@ -20,12 +20,6 @@ export class MenuMappingMasterService {
             );
       }
       
-    GetMenuResourceDetails(encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/GetMenuResourceDetails`,
-                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
-            );
-      }
-      
     GetMenuTypeDetails(encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.get<JsonResponseModel>(`${this.baseUrl}/MenuMappingMaster/GetMenuTypeDetails`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }

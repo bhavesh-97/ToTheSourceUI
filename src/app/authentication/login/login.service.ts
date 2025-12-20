@@ -238,6 +238,11 @@ export class LoginService {
         // demo Json
           // return of(this.demoLoginResponse).pipe(delay(500));
       }
+      GetAdminDetails(encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/Login/GetUserDetails`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }    
       isLoggedIn(): boolean {
           return !!this.getToken();
       }

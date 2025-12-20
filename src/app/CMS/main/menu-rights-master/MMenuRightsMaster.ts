@@ -3,6 +3,7 @@ import { MRights } from "../../../models/MRights";
 import { MMenuMappingMaster } from "../menu-mapping-master/MenuMappingMaster";
 
 export class MMenuRightsMaster {
+  MenuRightsID: number = 0;
   MappingID: number = 0;
   MenuID: number = 0;
   RoleID: number = 0;
@@ -29,10 +30,11 @@ export interface AdminOption {
 export interface SaveMenuRightsRequest {
   EntityID: number;
   EntityType: 'Role' | 'Admin';
-  Rights: MenuRightItem[];
+  MenuRights: MenuRightItem[];
 }
 
 export interface MenuRightItem {
+  MappingID: number;
   MenuID: number;
   Rights: MRights;
 }
