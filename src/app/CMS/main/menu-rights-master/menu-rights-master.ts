@@ -95,42 +95,31 @@ import { LoginService } from '../../../authentication/login/login.service';
   ],
   templateUrl: './menu-rights-master.html',
   styleUrl: './menu-rights-master.scss',
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MenuRightsMaster implements OnInit {
-    @ViewChild('tt') tt!: TreeTable;
-  
+  @ViewChild('tt') tt!: TreeTable;
   private menuRightsService = inject(MenuRightsMasterService);
   private rolemasterService = inject(RolemasterService);
   private loginService = inject(LoginService);
   private messageService = inject(NotificationService);
-
-  // Data properties
   menuRightsTree: TreeNode<any>[] = [];
   filteredMenuRightsTree: TreeNode<any>[] = [];
   roles: any[] = [];
   admins: any[] = [];
   menuMappings: any[] = [];
-  
-  // Selection properties
   selectedRoleId: number | null = 0;
   selectedAdminId: number | null = 0;
   selectedRole: any = null;
   selectedAdmin: any = null;
-  
-  // UI properties
   loading: boolean = false;
   saving: boolean = false;
   globalFilter: string = '';
   selectedMenuType: number | null = null;
-  
-  // Stats
   totalMenus: number = 0;
   menusWithView: number = 0;
   menusWithFullAccess: number = 0;
-
-  constructor() {}
 
   ngOnInit() {
     this.loadRoles();
@@ -139,7 +128,6 @@ export class MenuRightsMaster implements OnInit {
   }
 
   loadRoles() {
-    this.loading = true;
     this.rolemasterService.GetRoleDetails().subscribe({
       next: (res) => {
         if (!res.isError && res.result) {
@@ -147,18 +135,15 @@ export class MenuRightsMaster implements OnInit {
         } else {
           this.messageService.showMessage(res.strMessage || 'Failed to load roles', 'Error', PopupMessageType.Error);
         }
-        this.loading = false;
       },
       error: (err) => {
         console.error('Failed to load roles:', err);
         this.messageService.showMessage('Failed to load roles', 'Error', PopupMessageType.Error);
-        this.loading = false;
       }
     });
   }
 
   loadAdmins() {
-    this.loading = true;
     this.loginService.GetAdminDetails().subscribe({
       next: (res) => {
         if (!res.isError && res.result) {
@@ -166,13 +151,11 @@ export class MenuRightsMaster implements OnInit {
         } else {
           this.messageService.showMessage(res.strMessage || 'Failed to load admins', 'Error', PopupMessageType.Error);
         }
-        this.loading = false;
       },
       error: (err) => {
         console.error('Failed to load admins:', err);
         this.messageService.showMessage('Failed to load admins', 'Error', PopupMessageType.Error);
-        this.loading = false;
-      }
+        }
     });
   }
 
@@ -199,37 +182,26 @@ export class MenuRightsMaster implements OnInit {
   onRoleSelected(event: any) {
     this.selectedRoleId = event.value;
     this.selectedRole = this.roles.find(r => r.RoleID === this.selectedRoleId) || null;
-    
-    // Clear admin selection when role is selected
     this.selectedAdminId = null;
     this.selectedAdmin = null;
-    
-    // Load rights for selected role
     this.loadMenuRightsForEntity(this.selectedRoleId || 0, 0);
   }
 
   onAdminSelected(event: any) {
     this.selectedAdminId = event.value;
     this.selectedAdmin = this.admins.find(a => a.AdminID === this.selectedAdminId) || 0;
-    
-    // Clear role selection when admin is selected
-    this.selectedRoleId = null;
-    this.selectedRole = null;
-    
-    // Load rights for selected admin
     this.loadMenuRightsForEntity(0, this.selectedAdminId || 0);
   }
 
   loadMenuRightsForEntity(roleId: number, adminId: number) {
-    if (roleId === 0 && adminId === 0) {
-      // If both are 0, clear the tree
+    if (roleId === 0) {
       this.menuRightsTree = [];
       this.filteredMenuRightsTree = [];
       return;
     }
-
+    debugger;
     this.loading = true;
-    this.menuRightsService.GetMenuRights(roleId, adminId).subscribe({
+    this.menuRightsService.GetMenuMappingsByRoleandAdmin(roleId, adminId).subscribe({
       next: (res) => {
         this.loading = false;
         if (!res.isError) {
@@ -585,14 +557,14 @@ export class MenuRightsMaster implements OnInit {
     this.menusWithView = 0;
     this.menusWithFullAccess = 0;
   }
-getMenuTypeSeverity(type: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+  getMenuTypeSeverity(type: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
   switch(type) {
     case 1: return 'info';      // Main Menu
     case 2: return 'success';   // Sub Menu
     case 3: return 'warn';   // Action
     default: return 'secondary';
   }
-}
+  }
   // Get selected entity name for display
   getSelectedEntityName(): string {
     if (this.selectedRole) {
