@@ -37,13 +37,14 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeModule } from 'primeng/tree';
 import { TreeTableModule, TreeTable } from 'primeng/treetable';
-import { MMenuRightsMaster, SaveMenuRightsRequest } from './MMenuRightsMaster';
+import { MenuRightItem, MMenuRightsMaster, SaveMenuRights, SaveMenuRightsRequest } from './MMenuRightsMaster';
 import { SelectModule } from 'primeng/select';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { MenuRightsMasterService } from './menu-rights-master.services';
 import { RolemasterService } from '../rolemaster/rolemaster.service';
 import { LoginService } from '../../../authentication/login/login.service';
+import { ProgressBar } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-menu-rights-master',
@@ -66,7 +67,7 @@ import { LoginService } from '../../../authentication/login/login.service';
     BadgeModule,
     TagModule,
     TooltipModule,
-    ProgressSpinnerModule,
+    ProgressBar,
     PanelModule,
     AccordionModule,
     DividerModule,
@@ -82,6 +83,7 @@ import { LoginService } from '../../../authentication/login/login.service';
     TabsModule ,
     CardModule,
     ScrollPanelModule,
+    ProgressSpinnerModule,
     SplitterModule,
     PopoverModule,
     ContextMenuModule,
@@ -121,6 +123,9 @@ export class MenuRightsMaster implements OnInit {
   headerInsertState: boolean = false;
   headerUpdateState: boolean = false;
   headerDeleteState: boolean = false;
+  saveProgress: number = 0;
+  totalToSave: number = 0;
+  existingRightsMap: Map<number, number> = new Map(); 
   presetConfig = {
   readOnly: { 
     label: 'Read Only', 
@@ -408,67 +413,249 @@ export class MenuRightsMaster implements OnInit {
     });
     return count;
   }
+  // saveMenuRights() {
+  // if (!this.selectedRoleId && !this.selectedAdminId) {
+  //   this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
+  //   return;
+  // }
 
-  saveMenuRights() {
-    // Determine which entity is selected
-    const entityId = this.selectedRoleId || this.selectedAdminId;
-    const entityType = this.selectedRoleId ? 'Role' : 'Admin';
-    
-    if (!entityId) {
-      this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
-      return;
-    }
+  // // Collect all rights
+  // const menuRightsItems: MenuRightItem[] = [];
+  // const collectRights = (nodes: TreeNode<any>[]) => {
+  //   nodes.forEach(node => {
+  //     if (node.data) {
+  //       const existingRightsID = this.existingRightsMap.get(node.data.MenuID) || 0;
+        
+  //       menuRightsItems.push({
+  //         MenuRightsID: existingRightsID,
+  //         MappingID: node.data.MappingID,
+  //         MenuID: node.data.MenuID,
+  //         CanView: node.data.MRights?.CanView || false,
+  //         CanInsert: node.data.MRights?.CanInsert || false,
+  //         CanUpdate: node.data.MRights?.CanUpdate || false,
+  //         CanDelete: node.data.MRights?.CanDelete || false,
+  //         MCommonEntitiesMaster: {
+  //           CreatedBy: this.getCurrentUserId(), 
+  //           UpdatedBy: this.getCurrentUserId(),
+  //           IsActive: false
+  //         },
+  //         RoleID: this.selectedRoleId || 0,
+  //         AdminID: this.selectedAdminId || 0
+  //       });
+        
+  //       if (node.children?.length) {
+  //         collectRights(node.children);
+  //       }
+  //     }
+  //   });
+  // };
+  
+  // collectRights(this.menuRightsTree);
+  
+  // this.totalToSave = menuRightsItems.length;
+  // this.saveProgress = 0;
+  
+  // const saveRequest: SaveMenuRightsRequest = {
+  //   RoleID: this.selectedRoleId || 0,
+  //   AdminID: this.selectedAdminId || 0,
+  //   MenuRights: menuRightsItems
+  // };
 
-    // Collect all menu rights from tree
-    const menuRightsItems: any[] = [];
-    const collectRights = (nodes: TreeNode<any>[]) => {
-      nodes.forEach(node => {
-        if (node.data) {
-          menuRightsItems.push({
-            MenuID: node.data.MenuID,
-            MappingID: node.data.MappingID,
-            MRights: node.data.MRights
-          });
-          
-          if (node.children?.length) {
-            collectRights(node.children);
+  // this.saving = true;
+  // this.menuRightsService.SaveMenuRights(saveRequest).subscribe({
+  //   next: (res) => {
+  //     this.saving = false;
+  //     this.saveProgress = 100;
+      
+  //     if (!res.isError) {
+  //       this.messageService.showMessage(
+  //         `Successfully saved ${this.totalToSave} menu rights`,
+  //         'Success',
+  //         PopupMessageType.Success
+  //       );
+        
+  //       // Update existing rights map
+  //       if (res.result && Array.isArray(res.result)) {
+  //         res.result.forEach((savedRight: any) => {
+  //           if (savedRight.MenuRightsID && savedRight.MenuID) {
+  //             this.existingRightsMap.set(savedRight.MenuID, savedRight.MenuRightsID);
+  //           }
+  //         });
+  //       }
+        
+  //       // Reset progress after 2 seconds
+  //       setTimeout(() => {
+  //         this.saveProgress = 0;
+  //         this.totalToSave = 0;
+  //       }, 2000);
+  //     } else {
+  //       this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
+  //     }
+  //   },
+  //   error: (err) => {
+  //     this.saving = false;
+  //     this.saveProgress = 0;
+  //     this.messageService.showMessage(
+  //       'Failed to save menu rights. Please try again.',
+  //       'Error',
+  //       PopupMessageType.Error
+  //     );
+  //   }
+  // });
+  // }
+  // Updated save method using bulk API
+saveMenuRightsBulk() {
+  if (!this.selectedRoleId && !this.selectedAdminId) {
+    this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
+    return;
+  }
+
+  // Collect all menu rights from tree
+  const menuRightsList: SaveMenuRights[] = [];
+  const collectRights = (nodes: TreeNode<any>[]) => {
+    nodes.forEach(node => {
+      if (node.data) {
+        const existingRightsID = this.existingRightsMap.get(node.data.MenuID) || 0;
+        
+        const menuRight: SaveMenuRights = {
+          MenuRightsID: existingRightsID,
+          MappingID: node.data.MappingID,
+          RoleID: this.selectedRoleId || 0,
+          AdminID: this.selectedAdminId || 0,
+          Permission: {
+            CanView: node.data.MRights?.CanView || false,
+            CanInsert: node.data.MRights?.CanInsert || false,
+            CanUpdate: node.data.MRights?.CanUpdate || false,
+            CanDelete: node.data.MRights?.CanDelete || false
+          },
+          MCommonEntitiesMaster: {
+            IsActive: true,
+            CreatedBy: this.getCurrentUserId(),
+            UpdatedBy: this.getCurrentUserId()
           }
+        };
+        
+        menuRightsList.push(menuRight);
+        
+        if (node.children?.length) {
+          collectRights(node.children);
         }
-      });
-    };
-    
-    collectRights(this.menuRightsTree);
-
-    const saveRequest: SaveMenuRightsRequest = {
-      EntityID: entityId,
-      EntityType: entityType,
-      MenuRights: menuRightsItems
-    };
-
-    this.saving = true;
-    this.menuRightsService.SaveMenuRights(saveRequest).subscribe({
-      next: (res) => {
-        this.saving = false;
-        if (!res.isError) {
-          this.messageService.showMessage(
-            res.strMessage || 'Menu rights saved successfully', 
-            res.title || 'Success', 
-            PopupMessageType.Success
-          );
-        } else {
-          this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
-        }
-      },
-      error: (err) => {
-        this.saving = false;
-        this.messageService.showMessage(
-          'Failed to save menu rights. Please try again.',
-          'Error',
-          PopupMessageType.Error
-        );
       }
     });
-  }
+  };
+  
+  collectRights(this.menuRightsTree);
+
+  // Prepare bulk request
+  const bulkRequest: SaveMenuRightsRequest = {
+    RoleID: this.selectedRoleId || 0,
+    AdminID: this.selectedAdminId || 0,
+    MenuRights: menuRightsList
+  };
+
+  this.saving = true;
+  this.totalToSave = menuRightsList.length;
+  this.saveProgress = 0;
+
+  this.menuRightsService.SaveMenuRightsBulk(bulkRequest,true).subscribe({
+    next: (res) => {
+      this.saving = false;
+      this.saveProgress = 100;
+      
+      if (!res.isError) {
+        this.messageService.showMessage(
+          res.strMessage || `Successfully saved ${menuRightsList.length} menu rights`,
+          res.title || 'Success',
+          PopupMessageType.Success
+        );
+        
+        // Update existing rights map with returned IDs
+        if (res.result && Array.isArray(res.result)) {
+          res.result.forEach((savedRight: any) => {
+            if (savedRight.MenuRightsID && savedRight.MappingID) {
+              // Map MappingID to MenuID if needed
+              const menu = this.menuMappings.find(m => m.MappingID === savedRight.MappingID);
+              if (menu) {
+                this.existingRightsMap.set(menu.MenuID, savedRight.MenuRightsID);
+              }
+            }
+          });
+        }
+      } else {
+        this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
+      }
+    },
+    error: () => {
+      this.saving = false;
+      this.saveProgress = 0;
+      this.messageService.showMessage(
+        'Failed to save menu rights. Please try again.',
+        'Error',
+        PopupMessageType.Error
+      );
+    }
+  });
+}
+  // saveMenuRights() {
+  //   // Determine which entity is selected
+  //   const entityId = this.selectedRoleId || this.selectedAdminId;
+  //   const entityType = this.selectedRoleId ? 'Role' : 'Admin';
+    
+  //   if (!entityId) {
+  //     this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
+  //     return;
+  //   }
+
+  //   // Collect all menu rights from tree
+  //   const menuRightsItems: any[] = [];
+  //   const collectRights = (nodes: TreeNode<any>[]) => {
+  //     nodes.forEach(node => {
+  //       if (node.data) {
+  //         menuRightsItems.push({
+  //           MenuID: node.data.MenuID,
+  //           MappingID: node.data.MappingID,
+  //           MRights: node.data.MRights
+  //         });
+          
+  //         if (node.children?.length) {
+  //           collectRights(node.children);
+  //         }
+  //       }
+  //     });
+  //   };
+    
+  //   collectRights(this.menuRightsTree);
+
+  //   const saveRequest: SaveMenuRightsRequest = {
+  //     EntityID: entityId,
+  //     EntityType: entityType,
+  //     MenuRights: menuRightsItems
+  //   };
+
+  //   this.saving = true;
+  //   this.menuRightsService.SaveMenuRights(saveRequest).subscribe({
+  //     next: (res) => {
+  //       this.saving = false;
+  //       if (!res.isError) {
+  //         this.messageService.showMessage(
+  //           res.strMessage || 'Menu rights saved successfully', 
+  //           res.title || 'Success', 
+  //           PopupMessageType.Success
+  //         );
+  //       } else {
+  //         this.messageService.showMessage(res.strMessage, res.title, PopupMessageType.Error);
+  //       }
+  //     },
+  //     error: (err) => {
+  //       this.saving = false;
+  //       this.messageService.showMessage(
+  //         'Failed to save menu rights. Please try again.',
+  //         'Error',
+  //         PopupMessageType.Error
+  //       );
+  //     }
+  //   });
+  // }
 
   // Bulk actions
   selectAllForRight(rightType: string, value: boolean) {
@@ -740,4 +927,8 @@ private checkNodeAndChildren(node: TreeNode<any>, rightType: string, value: bool
     }
     return 'Select Role or Admin';
   }
+  getCurrentUserId(): number {
+  // Replace with your actual auth service
+  return 1; // Example: get from localStorage or auth service
+}
 }

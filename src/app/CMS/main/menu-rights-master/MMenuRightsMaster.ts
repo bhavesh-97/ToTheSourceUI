@@ -27,14 +27,29 @@ export interface AdminOption {
   Email: string;
 }
 
-export interface SaveMenuRightsRequest {
-  EntityID: number;
-  EntityType: 'Role' | 'Admin';
-  MenuRights: MenuRightItem[];
+export class SaveMenuRightsRequest {
+  RoleID: number = 0;
+  AdminID: number = 0;
+  MenuRights: SaveMenuRights[] = [];
 }
-
-export interface MenuRightItem {
-  MappingID: number;
-  MenuID: number;
-  Rights: MRights;
+export class SaveMenuRights
+{
+    MenuRightsID: number = 0;
+    MappingID: number = 0;
+    RoleID: number = 0;
+    AdminID: number = 0;
+    Permission: MRights = new MRights();
+    MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
+}
+export class MenuRightItem {
+  MenuRightsID: number = 0; 
+  MappingID: number = 0;    
+  MenuID: number = 0;       
+  RoleID: number = 0;
+  AdminID: number = 0;
+  CanView: boolean = false;
+  CanInsert: boolean = false;
+  CanUpdate: boolean = false;
+  CanDelete: boolean = false;
+  MCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }

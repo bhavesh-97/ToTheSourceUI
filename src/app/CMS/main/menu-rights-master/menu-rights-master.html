@@ -40,9 +40,15 @@
                         [text]="true" [rounded]="true" />
                     <p-button pTooltip="Save Rights" icon="pi pi-save" severity="success" 
                         [disabled]="(!selectedRoleId && !selectedAdminId) || saving" [loading]="saving"
-                        (onClick)="saveMenuRights()" [text]="true" [rounded]="true"
+                        (onClick)="saveMenuRightsBulk()" [text]="true" [rounded]="true"
                         class="ms-2">
                     </p-button>
+                    <div *ngIf="saving" class="progress-container mt-2">
+                         <p-progressBar [value]="saveProgress" [showValue]="false"></p-progressBar>
+                        <div class="text-xs text-center mt-1 text-color-secondary">
+                            Saving {{ saveProgress }}% ({{ totalToSave }} rights)
+                        </div>
+                    </div>
                      <p-button pTooltip="Clear All" icon="pi pi-times" severity="secondary" 
                         [disabled]="!selectedRoleId && !selectedAdminId" (onClick)="clearSelections()" [text]="true" [rounded]="true">
                      </p-button>
