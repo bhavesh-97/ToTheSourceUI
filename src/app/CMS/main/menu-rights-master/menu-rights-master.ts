@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ConfirmationService, MessageService, TreeNode, MenuItem } from 'primeng/api';
 import { AccordionModule } from 'primeng/accordion';
@@ -35,15 +35,10 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
-import { Tree, TreeModule } from 'primeng/tree';
+import { TreeModule } from 'primeng/tree';
 import { TreeTableModule, TreeTable } from 'primeng/treetable';
-import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
-import { MRights } from '../../../models/MRights';
-import { MenuRightItem, MMenuRightsMaster, SaveMenuRightsRequest } from './MMenuRightsMaster';
+import { MMenuRightsMaster, SaveMenuRightsRequest } from './MMenuRightsMaster';
 import { SelectModule } from 'primeng/select';
-import { MRoleMaster } from '../rolemaster/MRoleMaster';
-import { MUser } from '../../../models/MUser';
-import { MMenuMappingMaster } from '../menu-mapping-master/MenuMappingMaster';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { MenuRightsMasterService } from './menu-rights-master.services';
@@ -104,6 +99,7 @@ export class MenuRightsMaster implements OnInit {
   private rolemasterService = inject(RolemasterService);
   private loginService = inject(LoginService);
   private messageService = inject(NotificationService);
+  private confirmationService = inject(ConfirmationService);
   menuRightsTree: TreeNode<any>[] = [];
   filteredMenuRightsTree: TreeNode<any>[] = [];
   roles: any[] = [];
@@ -120,6 +116,43 @@ export class MenuRightsMaster implements OnInit {
   totalMenus: number = 0;
   menusWithView: number = 0;
   menusWithFullAccess: number = 0;
+  activePreset: string | null = null;
+  headerViewState: boolean = false;
+  headerInsertState: boolean = false;
+  headerUpdateState: boolean = false;
+  headerDeleteState: boolean = false;
+  presetConfig = {
+  readOnly: { 
+    label: 'Read Only', 
+    icon: 'pi pi-eye', 
+    description: 'Can only view content',
+    config: { CanView: true, CanInsert: false, CanUpdate: false, CanDelete: false }
+  },
+  fullAccess: { 
+    label: 'Full Access', 
+    icon: 'pi pi-lock-open', 
+    description: 'All permissions enabled',
+    config: { CanView: true, CanInsert: true, CanUpdate: true, CanDelete: true }
+  },
+  contentManager: { 
+    label: 'Content Manager', 
+    icon: 'pi pi-file-edit', 
+    description: 'Can view, insert and update content',
+    config: { CanView: true, CanInsert: true, CanUpdate: true, CanDelete: false }
+  },
+  editor: { 
+    label: 'Editor', 
+    icon: 'pi pi-pencil', 
+    description: 'Can view and update content',
+    config: { CanView: true, CanInsert: false, CanUpdate: true, CanDelete: false }
+  },
+  viewer: { 
+    label: 'Viewer', 
+    icon: 'pi pi-user', 
+    description: 'View only, no modifications',
+    config: { CanView: true, CanInsert: false, CanUpdate: false, CanDelete: false }
+  }
+  };
 
   ngOnInit() {
     this.loadRoles();
@@ -184,13 +217,16 @@ export class MenuRightsMaster implements OnInit {
     this.selectedRole = this.roles.find(r => r.RoleID === this.selectedRoleId) || null;
     this.selectedAdminId = null;
     this.selectedAdmin = null;
+    this.clearActivePreset(); 
     this.loadMenuRightsForEntity(this.selectedRoleId || 0, 0);
   }
 
   onAdminSelected(event: any) {
+    debugger
     this.selectedAdminId = event.value;
-    this.selectedAdmin = this.admins.find(a => a.AdminID === this.selectedAdminId) || 0;
-    this.loadMenuRightsForEntity(0, this.selectedAdminId || 0);
+    this.selectedAdmin = this.admins.find(a => a.UserID === this.selectedAdminId) || 0;
+    this.clearActivePreset(); 
+    this.loadMenuRightsForEntity(this.selectedRoleId || 0, this.selectedAdminId || 0);
   }
 
   loadMenuRightsForEntity(roleId: number, adminId: number) {
@@ -205,6 +241,7 @@ export class MenuRightsMaster implements OnInit {
       next: (res) => {
         this.loading = false;
         if (!res.isError) {
+          debugger;
           let rightsData: any[] = [];
           if (res.result) {
             rightsData = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
@@ -456,8 +493,139 @@ export class MenuRightsMaster implements OnInit {
     this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
     this.calculateStats();
   }
+  getNodeIndex(row: any): number {
+    const node = this.resolveTreeNode(row);
+    if (!node) return 0;
+    const visibleNodes = this.getVisibleNodes();
+    return visibleNodes.findIndex(n => n.key === node.key) + 1;
+  }
+  private getVisibleNodes(): TreeNode<MMenuRightsMaster>[] {
+    const visible: TreeNode<MMenuRightsMaster>[] = [];
+  
+    const traverse = (nodes: TreeNode<MMenuRightsMaster>[]) => {
+      for (const node of nodes) {
+        visible.push(node);
+  
+        if (node.expanded && node.children?.length) {
+          traverse(node.children);
+        }
+      }
+    };
+  
+    traverse(this.filteredMenuRightsTree);
+    return visible;
+  }
+  private resolveTreeNode(row: any): TreeNode<MMenuRightsMaster> | null {
+        if (!row) return null;
+        if (row.node && row.node.data) {
+          return row.node as TreeNode<MMenuRightsMaster>;
+        }
+        if (row.data) {
+          return row as TreeNode<MMenuRightsMaster>;
+        }
+        console.error('Invalid TreeTable row passed:', row);
+        return null;
+  }
 
-  // Filter methods
+  async applyPreset(presetKey: string) {
+    if (!this.selectedRoleId && !this.selectedAdminId) {
+    this.messageService.showMessage('Please select a role or admin first', 'Warning', PopupMessageType.Warning);
+    return;
+    } 
+
+  const preset = this.presetConfig[presetKey as keyof typeof this.presetConfig];
+  if (!preset) return;
+
+  // Show confirmation dialog
+  const confirmed = await this.showPresetConfirmation(preset);
+  if (!confirmed) return;
+
+  this.applyPresetConfig(preset.config);
+  this.activePreset = presetKey;
+  }
+  applyPresetConfig(config: any) {
+  const updateNodes = (nodes: TreeNode<any>[]) => {
+    nodes.forEach(node => {
+      if (node.data) {
+        // Apply the preset config
+        Object.assign(node.data.MRights, config);
+        
+        // Special logic for restricted preset
+        if (!config.CanView) {
+          node.data.MRights.CanInsert = false;
+          node.data.MRights.CanUpdate = false;
+          node.data.MRights.CanDelete = false;
+        }
+      }
+      if (node.children?.length) {
+        updateNodes(node.children);
+      }
+    });
+  };
+
+  updateNodes(this.menuRightsTree);
+  this.updateHeaderStates();
+  this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
+  this.calculateStats();
+  
+  // Show success message
+  this.messageService.showMessage(
+    'Preset applied successfully',
+    'Success',
+    PopupMessageType.Success
+  );
+  }
+  updateHeaderStates() {
+  if (this.menuRightsTree.length === 0) {
+    this.headerViewState = false;
+    this.headerInsertState = false;
+    this.headerUpdateState = false;
+    this.headerDeleteState = false;
+    return;
+  }
+
+  this.headerViewState = this.getAllRightState('CanView');
+  this.headerInsertState = this.getAllRightState('CanInsert');
+  this.headerUpdateState = this.getAllRightState('CanUpdate');
+  this.headerDeleteState = this.getAllRightState('CanDelete');
+}
+getAllRightState(rightType: string): boolean {
+  if (this.menuRightsTree.length === 0) return false;
+  return this.menuRightsTree.every(node => 
+    this.checkNodeAndChildren(node, rightType, true)
+  );
+}
+private checkNodeAndChildren(node: TreeNode<any>, rightType: string, value: boolean): boolean {
+  // Check current node
+  if (node.data?.MRights?.[rightType] !== value) return false;
+  
+  // Check all children recursively
+  if (node.children?.length) {
+    return node.children.every(child => 
+      this.checkNodeAndChildren(child, rightType, value)
+    );
+  }
+  return true;
+}
+  private showPresetConfirmation(preset: any): Promise<boolean> {
+  return new Promise((resolve) => {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to apply the <strong>"${preset.label}"</strong> preset?<br>
+                <small class="text-color-secondary">${preset.description}</small><br>
+                <br>
+                This will overwrite all existing permissions for the selected ${this.selectedRoleId ? 'role' : 'admin'}.`,
+      header: 'Apply Preset',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => resolve(true),
+      reject: () => resolve(false)
+    });
+  });
+  } 
+  clearActivePreset() {
+    this.activePreset = null;
+  }
   applyFilters() {
     let filteredData = this.menuRightsTree;
     
@@ -544,8 +712,6 @@ export class MenuRightsMaster implements OnInit {
     collapseNodes(this.menuRightsTree);
     this.filteredMenuRightsTree = [...this.filteredMenuRightsTree];
   }
-
-  // Clear selections
   clearSelections() {
     this.selectedRoleId = null;
     this.selectedAdminId = null;

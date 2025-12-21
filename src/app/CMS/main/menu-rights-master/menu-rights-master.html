@@ -58,31 +58,51 @@
 
       
       <!-- Bulk Actions -->
-      <div class="border-top-1 border-300 pt-3" *ngIf="selectedRoleId || selectedAdminId">
-        <div class="flex align-items-center justify-content-between">
-          <h4 class="m-0 text-sm">Bulk Actions:</h4>
-          <div class="flex gap-3">
-            <div class="flex align-items-center gap-2">
-              <label class="text-sm">Select All:</label>
-              <p-button label="View" size="small" (onClick)="selectAllForRight('CanView', true)" />
-              <p-button label="Insert" size="small" (onClick)="selectAllForRight('CanInsert', true)" />
-              <p-button label="Update" size="small" (onClick)="selectAllForRight('CanUpdate', true)" />
-              <p-button label="Delete" size="small" (onClick)="selectAllForRight('CanDelete', true)" />
-            </div>
-            <div class="flex align-items-center gap-2">
-              <label class="text-sm">Clear All:</label>
-              <p-button label="View" severity="secondary" size="small" 
-                       (onClick)="selectAllForRight('CanView', false)" />
-              <p-button label="Insert" severity="secondary" size="small" 
-                       (onClick)="selectAllForRight('CanInsert', false)" />
-              <p-button label="Update" severity="secondary" size="small" 
-                       (onClick)="selectAllForRight('CanUpdate', false)" />
-              <p-button label="Delete" severity="secondary" size="small" 
-                       (onClick)="selectAllForRight('CanDelete', false)" />
-            </div>
-          </div>
-        </div>
+      <!-- Add this after the Bulk Actions section or in the header area -->
+<div class="border-top-1 border-300 pt-3" *ngIf="selectedRoleId || selectedAdminId">
+  <div class="flex align-items-center justify-content-between">
+    <div class="flex align-items-center gap-3">
+      <h4 class="m-0 text-sm font-medium">Quick Presets:</h4>
+      <div class="flex gap-1">
+        <button pButton 
+                type="button" 
+                icon="pi pi-eye" 
+                class="p-button-sm p-button-text border-1 border-200"
+                [class]="activePreset === 'readOnly' ? 'p-button-primary' : 'p-button-secondary'"
+                (click)="applyPreset('readOnly')"
+                pTooltip="View only - Can only view content"
+                tooltipPosition="top">
+        </button>
+        <button pButton 
+                type="button" 
+                icon="pi pi-lock-open" 
+                class="p-button-sm p-button-text border-1 border-200"
+                [class]="activePreset === 'fullAccess' ? 'p-button-primary' : 'p-button-secondary'"
+                (click)="applyPreset('fullAccess')"
+                pTooltip="Full access - All permissions"
+                tooltipPosition="top">
+        </button>
+        <button pButton 
+                type="button" 
+                icon="pi pi-file-edit" 
+                class="p-button-sm p-button-text border-1 border-200"
+                [class]="activePreset === 'contentManager' ? 'p-button-primary' : 'p-button-secondary'"
+                (click)="applyPreset('contentManager')"
+                pTooltip="Content manager - View, Insert, Update"
+                tooltipPosition="top">
+        </button>
+        <button pButton 
+                type="button" 
+                icon="pi pi-pencil" 
+                class="p-button-sm p-button-text border-1 border-200"
+                [class]="activePreset === 'editor' ? 'p-button-primary' : 'p-button-secondary'"
+                (click)="applyPreset('editor')"
+                pTooltip="Editor - View and Update only"
+                tooltipPosition="top">
+        </button>
       </div>
+    </div>
+  </div>
     </div>
 
     <!-- Tree Table -->
@@ -116,7 +136,7 @@
         <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-rowIndex="rowIndex">
             <tr [ttRow]="rowNode" [class]="rowData.MRights.CanView ? 'view-enabled' : ''">
                 <td class="col-serial text-center">
-                    {{ rowIndex + 1 }}
+                    {{ getNodeIndex(rowNode) }}
                 </td>
 
                 <td class="col-menu">
