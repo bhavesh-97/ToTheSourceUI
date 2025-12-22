@@ -635,7 +635,7 @@ export class MenuRightsMaster implements OnInit {
   const collectRights = (nodes: TreeNode<any>[]) => {
     nodes.forEach(node => {
       if (node.data) {
-        const existingRightsID = this.existingRightsMap.get(node.data.MappingID) || 0;
+        const existingRightsID = this.existingRightsMap.get(node.data.MenuRightsID) || 0;
          if (this.hasChanges(node.data)) {
             const menuRight: SaveMenuRights = {
           MenuRightsID: existingRightsID,
@@ -664,7 +664,7 @@ export class MenuRightsMaster implements OnInit {
     });
   };
   
-  collectRights(this.menuRightsTree);
+  collectRights(this.filteredMenuRightsTree);
   
   if (menuRightsList.length === 0) {
     this.messageService.showMessage('No changes to save', 'Info', PopupMessageType.Info);
@@ -701,7 +701,7 @@ export class MenuRightsMaster implements OnInit {
             if (savedRight.MenuRightsID && savedRight.MappingID) {
               const menu = this.menuMappings.find(m => m.MappingID === savedRight.MappingID);
               if (menu) {
-                this.existingRightsMap.set(menu.MenuID, savedRight.MenuRightsID);
+                this.existingRightsMap.set(menu.MappingID, savedRight.MenuRightsID);
               }
             }
           });
