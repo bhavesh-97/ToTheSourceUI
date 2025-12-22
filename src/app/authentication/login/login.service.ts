@@ -242,7 +242,14 @@ export class LoginService {
         return this.http.get<JsonResponseModel>(`${this.baseUrl}/Login/GetUserDetails`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
-      }    
+      } 
+      GetAdminDetailsByRole(RoleID:number,encryptPayload = false): Observable<JsonResponseModel> {
+        const params = new HttpParams()
+                        .set('RoleID', RoleID);
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/Login/GetAdminDetailsByRole`,
+                                                      { params, context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }   
       isLoggedIn(): boolean {
           return !!this.getToken();
       }

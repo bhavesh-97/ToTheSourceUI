@@ -25,7 +25,7 @@
                         [(ngModel)]="selectedRoleId" placeholder="Select Role" [showClear]="true" (onChange)="onRoleSelected($event)" 
                         class="w-full">
                     </p-select>
-                    <p-select  id="adminSelect" [options]="admins"  optionLabel="FullName" optionValue="UserID"
+                    <p-select  id="adminSelect" [options]="admins"  optionLabel="fullName" optionValue="userID"
                         [(ngModel)]="selectedAdminId" placeholder="Select Admin" [showClear]="true" (onChange)="onAdminSelected($event)"
                         class="w-full ms-2">
                     </p-select>
@@ -43,12 +43,6 @@
                         (onClick)="saveMenuRightsBulk()" [text]="true" [rounded]="true"
                         class="ms-2">
                     </p-button>
-                    <div *ngIf="saving" class="progress-container mt-2">
-                         <p-progressBar [value]="saveProgress" [showValue]="false"></p-progressBar>
-                        <div class="text-xs text-center mt-1 text-color-secondary">
-                            Saving {{ saveProgress }}% ({{ totalToSave }} rights)
-                        </div>
-                    </div>
                      <p-button pTooltip="Clear All" icon="pi pi-times" severity="secondary" 
                         [disabled]="!selectedRoleId && !selectedAdminId" (onClick)="clearSelections()" [text]="true" [rounded]="true">
                      </p-button>

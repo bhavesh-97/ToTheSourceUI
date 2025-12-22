@@ -44,7 +44,6 @@ export class SaveMenuRights
 export class MenuRightItem {
   MenuRightsID: number = 0; 
   MappingID: number = 0;    
-  MenuID: number = 0;       
   RoleID: number = 0;
   AdminID: number = 0;
   CanView: boolean = false;

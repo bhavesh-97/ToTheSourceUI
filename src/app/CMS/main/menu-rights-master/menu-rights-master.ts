@@ -45,6 +45,7 @@ import { MenuRightsMasterService } from './menu-rights-master.services';
 import { RolemasterService } from '../rolemaster/rolemaster.service';
 import { LoginService } from '../../../authentication/login/login.service';
 import { ProgressBar } from 'primeng/progressbar';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-menu-rights-master',
@@ -67,7 +68,6 @@ import { ProgressBar } from 'primeng/progressbar';
     BadgeModule,
     TagModule,
     TooltipModule,
-    ProgressBar,
     PanelModule,
     AccordionModule,
     DividerModule,
@@ -113,6 +113,7 @@ export class MenuRightsMaster implements OnInit {
   selectedAdmin: any = null;
   loading: boolean = false;
   saving: boolean = false;
+  private originalPermissions = new Map<string, any>();
   globalFilter: string = '';
   selectedMenuType: number | null = null;
   totalMenus: number = 0;
@@ -161,7 +162,7 @@ export class MenuRightsMaster implements OnInit {
 
   ngOnInit() {
     this.loadRoles();
-    this.loadAdmins();
+    // this.loadAdmins();
     this.loadMenuMappings();
   }
 
@@ -183,6 +184,21 @@ export class MenuRightsMaster implements OnInit {
 
   loadAdmins() {
     this.loginService.GetAdminDetails().subscribe({
+      next: (res) => {
+        if (!res.isError && res.result) {
+          this.admins = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
+        } else {
+          this.messageService.showMessage(res.strMessage || 'Failed to load admins', 'Error', PopupMessageType.Error);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load admins:', err);
+        this.messageService.showMessage('Failed to load admins', 'Error', PopupMessageType.Error);
+        }
+    });
+  }
+  loadAdminsByRole(RoleID:number) {
+    this.loginService.GetAdminDetailsByRole(RoleID).subscribe({
       next: (res) => {
         if (!res.isError && res.result) {
           this.admins = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
@@ -223,6 +239,11 @@ export class MenuRightsMaster implements OnInit {
     this.selectedAdminId = null;
     this.selectedAdmin = null;
     this.clearActivePreset(); 
+    if(!this.selectedRoleId){
+      this.admins = [];
+      return;
+    }
+    this.loadAdminsByRole(this.selectedRoleId || 0);
     this.loadMenuRightsForEntity(this.selectedRoleId || 0, 0);
   }
 
@@ -251,6 +272,7 @@ export class MenuRightsMaster implements OnInit {
           if (res.result) {
             rightsData = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
           }
+          this.storeOriginalData();
           this.updateMenuTreeWithRights(rightsData);
           this.calculateStats();
         } else {
@@ -287,14 +309,12 @@ export class MenuRightsMaster implements OnInit {
   }
 
   updateMenuTreeWithRights(rightsData: any[]) {
-    // Create a map of MenuID to rights from API response
     const rightsMap = new Map<number, any>();
     rightsData.forEach(right => {
       if (right.MRights) {
-        rightsMap.set(right.MenuID, right.MRights);
+        rightsMap.set(right.MappingID, right.MRights);
       } else {
-        // If the API returns the rights directly on the object
-        rightsMap.set(right.MenuID, {
+        rightsMap.set(right.MappingID, {
           CanView: right.CanView || false,
           CanInsert: right.CanInsert || false,
           CanUpdate: right.CanUpdate || false,
@@ -302,11 +322,9 @@ export class MenuRightsMaster implements OnInit {
         });
       }
     });
-
-    // Update menu mappings with rights from API or set defaults
     const updatedMenus = this.menuMappings.map(menu => ({
       ...menu,
-      MRights: rightsMap.get(menu.MenuID) || {
+      MRights: rightsMap.get(menu.MappingID) || {
         CanView: false,
         CanInsert: false,
         CanUpdate: false,
@@ -413,6 +431,108 @@ export class MenuRightsMaster implements OnInit {
     });
     return count;
   }
+  private getPermissionKey(mappingId: number, roleId: number, adminId: number, menuRightsId: number): string {
+  return `${roleId}_${adminId}_${mappingId}_${menuRightsId}`;
+  }
+  storeOriginalData() {
+  this.originalPermissions.clear();
+  
+  const storeNodeOriginalData = (nodes: TreeNode<any>[]) => {
+    nodes.forEach(node => {
+      if (node.data) {
+        const menuRightsId = this.existingRightsMap.get(node.data.MappingID) || 0;
+        const key = this.getPermissionKey(
+          node.data.MappingID,
+          this.selectedRoleId || 0,
+          this.selectedAdminId || 0,
+          menuRightsId
+        );
+        
+        this.originalPermissions.set(key, {
+          MenuRightsID: menuRightsId,
+          MappingID: node.data.MappingID,
+          RoleID: this.selectedRoleId || 0,
+          AdminID: this.selectedAdminId || 0,
+          CanView: node.data.MRights?.CanView || false,
+          CanInsert: node.data.MRights?.CanInsert || false,
+          CanUpdate: node.data.MRights?.CanUpdate || false,
+          CanDelete: node.data.MRights?.CanDelete || false
+        });
+      }
+      
+      if (node.children?.length) {
+        storeNodeOriginalData(node.children);
+      }
+    });
+  };
+  
+  storeNodeOriginalData(this.menuRightsTree);
+  }
+  hasChanges(nodeData: any): boolean {
+  const menuRightsId = this.existingRightsMap.get(nodeData.MappingID) || 0;
+  const key = this.getPermissionKey(
+    nodeData.MappingID,
+    this.selectedRoleId || 0,
+    this.selectedAdminId || 0,
+    menuRightsId
+  );
+  
+  const original = this.originalPermissions.get(key);
+  
+  // If no original data, check if it's new (MenuRightsID = 0) or changed
+  if (!original) {
+    return true; // Either new or not found (should be saved)
+  }
+  
+  const current = nodeData.MRights || {};
+  
+  return (
+    original.CanView !== (current.CanView || false) ||
+    original.CanInsert !== (current.CanInsert || false) ||
+    original.CanUpdate !== (current.CanUpdate || false) ||
+    original.CanDelete !== (current.CanDelete || false)
+  );
+  }
+  updateAfterSave(savedResults: any[]) {
+  savedResults.forEach((savedRight: any) => {
+    if (savedRight.MenuRightsID && savedRight.MappingID) {
+      // Update existingRightsMap - this is number to number, so it's fine
+      this.existingRightsMap.set(savedRight.MappingID, savedRight.MenuRightsID);
+      
+      // Update originalPermissions
+      const key = this.getPermissionKey(
+        savedRight.MappingID,
+        savedRight.RoleID || this.selectedRoleId || 0,
+        savedRight.AdminID || this.selectedAdminId || 0,
+        savedRight.MenuRightsID
+      );
+      
+      this.originalPermissions.set(key, {
+        MenuRightsID: savedRight.MenuRightsID,
+        MappingID: savedRight.MappingID,
+        RoleID: savedRight.RoleID || this.selectedRoleId || 0,
+        AdminID: savedRight.AdminID || this.selectedAdminId || 0,
+        CanView: savedRight.Permission?.CanView || false,
+        CanInsert: savedRight.Permission?.CanInsert || false,
+        CanUpdate: savedRight.Permission?.CanUpdate || false,
+        CanDelete: savedRight.Permission?.CanDelete || false
+      });
+    }
+  });
+  }
+  saveNodeOriginalData(node: TreeNode<any>) {
+    if (node.data) {
+      this.originalPermissions.set(node.data.MappingID, {
+          CanView: node.data.MRights?.CanView || false,
+          CanInsert: node.data.MRights?.CanInsert || false,
+          CanUpdate: node.data.MRights?.CanUpdate || false,
+          CanDelete: node.data.MRights?.CanDelete || false
+      });
+    }
+    if (node.children) {
+        node.children.forEach(child => this.saveNodeOriginalData(child));
+    }
+  }
   // saveMenuRights() {
   // if (!this.selectedRoleId && !this.selectedAdminId) {
   //   this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
@@ -504,20 +624,20 @@ export class MenuRightsMaster implements OnInit {
   // });
   // }
   // Updated save method using bulk API
-saveMenuRightsBulk() {
-  if (!this.selectedRoleId && !this.selectedAdminId) {
-    this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
-    return;
-  }
+  saveMenuRightsBulk() {
+    debugger;
+    if (!this.selectedRoleId && !this.selectedAdminId) {
+      this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
+      return;
+    }
 
-  // Collect all menu rights from tree
   const menuRightsList: SaveMenuRights[] = [];
   const collectRights = (nodes: TreeNode<any>[]) => {
     nodes.forEach(node => {
       if (node.data) {
-        const existingRightsID = this.existingRightsMap.get(node.data.MenuID) || 0;
-        
-        const menuRight: SaveMenuRights = {
+        const existingRightsID = this.existingRightsMap.get(node.data.MappingID) || 0;
+         if (this.hasChanges(node.data)) {
+            const menuRight: SaveMenuRights = {
           MenuRightsID: existingRightsID,
           MappingID: node.data.MappingID,
           RoleID: this.selectedRoleId || 0,
@@ -533,10 +653,10 @@ saveMenuRightsBulk() {
             CreatedBy: this.getCurrentUserId(),
             UpdatedBy: this.getCurrentUserId()
           }
-        };
+            };
         
-        menuRightsList.push(menuRight);
-        
+          menuRightsList.push(menuRight);
+        }
         if (node.children?.length) {
           collectRights(node.children);
         }
@@ -545,8 +665,12 @@ saveMenuRightsBulk() {
   };
   
   collectRights(this.menuRightsTree);
+  
+  if (menuRightsList.length === 0) {
+    this.messageService.showMessage('No changes to save', 'Info', PopupMessageType.Info);
+    return;
+  }
 
-  // Prepare bulk request
   const bulkRequest: SaveMenuRightsRequest = {
     RoleID: this.selectedRoleId || 0,
     AdminID: this.selectedAdminId || 0,
@@ -555,12 +679,16 @@ saveMenuRightsBulk() {
 
   this.saving = true;
   this.totalToSave = menuRightsList.length;
-  this.saveProgress = 0;
-
-  this.menuRightsService.SaveMenuRightsBulk(bulkRequest,true).subscribe({
+   debugger;
+  this.menuRightsService.SaveMenuRightsBulk(bulkRequest,true)  
+  .pipe(
+    finalize(() => {
+      this.saving = false;  
+    })
+  ).subscribe({
     next: (res) => {
+      debugger
       this.saving = false;
-      this.saveProgress = 100;
       
       if (!res.isError) {
         this.messageService.showMessage(
@@ -568,12 +696,9 @@ saveMenuRightsBulk() {
           res.title || 'Success',
           PopupMessageType.Success
         );
-        
-        // Update existing rights map with returned IDs
         if (res.result && Array.isArray(res.result)) {
           res.result.forEach((savedRight: any) => {
             if (savedRight.MenuRightsID && savedRight.MappingID) {
-              // Map MappingID to MenuID if needed
               const menu = this.menuMappings.find(m => m.MappingID === savedRight.MappingID);
               if (menu) {
                 this.existingRightsMap.set(menu.MenuID, savedRight.MenuRightsID);
