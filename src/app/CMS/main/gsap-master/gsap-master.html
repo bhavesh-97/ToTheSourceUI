@@ -52,19 +52,6 @@
         </ng-template>
       </p-dialog>
 
-      <!-- Project Selection -->
-      <div class="mb-3" *ngIf="selectedPage">
-        <div class="row align-items-center">
-          <div class="col-12 col-md-8">
-            <label for="projectCode" class="form-label">Project Code for {{ selectedPage.title }}</label>
-            <input type="text" id="projectCode" class="form-control" [(ngModel)]="projectCode" placeholder="Enter project code (e.g., 'myproject')">
-          </div>
-          <div class="col-12 col-md-4 mt-2 mt-md-0">
-            <button pButton label="Load Config" icon="pi pi-download" class="p-button-secondary w-100 w-md-auto" (click)="loadConfig()"></button>
-          </div>
-        </div>
-      </div>
-
       <!-- Tabs Editor -->
       <div *ngIf="config && selectedPage" class="row">
         <div class="col-12 col-md-6">
@@ -262,7 +249,7 @@
       </textarea>
 
       <div class="mt-2 d-flex gap-2">
-        <button
+        <!-- <button
           pButton
           label="Import JSON"
           icon="pi pi-upload"
@@ -276,7 +263,7 @@
           icon="pi pi-download"
           class="p-button-secondary"
           (click)="exportJson()">
-        </button>
+        </button> -->
       </div>
     </p-tabpanel>
 

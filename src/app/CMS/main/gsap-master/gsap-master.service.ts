@@ -3,12 +3,14 @@ import { inject, Injectable, NgZone } from '@angular/core';
 import { gsap } from 'gsap';
 import { delay, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { GsapConfig } from '../../../@core/animations/animationtypes';
+import { GsapConfig, GsapRule } from '../../../@core/animations/animationtypes';
 import { GsapConfigLoaderService } from '../../../services/gsap-config-loader.service';
+import { GsapConfigApiService, MGsapConfigWithPages, MGsapPageWithRules, MGsapRule } from '../../../services/gsap-config-api.service';
 @Injectable({ providedIn: 'root' })
 export class GsapMasterService {
   private zone = inject(NgZone);
   private loader = inject(GsapConfigLoaderService);
+  private apiService = inject(GsapConfigApiService);
   private previewElements: HTMLElement[] = [];
   private currentTimeline?: gsap.core.Timeline;
   private apiUrl = '/api/gsap'; 
@@ -124,58 +126,130 @@ export class GsapMasterService {
   }
 
 getConfigs(projectCode: string): Observable<GsapConfig> {
-    // Simulate a delay like a real API (optional)
-    // return of(this.MOCK_CONFIG).pipe(delay(500));
     const config = this.loader.getConfig();
-    return of(config).pipe(delay(500));
+    if (config) {
+      return of(config as GsapConfig).pipe(delay(100));
+    }
+    return of(this.getPageConfigStructure('default')).pipe(delay(100));
   }
-getDefaultConfig(): GsapConfig {
-    const config = this.loader.getConfig();
-    return JSON.parse(JSON.stringify(config));
+  
+  getConfigForPage(pageId: string): Observable<GsapConfig> {
+    const config = this.getConfig(pageId);
+    return of(config).pipe(delay(50));
   }
+  
+  getDefaultConfig(): GsapConfig {
+    return this.getConfig('default');
+  }
+  
   getConfig(pageId: string): GsapConfig {
-    const getconfig = this.loader.getConfig();
-    const config = structuredClone(getconfig); // deep clone
-
-    // Page-specific overrides
-    switch (pageId) {
-      case 'landing':
-        config.rules.push({
-          id: 'heroFade',
-          label: 'Hero Fade In',
-          type: 'tween',
-          selector: '.hero-title',
+    const fullConfig = this.loader.getConfig();
+    
+    if (!fullConfig) {
+      return this.getPageConfigStructure(pageId);
+    }
+    
+    const pages = fullConfig as any;
+    
+    if (pages.pages && pages.pages[pageId]) {
+      return {
+        global: pages.global || this.getDefaultGlobal(),
+        rules: pages.pages[pageId].rules || [],
+        callbacks: pages.pages[pageId].callbacks || []
+      };
+    }
+    
+    return this.getPageConfigStructure(pageId);
+  }
+  
+  private getPageConfigStructure(pageId: string): GsapConfig {
+    return this.getConfigFromJson(pageId);
+  }
+  
+  private getConfigFromJson(pageId: string): GsapConfig {
+    const config = this.loader.getConfig() as any;
+    
+    if (config?.pages?.[pageId]) {
+      return {
+        global: config.global || this.getDefaultGlobal(),
+        rules: config.pages[pageId].rules || [],
+        callbacks: config.pages[pageId].callbacks || []
+      };
+    }
+    
+    return {
+      global: this.getDefaultGlobal(),
+      rules: [
+        {
+          id: 'defaultFadeUp',
+          label: 'Default Fade Up',
+          selector: '.fade-up',
           from: { opacity: 0, y: 50 },
           to: { opacity: 1, y: 0 },
+          type: 'tween' as const,
+          stagger: { each: 0.1 },
+          scrollTrigger: { enabled: true },
           version: 1,
-          status: 'published',
-          media: { type: 'none', url: '', id: '', selector: ''}
-        });
-        break;
-
-      case 'home':
-        config.rules.push({
-          id: 'contentStagger',
-          label: 'Content Stagger',
-          type: 'tween',
-          selector: '.home-content',
-          from: { opacity: 0, scale: 0.9 },
-          to: { opacity: 1, scale: 1 },
-          stagger: { each: 0.2 },
-          version: 1,
-          status: 'published',
-          media: { type: 'none', url: '', id: '', selector: '' }
-        });
-        break;
-
-      // Add more pages here easily
-      // case 'about': ...
-    }
-
-    return config;
+          status: 'published' as const,
+          media: { type: 'none' as const, url: '', id: '', selector: '' }
+        }
+      ],
+      callbacks: []
+    };
+  }
+  
+private getDefaultGlobal(): any {
+    return {
+      defaults: { duration: 1, ease: 'power2.out' },
+      registerPlugins: ['ScrollTrigger'],
+      autoInit: true,
+      meta: { version: '1.0', description: 'GSAP config' },
+      version: 1,
+      status: 'published'
+    };
   }
 
-  // Mock save (just logs for now)
+  // API Methods using backend
+  GetAllConfigs(encryptPayload = false): Observable<any> {
+    return this.apiService.GetConfigByName('default', encryptPayload);
+  }
+
+  GetConfigById(configId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.GetConfigById(configId, encryptPayload);
+  }
+
+  GetPages(configId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.GetPagesWithRules(configId, encryptPayload);
+  }
+
+  GetPage(pageId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.GetPageWithRules(pageId, encryptPayload);
+  }
+
+  GetRule(ruleId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.GetRuleWithDetails(ruleId, encryptPayload);
+  }
+
+  SaveConfig(config: any, encryptPayload = false): Observable<any> {
+    return this.apiService.UpdateConfig(config, encryptPayload);
+  }
+
+  SavePage(page: any, encryptPayload = false): Observable<any> {
+    return this.apiService.UpdatePage(page, encryptPayload);
+  }
+
+  SaveRule(rule: any, encryptPayload = false): Observable<any> {
+    return this.apiService.UpdateRule(rule, encryptPayload);
+  }
+
+  DeleteRule(ruleId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.DeleteRule(ruleId, encryptPayload);
+  }
+
+  DeletePage(pageId: string, encryptPayload = false): Observable<any> {
+    return this.apiService.DeletePage(pageId, encryptPayload);
+  }
+ // Mock save (just logs for now)
   saveConfig(projectCode: string, config: GsapConfig): Observable<any> {
     // console.log('Mock save for project:', projectCode, config);
     return of({ success: true });

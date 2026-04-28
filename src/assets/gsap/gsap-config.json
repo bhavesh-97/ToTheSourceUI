@@ -8,250 +8,385 @@
     "registerPlugins": ["ScrollTrigger"],
     "autoInit": true,
     "observeDom": true,
-    "debug": false,
     "meta": {
-      "version": "1.2",
-      "description": "Auto-applied GSAP configuration"
+      "version": "1.0",
+      "description": "Page-specific GSAP configuration"
     },
     "version": 1,
     "status": "active"
   },
 
-  "rules": [
-    {
-      "id": "fadeUp",
-      "selector": ".fade-up",
-      "from": { "opacity": 0, "y": 60 },
-      "to": { "opacity": 1, "y": 0 },
-      "duration": 1,
-      "ease": "power2.out",
-      "stagger": 0.12,
-      "scrollEnabled": true,
-      "trigger": ".fade-up",
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
+  "pages": {
+    "landing": {
+      "rules": [
+        {
+          "id": "landingFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 60 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "stagger": 0.12,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "landingFadeIn",
+          "selector": ".fade-in",
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 },
+          "duration": 0.8,
+          "ease": "power1.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "heroFade",
+          "selector": ".hero-title",
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1.2,
+          "ease": "power2.out",
+          "scrollEnabled": false,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
     },
-    {
-      "id": "fadeIn",
-      "selector": ".fade-in",
-      "from": { "opacity": 0 },
-      "to": { "opacity": 1 },
-      "duration": 0.8,
-      "ease": "power1.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 2,
-      "type": "tween"
-    },
-    {
-      "id": "slideInLeft",
-      "selector": ".slide-in-left",
-      "from": { "opacity": 0, "x": -100 },
-      "to": { "opacity": 1, "x": 0 },
-      "duration": 0.8,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "slideInRight",
-      "selector": ".slide-in-right",
-      "from": { "opacity": 0, "x": 100 },
-      "to": { "opacity": 1, "x": 0 },
-      "duration": 0.8,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "scaleIn",
-      "selector": ".scale-in",
-      "from": { "opacity": 0, "scale": 0.5 },
-      "to": { "opacity": 1, "scale": 1 },
-      "duration": 0.8,
-      "ease": "back.out(1.7)",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "blurIn",
-      "selector": ".blur-in",
-      "from": { "opacity": 0, "filter": "blur(10px)" },
-      "to": { "opacity": 1, "filter": "blur(0px)" },
-      "duration": 1,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "rotateIn",
-      "selector": ".rotate-in",
-      "from": { "opacity": 0, "rotation": -90, "transformOrigin": "center center" },
-      "to": { "opacity": 1, "rotation": 0 },
-      "duration": 0.8,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "flipIn",
-      "selector": ".flip-in",
-      "from": { "opacity": 0, "rotationY": -90, "transformOrigin": "center center", "perspective": 1000 },
-      "to": { "opacity": 1, "rotationY": 0 },
-      "duration": 1,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "bounceIn",
-      "selector": ".bounce-in",
-      "from": { "opacity": 0, "y": -100 },
-      "to": { "opacity": 1, "y": 0 },
-      "duration": 1,
-      "ease": "bounce.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "wobbleIn",
-      "selector": ".wobble-in",
-      "from": { "opacity": 0, "rotation": 0, "transformOrigin": "bottom center" },
-      "to": { "opacity": 1, "rotation": 0 },
-      "duration": 1.5,
-      "ease": "elastic.out(1, 3)",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "staggerCards",
-      "selector": ".stagger-card",
-      "from": { "opacity": 0, "y": 50, "scale": 0.9 },
-      "to": { "opacity": 1, "y": 0, "scale": 1 },
-      "duration": 0.6,
-      "ease": "power2.out",
-      "stagger": 0.15,
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "staggerList",
-      "selector": ".stagger-list",
-      "from": { "opacity": 0, "x": -30 },
-      "to": { "opacity": 1, "x": 0 },
-      "duration": 0.5,
-      "ease": "power2.out",
-      "stagger": 0.08,
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "heroSection",
-      "selector": ".hero-section",
-      "from": { "opacity": 0 },
-      "to": { "opacity": 1 },
-      "duration": 1.2,
-      "ease": "power2.out",
-      "scrollEnabled": false,
-      "status": "published",
-      "priority": 10,
-      "type": "tween"
-    },
-    {
-      "id": "contentReveal",
-      "selector": ".content-reveal",
-      "from": { "opacity": 0, "clipPath": "inset(0 100% 0 0)" },
-      "to": { "opacity": 1, "clipPath": "inset(0 0% 0 0)" },
-      "duration": 1,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "parallaxBg",
-      "selector": ".parallax-bg",
-      "from": { "y": 0 },
-      "to": { "y": -100 },
-      "duration": 1,
-      "ease": "none",
-      "scrollEnabled": true,
-      "trigger": ".parallax-section",
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "pinSection",
-      "selector": ".pinned-section",
-      "scrollEnabled": true,
-      "trigger": ".pinned-section",
-      "status": "published",
-      "priority": 1,
-      "type": "timeline"
-    },
-    {
-      "id": "batchReveal",
-      "selector": ".batch-item",
-      "type": "batch",
-      "status": "published",
-      "priority": 1
-    },
-    {
-      "id": "buttonHover",
-      "selector": ".btn-animate",
-      "from": { "scale": 1 },
-      "to": { "scale": 1.05 },
-      "duration": 0.3,
-      "ease": "power1.out",
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    },
-    {
-      "id": "imageZoom",
-      "selector": ".img-zoom",
-      "from": { "opacity": 0, "scale": 1.2 },
-      "to": { "opacity": 1, "scale": 1 },
-      "duration": 1.2,
-      "ease": "power2.out",
-      "scrollEnabled": true,
-      "status": "published",
-      "priority": 1,
-      "type": "tween"
-    }
-  ],
 
-  "callbacks": [
-    {
-      "name": "onFadeUpComplete",
-      "script": "console.log('Fade up animation complete')"
+    "home": {
+      "rules": [
+        {
+          "id": "homeFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "stagger": 0.1,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "homeContentFade",
+          "selector": ".content-fade",
+          "from": { "opacity": 0, "y": 30 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 0.8,
+          "ease": "power1.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "homeStagger",
+          "selector": ".stagger-item",
+          "from": { "opacity": 0, "y": 20 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 0.5,
+          "ease": "power2.out",
+          "stagger": 0.1,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
     },
-    {
-      "name": "onStaggerComplete",
-      "script": "console.log('Stagger animation complete')"
+
+    "gsap": {
+      "rules": [
+        {
+          "id": "gsapFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 60 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "stagger": 0.1,
+          "scrollEnabled": false,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapSlideLeft",
+          "selector": ".slide-in-left",
+          "from": { "opacity": 0, "x": -100 },
+          "to": { "opacity": 1, "x": 0 },
+          "duration": 0.8,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapSlideRight",
+          "selector": ".slide-in-right",
+          "from": { "opacity": 0, "x": 100 },
+          "to": { "opacity": 1, "x": 0 },
+          "duration": 0.8,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapScaleIn",
+          "selector": ".scale-in",
+          "from": { "opacity": 0, "scale": 0.5 },
+          "to": { "opacity": 1, "scale": 1 },
+          "duration": 0.8,
+          "ease": "back.out(1.7)",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapBlurIn",
+          "selector": ".blur-in",
+          "from": { "opacity": 0, "filter": "blur(10px)" },
+          "to": { "opacity": 1, "filter": "blur(0px)" },
+          "duration": 1,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapRotateIn",
+          "selector": ".rotate-in",
+          "from": { "opacity": 0, "rotation": -90, "transformOrigin": "center center" },
+          "to": { "opacity": 1, "rotation": 0 },
+          "duration": 0.8,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapFlipIn",
+          "selector": ".flip-in",
+          "from": { "opacity": 0, "rotationY": -90, "transformOrigin": "center center", "perspective": 1000 },
+          "to": { "opacity": 1, "rotationY": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapBounceIn",
+          "selector": ".bounce-in",
+          "from": { "opacity": 0, "y": -100 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "bounce.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "gsapStaggerCard",
+          "selector": ".stagger-card",
+          "from": { "opacity": 0, "y": 50, "scale": 0.9 },
+          "to": { "opacity": 1, "y": 0, "scale": 1 },
+          "duration": 0.6,
+          "ease": "power2.out",
+          "stagger": 0.15,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "template": {
+      "rules": [
+        {
+          "id": "templateFadeIn",
+          "selector": ".fade-in",
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 },
+          "duration": 0.8,
+          "ease": "power1.out",
+          "scrollEnabled": false,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "templateSlideUp",
+          "selector": ".slide-up",
+          "from": { "opacity": 0, "y": 30 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 0.6,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "rolemaster": {
+      "rules": [
+        {
+          "id": "roleFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 40 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 0.8,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "roleTableFade",
+          "selector": ".role-table-row",
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 },
+          "duration": 0.5,
+          "ease": "power1.out",
+          "stagger": 0.05,
+          "scrollEnabled": false,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "dashboard": {
+      "rules": [
+        {
+          "id": "dashboardFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 60 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "stagger": 0.12,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "dashboardFadeIn",
+          "selector": ".fade-in",
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 },
+          "duration": 0.8,
+          "ease": "power1.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "dashboardCardAnim",
+          "selector": ".dash-card",
+          "from": { "opacity": 0, "scale": 0.9 },
+          "to": { "opacity": 1, "scale": 1 },
+          "duration": 0.6,
+          "ease": "back.out(1.7)",
+          "stagger": 0.1,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "about": {
+      "rules": [
+        {
+          "id": "aboutFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "aboutReveal",
+          "selector": ".content-reveal",
+          "from": { "opacity": 0, "clipPath": "inset(0 100% 0 0)" },
+          "to": { "opacity": 1, "clipPath": "inset(0 0% 0 0)" },
+          "duration": 1,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "contact": {
+      "rules": [
+        {
+          "id": "contactFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "contactFormAnim",
+          "selector": ".contact-form-input",
+          "from": { "opacity": 0, "x": -30 },
+          "to": { "opacity": 1, "x": 0 },
+          "duration": 0.5,
+          "ease": "power2.out",
+          "stagger": 0.1,
+          "scrollEnabled": false,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
+    },
+
+    "default": {
+      "rules": [
+        {
+          "id": "defaultFadeUp",
+          "selector": ".fade-up",
+          "from": { "opacity": 0, "y": 50 },
+          "to": { "opacity": 1, "y": 0 },
+          "duration": 1,
+          "ease": "power2.out",
+          "stagger": 0.1,
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        },
+        {
+          "id": "defaultFadeIn",
+          "selector": ".fade-in",
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 },
+          "duration": 0.8,
+          "ease": "power1.out",
+          "scrollEnabled": true,
+          "status": "published",
+          "type": "tween"
+        }
+      ],
+      "callbacks": []
     }
-  ]
+  }
 }

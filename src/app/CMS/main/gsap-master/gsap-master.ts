@@ -18,7 +18,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { GsapMasterService } from './gsap-master.service';
-import { GsapCallback, GsapConfig, GsapMedia, GsapRule, GsapSequenceStep, PageConfig, MediaType } from '../../../@core/animations/animationtypes';
+import { GsapCallback, GsapConfig, GsapRule, PageConfig, MediaType } from '../../../@core/animations/animationtypes';
 
 @Component({
   selector: 'app-gsap-master',
@@ -33,7 +33,6 @@ import { GsapCallback, GsapConfig, GsapMedia, GsapRule, GsapSequenceStep, PageCo
 })
 export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewContainer', { static: false }) previewContainer!: ElementRef<HTMLDivElement>;
-  @ViewChild('codePreview') codePreview!: ElementRef<HTMLTextAreaElement>;
   
   private gsapConfigService = inject(GsapMasterService);
   private messageService = inject(MessageService);
@@ -43,13 +42,11 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   pages: PageConfig[] = [];
   selectedPage: PageConfig | null = null;
   newPageTitle = '';
-  projectCode = '';
   config: GsapConfig | null = null;
   configJson = '';
   activeTab = 0;
   showEditDialog = false;
   showAddPageDialog = false;
-  showCodeDialog = false;
   editMode: 'rule' | 'callback' | null = null;
   editingIndex: number | null = null;
   editingRule: GsapRule = {} as GsapRule;
@@ -62,29 +59,17 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     { label: 'Fade Up', value: 'fadeUp' },
     { label: 'Fade In', value: 'fadeIn' },
     { label: 'Slide Left', value: 'slideInLeft' },
-    { label: 'Slide Right', value: 'slideInRight' },
     { label: 'Scale In', value: 'scaleIn' },
-    { label: 'Blur In', value: 'blurIn' },
-    { label: 'Rotate In', value: 'rotateIn' },
-    { label: 'Flip In', value: 'flipIn' },
-    { label: 'Bounce In', value: 'bounceIn' },
-    { label: 'Wobble', value: 'wobbleIn' },
-    { label: 'Batch', value: 'batchReveal' },
     { label: 'Timeline', value: 'timeline' }
   ];
   
   easeOptions = [
-    { label: 'power1.out', value: 'power1.out' },
     { label: 'power2.out', value: 'power2.out' },
+    { label: 'power1.out', value: 'power1.out' },
     { label: 'power3.out', value: 'power3.out' },
-    { label: 'power4.out', value: 'power4.out' },
     { label: 'back.out(1.7)', value: 'back.out(1.7)' },
     { label: 'elastic.out(1, 3)', value: 'elastic.out(1, 3)' },
-    { label: 'bounce.out', value: 'bounce.out' },
-    { label: 'circ.out', value: 'circ.out' },
-    { label: 'expo.out', value: 'expo.out' },
-    { label: 'sine.out', value: 'sine.out' },
-    { label: 'none', value: 'none' }
+    { label: 'bounce.out', value: 'bounce.out' }
   ];
   
   statusOptions = [
@@ -96,24 +81,18 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   constructor() {
     gsap.registerPlugin(ScrollTrigger);
     this.changeSubject.pipe(debounceTime(500), takeUntil(this.destroy$)).subscribe(() => {
-      if (this.selectedPage) {
-        this.config = this.selectedPage.gsapConfig || null;
-        if (this.config) this.applyConfig();
+      if (this.selectedPage && this.config) {
+        this.applyConfig();
       }
     });
   }
 
   ngOnInit() {
-    this.projectCode = 'default';
     this.loadPages();
   }
 
-  ngAfterViewInit() {
-    if (this.selectedPage && this.config) {
-      this.resetPreview();
-      this.applyConfig();
-    }
-    setTimeout(() => this.applyConfig(), 1000);
+  async ngAfterViewInit() {
+    await this.loadConfig();
   }
 
   ngOnDestroy() {
@@ -134,24 +113,29 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadPages() {
-    const pageKeys = ['landing', 'home', 'about', 'contact'];
-    const configs = pageKeys.map(key => ({
+    const pageKeys = ['landing', 'home', 'about', 'contact', 'gsap', 'template', 'rolemaster'];
+    this.pages = pageKeys.map(key => ({
       id: key,
       title: key.charAt(0).toUpperCase() + key.slice(1) + ' Page',
-      description: `${key} page animations`,
-      gsapConfig: this.gsapConfigService.getDefaultConfig()
+      description: `${key} page animations`
     }));
-    this.pages = configs;
-    this.selectPage(this.pages[0]);
+  }
+
+  async loadConfig() {
+    const config = await this.gsapConfigService.getConfigForPage('default').toPromise() || null;
+    this.config = config;
+    this.configJson = this.config ? JSON.stringify(this.config, null, 2) : '';
+    if (this.pages.length > 0) {
+      this.selectPage(this.pages[0]);
+    }
   }
 
   addPage() {
     if (!this.newPageTitle.trim()) return;
     const newPage: PageConfig = {
-      id: 'page-' + Date.now(),
+      id: this.newPageTitle.toLowerCase().replace(/\s+/g, '-'),
       title: this.newPageTitle.trim(),
-      description: `Custom ${this.newPageTitle} page`,
-      gsapConfig: this.gsapConfigService.getDefaultConfig()
+      description: `Custom ${this.newPageTitle} page`
     };
     this.pages.push(newPage);
     this.newPageTitle = '';
@@ -159,10 +143,15 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     this.selectPage(newPage);
   }
 
-selectPage(page: PageConfig) {
+  async selectPage(page: PageConfig) {
     this.selectedPage = page;
-    this.config = page.gsapConfig || null;
+    
+    // Load ONLY this page's config
+    const pageConfig = await this.gsapConfigService.getConfigForPage(page.id).toPromise() || null;
+    page.gsapConfig = pageConfig || undefined;
+    this.config = pageConfig;
     this.configJson = this.config ? JSON.stringify(this.config, null, 2) : '';
+    
     if (this.previewContainer) {
       this.resetPreview();
       this.applyConfig();
@@ -179,22 +168,6 @@ selectPage(page: PageConfig) {
     }
   }
 
-  loadConfig() {
-    if (!this.selectedPage) return;
-    this.gsapConfigService.getConfigs(this.projectCode + '-' + this.selectedPage.id).subscribe({
-      next: (data: GsapConfig) => {
-        if (this.selectedPage) {
-          this.selectedPage.gsapConfig = data;
-        }
-        this.config = data;
-        this.configJson = JSON.stringify(data, null, 2);
-        this.applyConfig();
-        this.messageService.add({ severity: 'success', summary: 'Loaded', detail: 'Config loaded successfully' });
-      },
-      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load config' })
-    });
-  }
-
   onJsonChange(event: any) {
     try {
       const parsed = JSON.parse(event.target.value);
@@ -203,7 +176,7 @@ selectPage(page: PageConfig) {
         this.selectedPage.gsapConfig = this.config || undefined;
       }
       this.changeSubject.next();
-} catch (e) {
+    } catch (e) {
       this.messageService.add({ severity: 'warn', summary: 'Invalid', detail: 'JSON syntax error' });
     }
   }
@@ -213,18 +186,13 @@ selectPage(page: PageConfig) {
     this.changeSubject.next();
   }
 
-  private syncJsonToForms() {
-    if (!this.config) return;
-    this.configJson = JSON.stringify(this.deepClone(this.config), null, 2);
-  }
-
   private syncFormsToJson() {
     if (!this.config) return;
     this.configJson = JSON.stringify(this.deepClone(this.config), null, 2);
   }
 
   applyConfig() {
-    if (!this.config) return;
+    if (!this.config || !this.previewContainer) return;
     this.resetPreview();
     
     gsap.killTweensOf('*');
@@ -237,7 +205,7 @@ selectPage(page: PageConfig) {
     safeConfig.rules.forEach(rule => {
       if (rule.status !== 'published') return;
       
-      const elements = this.previewContainer?.nativeElement?.querySelectorAll(rule.selector);
+      const elements = this.previewContainer.nativeElement.querySelectorAll(rule.selector);
       if (!elements?.length) return;
 
       if (rule.styles) gsap.set(elements, this.deepClone(rule.styles));
@@ -245,25 +213,9 @@ selectPage(page: PageConfig) {
       const from = this.deepClone(rule.from || {});
       const to = this.deepClone(rule.to || {});
       const stagger = rule.stagger?.each || 0;
-      const scrollTrigger = (rule.scrollTrigger as any)?.enabled ? {
-        trigger: (rule.scrollTrigger as any)?.trigger || rule.selector,
-        start: (rule.scrollTrigger as any)?.start || 'top 85%',
-        end: (rule.scrollTrigger as any)?.end || 'bottom top',
-        scrub: (rule.scrollTrigger as any)?.scrub || false
-      } : undefined;
 
       if (rule.type === 'tween') {
-        gsap.fromTo(elements, from, { ...to, stagger, scrollTrigger });
-      } else if (rule.type === 'timeline') {
-        const tl = gsap.timeline({ scrollTrigger });
-        if (rule.sequence) {
-          rule.sequence.sort((a, b) => a.order - b.order).forEach(step => {
-            const stepEls = this.previewContainer?.nativeElement?.querySelectorAll(step.selector);
-            if (stepEls?.length) {
-              tl.fromTo(stepEls, step.from || {}, step.to || {}, '<0.1');
-            }
-          });
-        }
+        gsap.fromTo(elements, from, { ...to, stagger });
       }
     });
 
@@ -273,15 +225,10 @@ selectPage(page: PageConfig) {
 
   saveConfig() {
     if (!this.selectedPage || !this.config) return;
-    this.gsapConfigService.saveConfig(this.projectCode + '-' + this.selectedPage.id, this.config).subscribe({
-      next: () => {
-        if (this.selectedPage) {
-          this.selectedPage.gsapConfig = this.config || undefined;
-        }
-        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Config saved successfully' });
-      },
-      error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save config' })
-    });
+    if (this.selectedPage) {
+      this.selectedPage.gsapConfig = this.config || undefined;
+    }
+    this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Config saved successfully' });
   }
 
   addRule() {
@@ -408,10 +355,6 @@ selectPage(page: PageConfig) {
     gsap.globalTimeline.play();
   }
 
-  refreshAnimations() {
-    this.applyConfig();
-  }
-
   resetPreview() {
     if (!this.config || !this.previewContainer?.nativeElement) return;
     
@@ -419,26 +362,23 @@ selectPage(page: PageConfig) {
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
     const selectorMap = new Map<string, Record<string, string>>();
-    const collectSelectors = (rules: GsapRule[]) => {
-      rules.forEach(rule => {
-        if (rule.selector && !selectorMap.has(rule.selector)) {
-          selectorMap.set(rule.selector, rule.styles || {});
+    this.config.rules.forEach(rule => {
+      if (rule.selector && !selectorMap.has(rule.selector)) {
+        selectorMap.set(rule.selector, rule.styles || {});
+      }
+      rule.sequence?.forEach(step => {
+        if (step.selector && !selectorMap.has(step.selector)) {
+          selectorMap.set(step.selector, step.styles || {});
         }
-        rule.sequence?.forEach(step => {
-          if (step.selector && !selectorMap.has(step.selector)) {
-            selectorMap.set(step.selector, step.styles || {});
-          }
-        });
       });
-    };
-    collectSelectors(this.config.rules);
+    });
 
     let html = '';
     selectorMap.forEach((styles, selector) => {
       const styleStr = Object.entries(styles).map(([k, v]) => `${k}: ${v}`).join('; ');
       const cleanSelector = selector.replace(/^[.#]/, '');
       html += `<div class="${cleanSelector}" style="padding: 20px; margin: 10px; ${styleStr}; border: 1px solid #ccc; background: #f5f5f5; border-radius: 8px;">
-        Preview: ${selector} - Add content here to see animation
+        Preview: ${selector}
       </div>`;
     });
 
@@ -448,47 +388,4 @@ selectPage(page: PageConfig) {
 
     this.previewContainer.nativeElement.innerHTML = `<div style="height: 100%; overflow-y: auto; padding: 10px;">${html}</div>`;
   }
-
-  exportJson() {
-    if (this.codePreview?.nativeElement) {
-      this.codePreview.nativeElement.select();
-      document.execCommand('copy');
-      this.messageService.add({ severity: 'success', summary: 'Copied', detail: 'JSON copied to clipboard' });
-    }
-  }
- getStatusSeverity(status: string): TagSeverity {
-    switch (status) {
-      case 'published':
-        return 'success';
-
-      case 'draft':
-        return 'warn';
-
-      case 'archived':
-        return 'secondary';
-
-      default:
-        return 'info';
-    }
-  }
-  importJson() {
-    try {
-      const parsed = JSON.parse(this.configJson);
-      this.config = this.deepClone(parsed);
-      if (this.selectedPage) {
-        this.selectedPage.gsapConfig = this.config || undefined;
-      }
-      this.applyConfig();
-      this.messageService.add({ severity: 'success', summary: 'Imported', detail: 'JSON imported successfully' });
-    } catch (e) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Invalid JSON format' });
-    }
-  }
 }
-type TagSeverity =
-  | 'success'
-  | 'secondary'
-  | 'info'
-  | 'warn'
-  | 'danger'
-  | 'contrast';
