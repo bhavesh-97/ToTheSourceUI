@@ -39,7 +39,9 @@ export interface GsapCallback {
 }
 
 export interface GsapGlobal {
-  defaults: { duration: number; ease: string };
+  defaults: {
+stagger: any; duration: number; ease: string 
+};
   registerPlugins: string[];
   autoInit: boolean;
   meta: { version: string; description: string };

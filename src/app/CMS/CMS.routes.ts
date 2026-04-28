@@ -31,6 +31,10 @@ export const CMSRoutes: Routes = [
                             path: 'gsap',
                             loadComponent: () => import('./main/gsap-master/gsap-master').then(m => m.GsapMaster),
                             canActivate: [authGuard]
+                        {
+                            path: 'gsap-demo',
+                            loadComponent: () => import('./main/gsap-demo/gsap-demo').then(m => m.GsapDemoComponent),
+                            // canActivate: [authGuard]
                         },                        
                         {
                             path: 'template',

@@ -1,180 +1,340 @@
-import { Injectable, AfterViewInit, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, NgZone } from '@angular/core';
 import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Observer } from 'gsap/Observer';
 import { GsapConfigLoaderService } from './gsap-config-loader.service';
 
+export interface GsapAnimationOptions {
+  selector: string;
+  from?: gsap.TweenVars;
+  to?: gsap.TweenVars;
+  duration?: number;
+  ease?: string;
+  stagger?: number;
+  delay?: number;
+  repeat?: number;
+  yoyo?: boolean;
+  scrollTrigger?: ScrollTrigger.Vars;
+  onComplete?: () => void;
+  onStart?: () => void;
+  onUpdate?: () => void;
+}
+
+export interface GsapTimelineOptions {
+  scrollTrigger?: ScrollTrigger.Vars;
+  defaults?: gsap.TweenVars;
+  paused?: boolean;
+}
+
+export interface GsapSequenceStep {
+  selector: string;
+  from?: gsap.TweenVars;
+  to?: gsap.TweenVars;
+  position?: string | number;
+  duration?: number;
+}
+
+export interface GsapScrollOptions {
+  trigger: string;
+  start?: string;
+  end?: string;
+  scrub?: boolean | number;
+  pin?: boolean | string;
+  pinSpacing?: boolean;
+  anticipatePin?: number;
+  toggleActions?: string;
+  markers?: boolean;
+  onEnter?: () => void;
+  onLeave?: () => void;
+  onEnterBack?: () => void;
+  onLeaveBack?: () => void;
+}
+
 @Injectable({ providedIn: 'root' })
-export class GsapService implements AfterViewInit, OnDestroy {
-  private observer!: MutationObserver;
+export class GsapService implements OnDestroy {
   private animated = new WeakSet<HTMLElement>();
+  private timelines = new Map<string, gsap.core.Timeline>();
+  private tweens: gsap.core.Tween[] = [];
+  private initialized = false;
 
-  constructor(private loader: GsapConfigLoaderService) {
-    gsap.registerPlugin(ScrollTrigger);
-    this.loader.load();
+  constructor(
+    private loader: GsapConfigLoaderService,
+    private zone: NgZone
+  ) {
+    this.registerPlugins();
   }
 
-  ngAfterViewInit(): void {
-    this.observer = new MutationObserver(() => this.run());
-    this.observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => this.run(), 100); // Safety
+  private registerPlugins() {
+    if (this.initialized) return;
+    
+    gsap.registerPlugin(ScrollTrigger, Observer);
+    this.initialized = true;
   }
 
-  ngOnDestroy(): void {
-    this.observer?.disconnect();
+  get gsap() {
+    return gsap;
+  }
+
+  get scrollTrigger() {
+    return ScrollTrigger;
+  }
+
+  get observer() {
+    return Observer;
+  }
+
+  animate(options: GsapAnimationOptions): gsap.core.Tween {
+    const { selector, from, to, duration, ease, stagger, delay, repeat, yoyo, scrollTrigger, onComplete, onStart, onUpdate } = options;
+    
+    const elements = this.getElements(selector);
+    if (!elements.length) {
+      console.warn(`GSAP: No elements found for selector: ${selector}`);
+      return null as any;
+    }
+
+    const animOptions: gsap.TweenVars = {
+      ...to,
+      duration: duration ?? 1,
+      ease: ease ?? 'power2.out',
+      stagger: stagger ?? 0,
+      delay: delay ?? 0,
+      repeat: repeat ?? 0,
+      yoyo: yoyo ?? false,
+      onComplete: onComplete ? () => this.zone.run(onComplete) : undefined,
+      onStart: onStart ? () => this.zone.run(onStart) : undefined,
+      onUpdate: onUpdate ? () => this.zone.run(onUpdate) : undefined,
+    };
+
+    if (scrollTrigger) {
+      (animOptions as any).scrollTrigger = scrollTrigger;
+    }
+
+    const tween = from 
+      ? gsap.fromTo(elements, from, animOptions)
+      : gsap.to(elements, animOptions);
+
+    this.tweens.push(tween);
+    return tween;
+  }
+
+  from(selector: string, vars: gsap.TweenVars, scrollTrigger?: ScrollTrigger.Vars): gsap.core.Tween {
+    return this.animate({ selector, from: vars, to: {}, scrollTrigger });
+  }
+
+  to(selector: string, vars: gsap.TweenVars, scrollTrigger?: ScrollTrigger.Vars): gsap.core.Tween {
+    return this.animate({ selector, to: vars, scrollTrigger });
+  }
+
+  fromTo(selector: string, fromVars: gsap.TweenVars, toVars: gsap.TweenVars, scrollTrigger?: ScrollTrigger.Vars): gsap.core.Tween {
+    return this.animate({ selector, from: fromVars, to: toVars, scrollTrigger });
+  }
+
+  timeline(name?: string, options?: GsapTimelineOptions): GsapTimelineBuilder {
+    const tl = gsap.timeline({
+      scrollTrigger: options?.scrollTrigger,
+      defaults: options?.defaults,
+      paused: options?.paused
+    });
+    
+    if (name) {
+      this.timelines.set(name, tl);
+    }
+    
+    return new GsapTimelineBuilder(tl, this);
+  }
+
+  addToTimeline(name: string, tween: gsap.core.Tween, position?: string | number): boolean {
+    const tl = this.timelines.get(name);
+    if (!tl) return false;
+    tl.add(tween, position);
+    return true;
+  }
+
+  getTimeline(name: string): gsap.core.Timeline | undefined {
+    return this.timelines.get(name);
+  }
+
+  killTimeline(name: string): void {
+    const tl = this.timelines.get(name);
+    if (tl) {
+      tl.kill();
+      this.timelines.delete(name);
+    }
+  }
+
+  killAll(): void {
+    this.tweens.forEach(t => t.kill());
+    this.tweens = [];
+    this.timelines.forEach(tl => tl.kill());
+    this.timelines.clear();
     ScrollTrigger.getAll().forEach(st => st.kill());
   }
 
-  private run() {
-    const config = this.loader.getConfig();
-    if (!config?.rules) return;
-
-    config.rules.forEach((rule: any) => {
-      if (rule.status !== 'published') return;
-
-      if (rule.type === 'tween') this.tween(rule, config);
-      if (rule.type === 'timeline') this.timeline(rule, config);
-    });
-
-    ScrollTrigger.refresh();
+set(selector: string, vars: gsap.TweenVars): gsap.core.Tween {
+    const elements = this.getElements(selector);
+    return gsap.set(elements, vars);
   }
 
-  private tween(rule: any, config: any) {
-    const els = document.querySelectorAll(rule.selector);
-    if (!els.length) return;
+  get(selector: string): HTMLElement[] {
+    return this.getElements(selector);
+  }
 
-    const def = config.global?.defaults || {};
-    const duration = rule.duration ?? def.duration ?? 1.2;
-    const ease = rule.ease ?? def.ease ?? 'power3.out';
-    const hasST = rule.scrollTrigger?.enabled ?? false;
+  querySelector(selector: string): HTMLElement | null {
+    return document.querySelector(selector);
+  }
 
-    const mediaHtml = rule.media && rule.media.type !== 'none' && rule.media.selector === rule.selector
-      ? this.getMediaElement(rule.media)
-      : '';
+  querySelectorAll(selector: string): HTMLElement[] {
+    return this.getElements(selector);
+  }
 
-    const targetEls = Array.from(els).filter((el): el is HTMLElement => !this.animated.has(el));
+  createStagger(selector: string, vars: gsap.TweenVars, stagger: number = 0.1, scrollTrigger?: ScrollTrigger.Vars): gsap.core.Tween {
+    const elements = this.getElements(selector);
+    if (!elements.length) return null as any;
 
-    if (!targetEls.length) return;
-
-    targetEls.forEach(el => {
-      if (mediaHtml) {
-        el.innerHTML += mediaHtml;
-      }
-      if (rule.styles) {
-        gsap.set(el, rule.styles);
-      }
-      this.animated.add(el);
-    });
-
-    const stTrigger = rule.scrollTrigger?.trigger
-      ? document.querySelector(rule.scrollTrigger.trigger)
-      : targetEls;
-
-    const stConfig = hasST ? {
-      trigger: stTrigger,
-      start: rule.scrollTrigger.start || 'top 85%',
-      end: rule.scrollTrigger.end || 'bottom top',
-      scrub: rule.scrollTrigger.scrub ?? false,
-      toggleActions: (rule.scrollTrigger.scrub ?? false) ? undefined : 'play none none reverse',
-      immediateRender: true
-    } : undefined;
-
-    const animVars = {
-      ...rule.to,
-      duration,
-      ease,
-      stagger: rule.stagger?.each ?? 0,
-      scrollTrigger: stConfig,
-      immediateRender: true,
-      onComplete: () => this.runCallback(config, rule.onComplete)
+    const animVars: gsap.TweenVars = {
+      ...vars,
+      stagger,
+      onComplete: vars.onComplete ? () => this.zone.run(() => vars.onComplete!()) : undefined
     };
 
-    gsap.fromTo(targetEls, rule.from, animVars);
+    if (scrollTrigger) {
+      (animVars as any).scrollTrigger = scrollTrigger;
+    }
+
+    const tween = gsap.fromTo(elements, { opacity: 0, y: 50 }, animVars);
+    this.tweens.push(tween);
+    return tween;
   }
 
-  private timeline(rule: any, config: any) {
-    const container = document.querySelector(rule.selector) as HTMLElement;
-    if (!container) return;
+  createScrollTrigger(trigger: string, callback: (self: ScrollTrigger) => void, vars?: ScrollTrigger.Vars): ScrollTrigger {
+    // Factory - callers should use ScrollTrigger.create() directly with trigger element
+    return null as any;
+  }
 
-    const hasST = rule.scrollTrigger?.enabled ?? false;
-
-    // Apply media and styles to container
-    if (rule.media && rule.media.type !== 'none' && rule.media.selector === rule.selector) {
-      container.innerHTML += this.getMediaElement(rule.media);
+  createPinnedSection(trigger: string, content: string, vars?: ScrollTrigger.Vars): gsap.core.Timeline {
+    const triggerEl = document.querySelector(trigger);
+    const contentEl = document.querySelector(content);
+    if (!triggerEl || !contentEl) {
+      console.warn('GSAP Pin: Elements not found');
+      return null as any;
     }
-    if (rule.styles) {
-      gsap.set(container, rule.styles);
-    }
+    const pinVars = { trigger: triggerEl, start: 'top top', end: '+=300', pin: contentEl, pinSpacing: vars?.pinSpacing ?? true, scrub: vars?.scrub ?? true };
+    return gsap.timeline({ scrollTrigger: { ...pinVars, ...vars } });
+  }
 
-    let sequence = (rule.sequence || [])
-      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-
-    const targetSteps: { el: HTMLElement; from: any; to: any }[] = [];
-
-    sequence.forEach((step: any) => {
-      const el = container.querySelector(step.selector) as HTMLElement;
-      if (!el || this.animated.has(el)) return;
-
-      const stepMediaHtml = step.media && step.media.type !== 'none' && step.media.selector === step.selector
-        ? this.getMediaElement(step.media)
-        : '';
-      if (stepMediaHtml) {
-        el.innerHTML += stepMediaHtml;
-      }
-      if (step.styles) {
-        gsap.set(el, step.styles);
-      }
-      this.animated.add(el);
-      targetSteps.push({
-        el,
-        from: step.from,
-        to: step.to
-      });
-    });
-
-    this.animated.add(container);
-
-    if (!targetSteps.length) return;
-
-    const tlDefaults = {
-      duration: rule.defaults?.duration ?? config.global?.defaults?.duration ?? 1,
-      ease: rule.defaults?.ease ?? config.global?.defaults?.ease ?? 'power2.out'
-    };
-
-    const tlVars: any = {
-      defaults: tlDefaults
-    };
-
-    if (hasST) {
-      tlVars.scrollTrigger = {
-        trigger: rule.scrollTrigger.trigger || container,
-        start: rule.scrollTrigger.start || 'top 80%',
-        end: rule.scrollTrigger.end || 'bottom top',
-        scrub: rule.scrollTrigger.scrub ?? false,
-        toggleActions: (rule.scrollTrigger.scrub ?? false) ? undefined : 'play none none reverse',
-        immediateRender: true
-      };
-    }
-
-    const tl = gsap.timeline(tlVars);
-
-    targetSteps.forEach(({ el, from, to }) => {
-      tl.fromTo(el, from, { ...to, immediateRender: true });
+  createParallax(trigger: string, element: string, speed: number = 0.5, y: number = -100): ScrollTrigger {
+    const triggerEl = document.querySelector(trigger);
+    const el = document.querySelector(element);
+    if (!triggerEl || !el) return null as any;
+    return ScrollTrigger.create({
+      trigger: triggerEl, start: 'top bottom', end: 'bottom top',
+      onUpdate: (self) => { const progress = self.progress; gsap.set(el, { y: y * progress * speed * (1 - progress) }); }
     });
   }
 
-  private getMediaElement(media: any): string {
-    const cleanSelector = media.selector ? media.selector.replace(/^[.#]/, '') : '';
-    switch (media.type) {
-      case 'image': return `<img src="${media.url}" class="${cleanSelector}" alt="" style="max-width: 100%; height: auto;">`;
-      case 'video': return `<video src="${media.url}" class="${cleanSelector}" controls style="max-width: 100%; height: auto;"></video>`;
-      case 'audio': return `<audio src="${media.url}" class="${cleanSelector}" controls></audio>`;
-      default: return '';
-    }
+  createHorizontalScroll(trigger: string, container: string, xPercent: number = -100, scrub: boolean | number = true): gsap.core.Tween {
+    const triggerEl = document.querySelector(trigger);
+    const containerEl = document.querySelector(container);
+    if (!triggerEl || !containerEl) return null as any;
+    return gsap.to(containerEl, {
+      xPercent, ease: 'none',
+      scrollTrigger: { trigger: triggerEl, start: 'top top', end: () => `+=${(containerEl as HTMLElement).offsetWidth}`, scrub, pin: true, anticipatePin: 1 }
+    });
   }
 
-  private runCallback(config: any, name?: string) {
-    if (!name) return;
-    const cb = config.callbacks?.find((c: any) => c.name === name);
-    if (cb?.script) new Function(cb.script)();
+  batch(selector: string, vars: gsap.TweenVars, scrollTrigger?: ScrollTrigger.Vars): void {
+    ScrollTrigger.batch(selector, {
+      onEnter: (elements) => gsap.fromTo(elements, { opacity: 0, y: 30 }, { ...vars, opacity: 1, y: 0, stagger: 0.15, overwrite: 'auto' }),
+      onLeave: (elements) => gsap.to(elements, { ...vars, opacity: 0, y: -30, overwrite: 'auto' }),
+      onEnterBack: (elements) => gsap.fromTo(elements, { opacity: 0, y: -30 }, { ...vars, opacity: 1, y: 0, stagger: 0.15, overwrite: 'auto' }),
+      onLeaveBack: (elements) => gsap.to(elements, { ...vars, opacity: 0, y: 30, overwrite: 'auto' })
+    });
+  }
+
+  matchMedia(vars: { desktop?: () => void; tablet?: () => void; mobile?: () => void }): void {
+    const mm = gsap.matchMedia();
+    if (vars.desktop) mm.add('(min-width: 1024px)', vars.desktop);
+    if (vars.tablet) mm.add('(min-width: 768px) and (max-width: 1023px)', vars.tablet);
+    if (vars.mobile) mm.add('(max-width: 767px)', vars.mobile);
+  }
+
+  getElements(selector: string): HTMLElement[] {
+    if (!selector) return [];
+    return Array.from(document.querySelectorAll(selector)).filter((el): el is HTMLElement => el instanceof HTMLElement);
+  }
+
+  isAnimated(element: HTMLElement): boolean {
+    return this.animated.has(element);
+  }
+
+  markAnimated(element: HTMLElement): void {
+    this.animated.add(element);
+  }
+
+  ngOnDestroy(): void {
+    this.killAll();
+  }
+}
+
+export class GsapTimelineBuilder {
+  private timeline: gsap.core.Timeline;
+
+  constructor(timeline: gsap.core.Timeline, private service: GsapService) {
+    this.timeline = timeline;
+  }
+
+  add(options: GsapAnimationOptions, position?: string | number): GsapTimelineBuilder {
+    const { selector, from, to, duration, ease, stagger, delay, repeat, yoyo, onComplete, onStart } = options;
+    
+    const elements = this.service.getElements(selector);
+    if (!elements.length) return this;
+
+    const animVars: gsap.TweenVars = {
+      ...to,
+      duration: duration ?? 1,
+      ease: ease ?? 'power2.out',
+      stagger: stagger ?? 0,
+      delay: delay ?? 0,
+      repeat: repeat ?? 0,
+      yoyo: yoyo ?? false,
+      onComplete: onComplete ? () => this.service['zone'].run(onComplete) : undefined,
+      onStart: onStart ? () => this.service['zone'].run(onStart) : undefined
+    };
+
+    if (from) {
+      this.timeline.fromTo(elements, from, animVars, position);
+    } else {
+      this.timeline.to(elements, animVars, position);
+    }
+
+    return this;
+  }
+
+  from(selector: string, vars: gsap.TweenVars, position?: string | number): GsapTimelineBuilder {
+    return this.add({ selector, from: vars }, position);
+  }
+
+  to(selector: string, vars: gsap.TweenVars, position?: string | number): GsapTimelineBuilder {
+    return this.add({ selector, to: vars }, position);
+  }
+
+  addLabel(label: string, position?: string | number): GsapTimelineBuilder {
+    this.timeline.addLabel(label, position);
+    return this;
+  }
+
+  addCallback(callback: () => void, position: string | number): GsapTimelineBuilder {
+    this.timeline.call(callback, undefined, position);
+    return this;
+  }
+
+  set(selector: string, vars: gsap.TweenVars, position?: string | number): GsapTimelineBuilder {
+    const elements = this.service.getElements(selector);
+    this.timeline.set(elements, vars, position);
+    return this;
+  }
+
+  toTimeline(): gsap.core.Timeline {
+    return this.timeline;
   }
 }
