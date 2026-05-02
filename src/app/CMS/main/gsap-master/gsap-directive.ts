@@ -1,5 +1,5 @@
 import { Directive, ElementRef, Input, OnInit, OnDestroy, inject } from '@angular/core';
-import { GsapAutoService } from '../../../services/gsap-auto.service';
+// import { GsapAutoService } from '../../../services/gsap-auto.service';
 
 @Directive({
   selector: '[gsapAnimate]',
@@ -7,7 +7,7 @@ import { GsapAutoService } from '../../../services/gsap-auto.service';
 })
 export class GsapAnimateDirective implements OnInit, OnDestroy {
   private el = inject(ElementRef);
-  private gsap = inject(GsapAutoService);
+  // private gsap = inject(GsapAutoService);
 
   @Input('gsapAnimate') animationType = 'fadeUp';
   @Input() gsapSelector?: string;
@@ -19,7 +19,7 @@ export class GsapAnimateDirective implements OnInit, OnDestroy {
     setTimeout(() => {
       const selector = this.gsapSelector || this.el.nativeElement.className?.split(' ')[0] || '';
       if (selector) {
-        this.gsap.applyToElement(`.${selector}`, this.animationType);
+        // this.gsap.applyToElement(`.${selector}`, this.animationType);
       }
     }, 500);
   }
@@ -32,13 +32,13 @@ export class GsapAnimateDirective implements OnInit, OnDestroy {
   standalone: true
 })
 export class GsapAutoDirective implements OnInit, OnDestroy {
-  private gsap = inject(GsapAutoService);
+  // private gsap = inject(GsapAutoService);
 
   ngOnInit() {
-    this.gsap.startAutoApply();
+    // this.gsap.startAutoApply();
   }
 
   ngOnDestroy() {
-    this.gsap.stopAutoApply();
+    // this.gsap.stopAutoApply();
   }
 }

@@ -6,7 +6,6 @@ import { AsyncPipe } from '@angular/common';
 import { AnalyticsService, SeoService } from './@core/utils';
 import { NbSidebarService } from '@nebular/theme';
 import { filter } from 'rxjs';
-import { GsapService } from './services/gsap.service';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet,ButtonModule,AsyncPipe],
@@ -23,7 +22,6 @@ export class App implements OnInit{
   private analytics = inject(AnalyticsService);
   private seoService = inject(SeoService);
   // private gsapService = inject(GsapService);
-  constructor(private gsap: GsapService) {}
   ngOnInit(): void {
     // Call setFavicon on initialization
     this.setFavicon('../assets/images/product/Tothesourceicon.png','64x64');
@@ -40,7 +38,7 @@ export class App implements OnInit{
   ngAfterViewInit() {
     this.cdr.detectChanges();
     // console.log('AppComponent: ngAfterViewInit fired → GSAP will start now');
-    (this.gsap as any).run?.();
+    
   }
  setFavicon(iconUrl: string, size: string = '32x32') {
   let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");

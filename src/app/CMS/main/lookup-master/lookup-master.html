@@ -1,0 +1,68 @@
+<div class="lookup-container">
+  <div class="header">
+    <h1>Lookup Master</h1>
+    <p-select
+      [options]="codes"
+      [(ngModel)]="selectedCode"
+      (onChange)="onCodeChange()"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select Lookup Type">
+    </p-select>
+  </div>
+
+  <p-table [value]="filteredLookups()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Code</th>
+        <th>Description</th>
+        <th>Value</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-lookup>
+      <tr>
+        <td>{{ lookup.lookupID }}</td>
+        <td><code>{{ lookup.code }}</code></td>
+        <td>{{ lookup.desc }}</td>
+        <td>{{ lookup.val }}</td>
+        <td>
+          <p-tag [value]="lookup.isActive ? 'Active' : 'Inactive'" [severity]="getSeverity(lookup.isActive)"></p-tag>
+        </td>
+        <td>
+          <p-button icon="pi pi-pencil" [text]="true" (onClick)="openDialog(false, lookup)"></p-button>
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="deleteLookup(lookup)"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-button label="Add New" icon="pi pi-plus" (onClick)="openDialog(true)"></p-button>
+
+  <p-dialog header="{{ isNew ? 'Add Lookup' : 'Edit Lookup' }}" [(visible)]="dialogVisible" [modal]="true" [style]="{width: '400px'}">
+    <div class="form-field">
+      <label>Code</label>
+      <input pInputText [(ngModel)]="editingLookup.code" [disabled]="!isNew" />
+    </div>
+    <div class="form-field">
+      <label>Description</label>
+      <input pInputText [(ngModel)]="editingLookup.desc" />
+    </div>
+    <div class="form-field">
+      <label>Value</label>
+      <input pInputText type="number" [(ngModel)]="editingLookup.val" />
+    </div>
+    <div class="form-field">
+      <label>Active</label>
+      <input pInputText [(ngModel)]="editingLookup.isActive" />
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" [text]="true" (onClick)="dialogVisible = false"></p-button>
+      <p-button label="Save" (onClick)="save()"></p-button>
+    </ng-template>
+  </p-dialog>
+</div>
+
+<p-toast></p-toast>

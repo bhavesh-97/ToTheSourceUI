@@ -4,7 +4,6 @@ import { App } from './app/app';
 import { environment } from './environments/environment';
 import { enableProdMode } from '@angular/core';
 import "./polyfills";
-import { GsapService } from './app/services/gsap.service';
 
 if (environment.production) {
   enableProdMode();

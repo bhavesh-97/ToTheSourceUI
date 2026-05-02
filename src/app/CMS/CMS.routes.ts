@@ -62,6 +62,11 @@ export const CMSRoutes: Routes = [
                             loadComponent: () => import('./main/menu-rights-master/menu-rights-master').then(m => m.MenuRightsMaster),
                             canActivate: [authGuard]
                         },
+                        {
+                            path: 'lookupmaster',
+                            loadComponent: () => import('./main/lookup-master/lookup-master').then(m => m.LookupMaster),
+                            canActivate: [authGuard]
+                        },
                       ],
           },
 ];
