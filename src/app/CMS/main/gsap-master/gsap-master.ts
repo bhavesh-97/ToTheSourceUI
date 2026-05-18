@@ -759,6 +759,16 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private validateAll(): { isValid: boolean; message: string } {
+    const globalValidation = this.validateGlobalDefaults();
+    if (!globalValidation.isValid) {
+      return globalValidation;
+    }
+
+    const pluginsValidation = this.validatePlugins();
+    if (!pluginsValidation.isValid) {
+      return pluginsValidation;
+    }
+
     const rulesValidation = this.validateRules();
     if (!rulesValidation.isValid) {
       return rulesValidation;
@@ -767,6 +777,39 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     const callbacksValidation = this.validateCallbacks();
     if (!callbacksValidation.isValid) {
       return callbacksValidation;
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateGlobalDefaults(): { isValid: boolean; message: string } {
+    const duration = this.pageForm.get('duration')?.value;
+    const stagger = this.pageForm.get('stagger')?.value;
+    const ease = this.pageForm.get('ease')?.value;
+
+    if (duration === undefined || duration === null || duration === '') {
+      return { isValid: false, message: 'Duration is required' };
+    }
+    if (duration < 0) {
+      return { isValid: false, message: 'Duration must be greater than or equal to 0' };
+    }
+
+    if (stagger !== undefined && stagger !== null && stagger !== '' && stagger < 0) {
+      return { isValid: false, message: 'Stagger must be greater than or equal to 0' };
+    }
+
+    if (!ease || ease.trim() === '') {
+      return { isValid: false, message: 'Ease is required' };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validatePlugins(): { isValid: boolean; message: string } {
+    const pluginNames = this.pageForm.get('registerPlugins')?.value?.filter((p: any) => p);
+    
+    if (!pluginNames || pluginNames.length === 0) {
+      return { isValid: false, message: 'Please select at least one plugin' };
     }
 
     return { isValid: true, message: '' };
