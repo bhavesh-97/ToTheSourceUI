@@ -1,6 +1,6 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, inject, OnInit, OnDestroy, QueryList, ViewChildren, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -25,14 +25,17 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
 import { NotificationService } from '../../../services/notification.service';
 import { IconField } from "primeng/iconfield";
 import { InputIcon } from "primeng/inputicon";
-import { PageConfig, GsapConfig, GsapRule, GsapCallback, GsapMedia, GsapTimelineStep, Severity, MGsapPage } from './gsap-interface';
+import { PageConfig, GsapConfig, GsapRule, GsapTimelineStep, Severity, MGsapPage, SaveGsapCallback, SaveGsapConfigRequest, SaveGsapGlobalDefaults, SaveGsapPlugin, SaveGsapRule } from './gsap-interface';
 import { LookupService } from '../../../services/lookup.service';
+import { FormUtils } from '../../../shared/utilities/form-utils';
+import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
+
 
 @Component({
   selector: 'app-gsap-master',
   standalone: true,
-imports: [
-    CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, CheckboxModule, DialogModule,
+  imports: [
+    CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TableModule, ButtonModule, CheckboxModule, DialogModule,
     InputTextModule, SelectModule, MultiSelectModule, TextareaModule, TooltipModule, ToastModule, TabsModule, TagModule,
     IconField,
     InputIcon
@@ -41,18 +44,19 @@ imports: [
   styleUrl: './gsap-master.css',
   providers: [MessageService]
 })
-export class GsapMaster implements OnInit, OnDestroy {
+export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewContainer', { static: false }) previewContainer!: ElementRef<HTMLDivElement>;
+  @ViewChildren('inputField') inputElements!: QueryList<ElementRef>;
+  private renderer = inject(Renderer2);
   private gsapConfigService = inject(GsapMasterService);
   private lookupService = inject(LookupService);
-  private messageService = inject(MessageService);
   private NotificationService = inject(NotificationService);
-  private http = inject(HttpClient);
+  private fb = inject(FormBuilder);
+  private FormUtils = inject(FormUtils);
   private changeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
   pages: PageConfig[] = [];
   selectedPage: any | null = null;
-  newPageTitle = '';
   config: GsapConfig = this.getDefaultGsapConfig();
   configJson = '';
   activeTab = 0;
@@ -65,36 +69,157 @@ export class GsapMaster implements OnInit, OnDestroy {
   editingRuleToJson = '';
   editingRuleStylesJson = '{}';
   editingTimelineSteps: GsapTimelineStep[] = [];
-  editingCallback: GsapCallback = { eventName: '', handlerName: '' };
+  editingCallback: SaveGsapCallback = new SaveGsapCallback();
 
   animationTypes: { label: string; value: string }[] = [];
   easeOptions: { label: string; value: string }[] = [];
   statusOptions: { label: string; value: string }[] = [];
   pluginOptions: { label: string; value: string }[] = [];
   loading: boolean = false;
+  saving: boolean = false;
+
+  pageForm!: FormGroup;
+  ruleForm!: FormGroup;
+  callbackForm!: FormGroup;
+  timelineStepForms: FormGroup[] = [];
+  timelineStepData: { label: string; selector: string; duration: number; ease: string; delay: number }[] = [];
+  defaultMap: Record<string, string> = { '0': 'Published', 'published': 'Published', '1': 'Draft','draft': 'Draft', '2': 'Archived','archived': 'Archived' };
+  private pageFormFields: FormFieldConfig[] = [
+    { name: 'duration', isMandatory: true, min: 0, validationMessage: 'Duration is required and must be >= 0', events: [] },
+    { name: 'ease', isMandatory: true, validationMessage: 'Please select an ease option', events: [] },
+    { name: 'stagger', isMandatory: false, min: 0, validationMessage: 'Stagger must be >= 0', events: [] },
+    { name: 'registerPlugins', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'autoInit', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'newPageTitle', isMandatory: false, validationMessage: 'Page title is required', events: [] },
+  ];
+
+  private ruleFormFields: FormFieldConfig[] = [
+    { name: 'label', isMandatory: true, validationMessage: 'Label is required', events: [] },
+    { name: 'type', isMandatory: true, validationMessage: 'Type is required', events: [] },
+    { name: 'status', isMandatory: true, validationMessage: 'Status is required', events: [] },
+    { name: 'selector', isMandatory: true, validationMessage: 'Selector is required', events: [] },
+    { name: 'duration', isMandatory: false, min: 0, validationMessage: 'Duration must be >= 0', events: [] },
+    { name: 'ease', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'stagger', isMandatory: false, min: 0, validationMessage: 'Stagger must be >= 0', events: [] },
+    { name: 'delay', isMandatory: false, min: 0, validationMessage: 'Delay must be >= 0', events: [] },
+    { name: 'editingRuleStylesJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
+    { name: 'editingRuleFromJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
+    { name: 'editingRuleToJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
+    { name: 'mediaUrl', isMandatory: false, validationMessage: 'Invalid URL', events: [] },
+    { name: 'mediaType', isMandatory: false, validationMessage: '', events: [] },
+  ];
+
+  private callbackFormFields: FormFieldConfig[] = [
+    { name: 'name', isMandatory: true, validationMessage: 'Name is required', events: [] },
+    { name: 'script', isMandatory: true, validationMessage: 'Script is required', events: [] },
+  ];
+
+  private timelineStepFormFields: FormFieldConfig[] = [
+    { name: 'label', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'selector', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'duration', isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+    { name: 'ease', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'delay', isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+  ];
 
   ngOnInit() {
     this.loading = true;
     this.loadLookupData();
     this.loadPages();
+    this.initForms();
     this.loading = false;
     this.changeSubject.pipe(debounceTime(300), takeUntil(this.destroy$)).subscribe(() => {
-      this.onFormChange();
+      this.onConfigChange();
     });
+  }
+
+  onConfigChange() {
+    if (this.previewContainer?.nativeElement && this.config?.rules) {
+      if (this.config.global) {
+        this.config.global.defaults = {
+          ...this.config.global.defaults,
+          duration: this.pageForm.get('duration')?.value ?? 1,
+          ease: this.pageForm.get('ease')?.value ?? 'power2.out',
+          stagger: this.pageForm.get('stagger')?.value ?? 0.1
+        };
+        this.config.global.registerPlugins = this.pageForm.get('registerPlugins')?.value || [];
+      }
+      this.gsapConfigService.autoRefreshPreview(this.config, this.previewContainer.nativeElement);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.inputElements?.length) {
+      this.FormUtils.registerFormFieldEventListeners(this.pageFormFields, this.inputElements.toArray(), this.renderer, this.pageForm);
+      this.FormUtils.registerFormFieldEventListeners(this.ruleFormFields, this.inputElements.toArray(), this.renderer, this.ruleForm);
+      this.FormUtils.registerFormFieldEventListeners(this.callbackFormFields, this.inputElements.toArray(), this.renderer, this.callbackForm);
+    }
+  }
+
+  private initForms(): void {
+    this.pageForm = this.FormUtils.createFormGroup(this.pageFormFields, this.fb);
+    this.ruleForm = this.FormUtils.createFormGroup(this.ruleFormFields, this.fb);
+    this.callbackForm = this.FormUtils.createFormGroup(this.callbackFormFields, this.fb);
+    this.timelineStepForms = [];
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  parseCssInput(input: string): Record<string, string> {
+    if (!input) return {};
+    const trimmed = input.trim();
 
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed === 'object' && parsed !== null) return parsed as Record<string, string>;
+      } catch (e) {}
+    }
+
+    const cssRules: Record<string, string> = {};
+    const classMatch = trimmed.match(/\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{([^}]*)\}/);
+    if (classMatch && classMatch[2]) {
+      const declarations = classMatch[2].split(';').filter(d => d.trim());
+      declarations.forEach(decl => {
+        const [prop, val] = decl.split(':').map(s => s.trim());
+        if (prop && val) {
+          const camelProp = this.kebabToCamel(prop);
+          cssRules[camelProp] = val;
+        }
+      });
+      return cssRules;
+    }
+
+    const styleProps = trimmed.split(';').filter(s => s.trim());
+    styleProps.forEach(style => {
+      const [prop, val] = style.split(':').map(s => s.trim());
+      if (prop && val) {
+        const camelProp = this.kebabToCamel(prop);
+        cssRules[camelProp] = val;
+      }
+    });
+
+    return cssRules;
+  }
+
+  private kebabToCamel(str: string): string {
+    return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+  }
+
+  formatStylesForDisplay(styles: any): string {
+    if (!styles) return '';
+    if (typeof styles === 'string') return styles;
+    return JSON.stringify(styles, null, 2);
+  }
   private getOptionsFromResponse(res: any): { label: string; value: string }[] {
     const data = res?.result || res;
     if (Array.isArray(data)) {
       const options = data
         .map((item: any) => ({
           label: String(item.Desc || item.desc || item.Label || item.label || item.Val || item.val || ''),
-          value: String(item.LookupID || item.lookupID || item.ID || item.id || item.Val || item.val || item.Value || item.value || '')
+          value: String(item.Val || item.val)
         }))
         .filter((opt: any) => opt.value && opt.value !== 'null' && opt.value !== 'undefined');
       // console.log('Lookup options:', options);
@@ -115,10 +240,7 @@ export class GsapMaster implements OnInit, OnDestroy {
       this.easeOptions = this.getOptionsFromResponse(easeOptionsRes?.result);
       this.statusOptions = this.getOptionsFromResponse(statusOptionsRes?.result);
       this.pluginOptions = this.getOptionsFromResponse(pluginOptionsRes?.result);
-      // console.log(this.animationTypes);
-      // console.log(this.easeOptions);
-      // console.log(this.statusOptions);
-      // console.log(this.pluginOptions);
+      console.log(this.pluginOptions);
     } catch (err) {
       console.error('Failed to load lookup data:', err);
     }
@@ -144,12 +266,13 @@ export class GsapMaster implements OnInit, OnDestroy {
     }
   }
   
-async selectPage(page: any) {
+  async selectPage(page: any) {
     debugger;
     this.selectedPage = page;
     const pageId = page.PageId || page.pageId;
     if (!pageId) {
       this.config = this.getDefaultGsapConfig();
+      this.pageForm.reset();
       return;
     }
     try {
@@ -161,13 +284,14 @@ async selectPage(page: any) {
       ]);
       
       debugger;
-      const defaults = defaultsRes?.result || {};
-      const plugins = pluginsRes?.result || [];
-      const rules = rulesRes?.result || [];
-      const callbacks = callbacksRes?.result || [];
+      const defaults = defaultsRes?.result;
+      const plugins = pluginsRes?.result;
+      const rules = rulesRes?.result;
+      const callbacks = callbacksRes?.result;
       
-      // const pluginNames = this.pluginOptions.map((p: any) => p.pluginName || p.pluginname || p);
-      const pluginids = this.pluginOptions.map((p: any) => p.value);
+      // const pluginids = this.pluginOptions.filter((p: any) => this.config.global.registerPlugins?.includes(plugins.plugid)).map((p: any) => p.value);
+      // const pluginids = plugins.map((p: any) => p.plugid);
+      const pluginids = plugins.map((p: any) => String(p.plugid));
       this.config = {
         global: {
           pageId: pageId,
@@ -175,7 +299,7 @@ async selectPage(page: any) {
             defaultsId: defaults?.defaultsID || defaults?.defaultsId || defaults?.DefaultsID,
             pageId: pageId,
             duration: defaults?.duration || defaults?.Duration || 1,
-            ease: this.easeOptions.find((x: { label: any; value: any; }) => x.label === (defaults?.ease || defaults?.Ease) || x.value === (defaults?.ease || defaults?.Ease))?.value || '0',
+            ease: this.getDropdownValue(defaults?.ease || defaults?.Ease, this.easeOptions) || 'power2.out',
             stagger: defaults?.stagger || defaults?.Stagger || 0.1,
             delay: defaults?.delay || defaults?.Delay || 0,
             repeat: defaults?.repeat || defaults?.RepeatN || 0,
@@ -186,23 +310,33 @@ async selectPage(page: any) {
           observeDom: true,
           meta: { version: '1.0', description: '' }
         },
+        plugins: plugins.map((p: any) => ({
+          pluginId: p.pluginID || p.pluginId || 0,
+          pageId: p.pageId || pageId,
+          plugid: p.plugid || 0,
+          pluginName: p.pluginName || p.PluginName || '',
+          enabled: p.enabled ?? true
+        })),
         pages: {},
         rules: rules.map((r: any) => ({
           ruleId: r?.ruleId || r?.RuleID || r?.ruleID,
           pageId: r?.pageId || r?.PageID || pageId,
-          ruleKey: r?.ruleKey || r?.RuleKey || '',
-          label: r?.label || r?.Label || '',
-          selector: r?.selector || r?.Selector || '',
-          type: r?.type || r?.RuleType || 'fromTo',
-          duration: r?.duration || r?.Duration || 1,
-          ease: this.animationTypes.find((x: { label: any; value: any; }) => x.label === (r?.ease || r?.Ease) || x.value === (r?.ease || r?.Ease))?.value || '0',
-          stagger: r?.stagger || r?.Stagger || 0,
-          delay: r?.delay || r?.Delay || 0,
-          repeat: r?.repeat || r?.RepeatN || 0,
+          ruleKey: r?.ruleKey || r?.RuleKey,
+          label: r?.label || r?.Label,
+          selector: r?.selector || r?.Selector,
+          type: this.getDropdownValue(r?.type || r?.RuleType, this.animationTypes),
+          duration: r?.duration || r?.Duration,
+          ease: r?.ease || r?.Ease || 'power2.out',
+          stagger: r?.stagger || r?.Stagger,
+          delay: r?.delay || r?.Delay,
+          repeat: r?.repeat || r?.RepeatN,
           yoyo: r?.yoyo || r?.Yoyo || false,
+          from: this.parseCssInput(r?.from || r?.From),
+          to: this.parseCssInput(r?.to || r?.To),
+          styles: this.parseCssInput(r?.styles || r?.Styles),
           paused: r?.paused || r?.Paused || false,
           scrollEnabled: r?.scrollEnabled || r?.ScrollEnabled || false,
-          status: r?.status || r?.Status || '0',
+          status: this.getDropdownValue(r?.status || r?.Status, this.statusOptions),
           sortOrder: r?.sortOrder || r?.SortOrder || 0
         })),
         callbacks: callbacks.map((c: any) => ({
@@ -213,6 +347,15 @@ async selectPage(page: any) {
           handlerCode: c?.handlerCode || c?.HandlerCode || ''
         }))
       };
+
+      const easeValue = this.getDropdownValue(this.config.global?.defaults?.ease, this.easeOptions);
+      this.pageForm.patchValue({
+        duration: this.config.global?.defaults?.duration,
+        ease: easeValue,
+        stagger: this.config.global?.defaults?.stagger,
+        registerPlugins: this.config.global?.registerPlugins,
+        autoInit: this.config.global?.autoInit ?? true
+      });
     } catch (err) {
       console.error('Failed to load page data:', err);
       this.config = this.getDefaultGsapConfig();
@@ -227,25 +370,44 @@ async selectPage(page: any) {
   }
 
   addPage() {
-    if (this.newPageTitle.trim()) {
+    const formValidation = this.FormUtils.validateFormFields(
+      [{ name: 'newPageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] }],
+      this.pageForm, this.inputElements.toArray(), this.renderer);
+
+    if (formValidation.isError) {
+      this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
+      return;
+    }
+    const pageTitle = this.pageForm.get('newPageTitle')?.value || '';
+    if (pageTitle.trim()) {
       const newPage: PageConfig = {
         PageId: `page-${Date.now()}`,
-        title: this.newPageTitle,
-        pageKey: this.newPageTitle.toLowerCase().replace(/\s+/g, '-')
+        title: pageTitle,
+        pageKey: pageTitle.toLowerCase().replace(/\s+/g, '-')
       };
       this.pages.push(newPage);
       this.selectPage(newPage);
-      this.newPageTitle = '';
+      this.pageForm.patchValue({ newPageTitle: '' });
       this.showAddPageDialog = false;
     }
   }
 
-async saveConfig() {
-    if (!this.selectedPage) return;
+  async saveConfig() {
     debugger;
-    const validation = this.validateConfig();
-    if (!validation.isValid) {
-      this.NotificationService.showMessage(validation.message, 'Validation Error', PopupMessageType.ValidationError);
+    if (!this.selectedPage) {
+      this.NotificationService.showMessage('No page selected', 'Error', PopupMessageType.Error);
+      return;
+    }
+
+    // if (this.pageForm.invalid) {
+    //   this.markFormGroupTouched(this.pageForm);
+    //   this.NotificationService.showMessage('Please fill all required fields', 'Validation Error', PopupMessageType.ValidationError);
+    //   return;
+    // }
+
+    const outcome = this.FormUtils.validateFormFields(this.pageFormFields, this.pageForm, this.inputElements.toArray(), this.renderer);
+    if (outcome.isError) {
+      this.NotificationService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }
 
@@ -255,56 +417,72 @@ async saveConfig() {
       this.NotificationService.showMessage('Page ID is required', 'Error', PopupMessageType.Error);
       return;
     }
-const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) || ['ScrollTrigger'];
-    const plugins = pluginNames.map((name: string, index: number) => ({
-      pluginId: 0,
-      pageId: pageId,
-      pluginName: name,
-      enabled: true
-    }));
+
+    const validation = this.validateAll();
+    if (!validation.isValid) {
+      this.NotificationService.showMessage(validation.message, 'Validation Error', PopupMessageType.ValidationError);
+      return;
+    }
+    const pluginNames = this.pageForm.get('registerPlugins')?.value?.filter((p: any) => p);
+    const pageIdNum = parseInt(String(pageId), 10);
+    const configPlugins = (this.config.plugins || []) as any[];
+    
     const saveModel = {
-      pageId: pageId,
+      pageId: pageIdNum,
       pageKey: pageKey,
       label: this.selectedPage.title || pageKey,
       globalDefaults: {
-        defaultsId: this.config.global?.defaults?.defaultsId || 0,
-        pageId: pageId,
-        duration: this.config.global?.defaults?.duration || 1,
-        ease: this.config.global?.defaults?.ease || 'power2.out',
-        stagger: this.config.global?.defaults?.stagger || 0.1,
+        defaultsID: this.config.global?.defaults?.defaultsId || 0,
+        pageId: pageIdNum,
+        duration: this.pageForm.get('duration')?.value,
+        ease: this.pageForm.get('ease')?.value,
+        stagger: this.pageForm.get('stagger')?.value,
         delay: this.config.global?.defaults?.delay || 0,
         repeat: this.config.global?.defaults?.repeat || 0,
         yoyo: this.config.global?.defaults?.yoyo || false
       },
-      plugins: plugins,
+      
+      plugins: pluginNames.map((name: string, idx: number) => ({
+        pluginID: configPlugins[idx]?.pluginId || 0,
+        pageId: pageIdNum,
+        plugid: parseInt(name, 10),
+        pluginName: configPlugins[idx]?.pluginName || name,
+        enabled: true
+      })),
       rules: (this.config.rules || []).map((r: any) => ({
         ruleId: r?.ruleId || 0,
-        pageId: pageId,
-        ruleKey: r?.ruleKey || r?.label?.toLowerCase().replace(/\s+/g, '-') || '',
-        label: r?.label || '',
-        selector: r?.selector || '',
-        type: r?.type || 'fromTo',
-        duration: r?.duration || 1,
+        pageId: pageIdNum,
+        ruleKey: r?.ruleKey || r?.label?.toLowerCase().replace(/\s+/g, '-'),
+        label: r?.label,
+        selector: r?.selector,
+        type: r?.type,
+        duration: r?.duration ?? 0,
         ease: r?.ease || 'power2.out',
-        stagger: r?.stagger || 0,
-        delay: r?.delay || 0,
-        repeat: r?.repeat || 0,
-        yoyo: r?.yoyo || false,
-        paused: r?.paused || false,
-        scrollEnabled: r?.scrollEnabled || false,
-        status: r?.status || 'Published',
-        sortOrder: r?.sortOrder || 0
+        stagger: r?.stagger ?? 0,
+        delay: r?.delay ?? 0,
+        repeat: r?.repeat ?? 0,
+        yoyo: r?.yoyo ?? false,
+        paused: r?.paused ?? false,
+        scrollEnabled: r?.scrollEnabled ?? false,
+        status: r?.status,
+        sortOrder: r?.sortOrder ?? 0,
+        from: r?.from ? (typeof r?.from === 'object' ? JSON.stringify(r?.from) : String(r?.from)) : '{}',
+        to: r?.to ? (typeof r?.to === 'object' ? JSON.stringify(r?.to) : String(r?.to)) : '{}',
+        styles: r?.styles ? (typeof r?.styles === 'object' ? JSON.stringify(r?.styles) : String(r?.styles)) : '{}'
       })),
       callbacks: (this.config.callbacks || []).map((c: any) => ({
         callbackId: c?.callbackId || 0,
         ruleId: c?.ruleId || 0,
-        eventName: c?.eventName || '',
-        handlerName: c?.handlerName || '',
-        handlerCode: c?.handlerCode || ''
+        eventName: c?.eventName || c?.handlerName,
+        handlerName: c?.handlerName,
+        handlerCode: c?.handlerCode
       }))
     };
+    console.log('Save model:', saveModel);
+    this.saving = true;
     try {
       const response = await firstValueFrom(this.gsapConfigService.SaveGsapConfig(saveModel));
+      this.saving = false;
       if (response?.isError) {
         this.NotificationService.showMessage(response.strMessage || 'Failed to save', 'Error', PopupMessageType.Error);
       } else {
@@ -312,64 +490,295 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
         this.NotificationService.showMessage(response.strMessage || 'Configuration saved successfully', 'Success', PopupMessageType.Success);
       }
     } catch (err: any) {
+      this.saving = false;
       console.error('Failed to save:', err);
       this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to save configuration', 'Error', PopupMessageType.Error);
     }
   }
 
-  private validateConfig(): { isValid: boolean; message: string } {
-    if (!this.selectedPage) {
-      return { isValid: false, message: 'No page selected' };
-    }
-
-    const pageId = this.selectedPage.PageId || this.selectedPage.pageId;
-    if (!pageId) {
-      return { isValid: false, message: 'Page ID is required' };
-    }
-
-    if (!this.selectedPage.pageKey) {
-      return { isValid: false, message: 'Page Key is required' };
-    }
-
-    if (!this.selectedPage.title && !this.selectedPage.label) {
-      return { isValid: false, message: 'Page Label is required' };
-    }
-
-    if (this.config.global?.defaults) {
-      const defaults = this.config.global.defaults;
-      if (defaults.duration !== undefined && defaults.duration < 0) {
-        return { isValid: false, message: 'Duration must be greater than or equal to 0' };
-      }
-      if (defaults.stagger !== undefined && defaults.stagger < 0) {
-        return { isValid: false, message: 'Stagger must be greater than or equal to 0' };
-      }
-      if (defaults.delay !== undefined && defaults.delay < 0) {
-        return { isValid: false, message: 'Delay must be greater than or equal to 0' };
-      }
-    }
+  private validateRules(): { isValid: boolean; message: string } {
+    const validTypes = ['fromTo', 'to', 'from', 'set', 'timeline', 'keyframes'];
+    const validEasePatterns = [
+      'power1', 'power2', 'power3', 'power4',
+      'back', 'elastic', 'bounce', 'circ', 'expo',
+      'sine', 'quad', 'cubic', 'quart', 'quint',
+      'rough', 'slow', 'steps', 'bezier'
+    ];
 
     if (this.config.rules) {
       for (let i = 0; i < this.config.rules.length; i++) {
         const rule = this.config.rules[i];
-        if (!rule.selector || rule.selector.trim() === '') {
-          return { isValid: false, message: `Rule #${i + 1}: Selector is required` };
+        const ruleLabel = rule.label || `Rule #${i + 1}`;
+
+        if (!rule.label || rule.label.trim() === '') {
+          return { isValid: false, message: `${ruleLabel}: Label is required` };
         }
-        if (rule.duration !== undefined && rule.duration < 0) {
-          return { isValid: false, message: `Rule "${rule.label || i + 1}": Duration must be >= 0` };
+
+        if (!rule.selector || rule.selector.trim() === '') {
+          return { isValid: false, message: `${ruleLabel}: Selector is required` };
+        }
+
+        const selectorValidation = this.validateSelector(rule.selector);
+        if (!selectorValidation.isValid) {
+          return { isValid: false, message: `${ruleLabel}: Invalid selector - ${selectorValidation.message}` };
+        }
+
+        if (!rule.type || rule.type.trim() == '0' || !this.animationTypes.some(item => item.value === rule.type)) 
+        {
+          return { isValid: false, message: `${ruleLabel}: Please select a valid type`};
+        }
+
+        if (rule.from && typeof rule.from === 'string') {
+          const fromValidation = this.validateGsapJson(rule.from, 'From');
+          if (!fromValidation.isValid) {
+            return { isValid: false, message: `${ruleLabel}: ${fromValidation.message}` };
+          }
+        }
+
+        if (rule.to && typeof rule.to === 'string') {
+          const toValidation = this.validateGsapJson(rule.to, 'To');
+          if (!toValidation.isValid) {
+            return { isValid: false, message: `${ruleLabel}: ${toValidation.message}` };
+          }
+        }
+
+        if (rule.styles && typeof rule.styles === 'string') {
+          const stylesValidation = this.validateGsapJson(rule.styles, 'Styles');
+          if (!stylesValidation.isValid) {
+            return { isValid: false, message: `${ruleLabel}: ${stylesValidation.message}` };
+          }
+        }
+
+        if (rule.duration !== undefined && (rule.duration < 0 || isNaN(rule.duration))) {
+          return { isValid: false, message: `${ruleLabel}: Duration must be a positive number` };
+        }
+
+        if (rule.stagger !== undefined) {
+          const staggerVal = typeof rule.stagger === 'number' ? rule.stagger : (rule.stagger as any)?.each || 0;
+          if (staggerVal < 0 || isNaN(staggerVal)) {
+            return { isValid: false, message: `${ruleLabel}: Stagger must be a positive number` };
+          }
+        }
+
+        if (rule.delay !== undefined && (rule.delay < 0 || isNaN(rule.delay))) {
+          return { isValid: false, message: `${ruleLabel}: Delay must be a positive number` };
         }
       }
     }
+    return { isValid: true, message: '' };
+  }
 
-    // if (this.config.callbacks) {
-    //   for (let i = 0; i < this.config.callbacks.length; i++) {
-    //     const callback = this.config.callbacks[i];
-    //     if (!callback.eventName || callback.eventName.trim() === '') {
-    //       return { isValid: false, message: `Callback #${i + 1}: Event Name is required` };
-    //     }
-    //   }
-    // }
+  private validateSelector(selector: string): { isValid: boolean; message: string } {
+    if (!selector || selector.trim() === '') {
+      return { isValid: false, message: 'Selector cannot be empty' };
+    }
+
+    const trimmed = selector.trim();
+
+    const selectors = trimmed.split(',').map(s => s.trim()).filter(s => s);
+
+    for (const singleSelector of selectors) {
+      const validation = this.validateSingleSelector(singleSelector);
+      if (!validation.isValid) {
+        return validation;
+      }
+    }
 
     return { isValid: true, message: '' };
+  }
+
+  private validateSingleSelector(sel: string): { isValid: boolean; message: string } {
+    if (!sel || sel.trim() === '') {
+      return { isValid: false, message: 'Empty selector part' };
+    }
+
+    const trimmed = sel.trim();
+
+    if (trimmed.startsWith('.')) {
+      const classPart = trimmed.substring(1).split(/[\s>+~]/)[0];
+      if (!classPart || !/^[a-zA-Z_-][a-zA-Z0-9_-]*$/.test(classPart)) {
+        return { isValid: false, message: `Invalid class selector: .${classPart}` };
+      }
+    } else if (trimmed.startsWith('#')) {
+      const idPart = trimmed.substring(1).split(/[\s>+~]/)[0];
+      if (!idPart || !/^[a-zA-Z_-][a-zA-Z0-9_-]*$/.test(idPart)) {
+        return { isValid: false, message: `Invalid ID selector: #${idPart}` };
+      }
+    } else if (trimmed.startsWith('[')) {
+      if (!trimmed.includes(']')) {
+        return { isValid: false, message: 'Incomplete attribute selector' };
+      }
+    } else if (trimmed.startsWith('*')) {
+      return { isValid: true, message: '' };
+    } else if (trimmed.startsWith(':')) {
+      return { isValid: true, message: '' };
+    } else {
+      const validSelectorPattern = /^([a-zA-Z][a-zA-Z0-9_-]*)([\s>+~:.,#.\[\]]*)?/;
+      if (!validSelectorPattern.test(trimmed)) {
+        return { isValid: false, message: `Invalid selector format: ${trimmed}` };
+      }
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateGsapJson(input: string, fieldName: string): { isValid: boolean; message: string } {
+    if (!input || input.trim() === '') {
+      return { isValid: true, message: '' };
+    }
+
+    const trimmed = input.trim();
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed !== 'object' || parsed === null) {
+          return { isValid: false, message: `${fieldName}: Must be a valid JSON object` };
+        }
+
+        const validGsapProps = [
+          'opacity', 'x', 'y', 'xPercent', 'yPercent', 'z', 'zIndex',
+          'rotation', 'rotationX', 'rotationY', 'rotationZ',
+          'scale', 'scaleX', 'scaleY', 'scaleZ',
+          'skewX', 'skewY',
+          'backgroundColor', 'background', 'color', 'borderColor', 'borderWidth', 'borderRadius',
+          'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
+          'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+          'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+          'top', 'left', 'right', 'bottom',
+          'transform', 'transformOrigin', 'transformStyle', 'perspective',
+          'filter', 'blur', 'brightness', 'contrast', 'grayscale', 'hueRotate', 'saturate',
+          'clipPath', 'clip-path',
+          'opacity', 'visibility', 'display',
+          'overflow', 'overflowX', 'overflowY',
+          'scrollTop', 'scrollLeft',
+          'autoAlpha', 'svgOrigin'
+        ];
+
+        const keys = Object.keys(parsed);
+        const invalidKeys = keys.filter(key => !validGsapProps.includes(key.toLowerCase()));
+
+        if (invalidKeys.length > 0 && keys.length > 0) {
+          console.warn(`${fieldName}: Unknown properties: ${invalidKeys.join(', ')}`);
+        }
+
+        return { isValid: true, message: '' };
+      } catch (e) {
+        return { isValid: false, message: `${fieldName}: Invalid JSON format` };
+      }
+    }
+
+    const cssMatch = trimmed.match(/\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{([^}]*)\}/);
+    if (cssMatch) {
+      return { isValid: true, message: '' };
+    }
+
+    const propPairs = trimmed.split(';').filter(s => s.trim());
+    for (const pair of propPairs) {
+      if (!pair.includes(':')) {
+        return { isValid: false, message: `${fieldName}: Invalid CSS format - missing colon` };
+      }
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateCallbacks(): { isValid: boolean; message: string } {
+    const validEventNames = [
+      'onStart', 'onUpdate', 'onComplete', 'onRepeat',
+      'onReverseComplete', 'onReverse', 'onInterrupt'
+    ];
+
+    if (this.config.callbacks) {
+      for (let i = 0; i < this.config.callbacks.length; i++) {
+        const callback = this.config.callbacks[i];
+        const callbackLabel = callback.name || `Callback #${i + 1}`;
+
+        if (!callback.name || callback.name.trim() === '') {
+          return { isValid: false, message: `${callbackLabel}: Name is required` };
+        }
+
+        if (!callback.script || callback.script.trim() === '') {
+          return { isValid: false, message: `${callbackLabel}: Script is required` };
+        }
+
+        const eventName = callback.name.trim();
+        const isValidEvent = validEventNames.some(e => e.toLowerCase() === eventName.toLowerCase());
+
+        if (!isValidEvent) {
+          console.warn(`${callbackLabel}: Unknown event "${eventName}". Valid events: ${validEventNames.join(', ')}`);
+          this.NotificationService.showMessage(`${callbackLabel}: Unknown event "${eventName}". Valid events: ${validEventNames.join(', ')}`, 'Error', PopupMessageType.Error);
+        }
+
+        const scriptValidation = this.validateScript(callback.script);
+        if (!scriptValidation.isValid) {
+          return { isValid: false, message: `${callbackLabel}: ${scriptValidation.message}` };
+        }
+      }
+    }
+    return { isValid: true, message: '' };
+  }
+
+  private validateScript(script: string): { isValid: boolean; message: string } {
+    if (!script || script.trim() === '') {
+      return { isValid: true, message: '' };
+    }
+
+    const dangerousPatterns = [
+      /eval\s*\(/,
+      /Function\s*\(/,
+      /setTimeout\s*\(\s*['"]/,
+      /setInterval\s*\(\s*['"]/,
+      /document\.cookie/,
+      /localStorage\.setItem/,
+      /sessionStorage\.setItem/,
+      /fetch\s*\(\s*['"]/,
+      /XMLHttpRequest/,
+      /window\.location\s*=/,
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(script)) {
+        return { isValid: false, message: 'Script contains potentially dangerous code' };
+      }
+    }
+
+    const openBraces = (script.match(/{/g) || []).length;
+    const closeBraces = (script.match(/}/g) || []).length;
+    if (openBraces !== closeBraces) {
+      return { isValid: false, message: 'Script has mismatched braces' };
+    }
+
+    const openParens = (script.match(/\(/g) || []).length;
+    const closeParens = (script.match(/\)/g) || []).length;
+    if (openParens !== closeParens) {
+      return { isValid: false, message: 'Script has mismatched parentheses' };
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateAll(): { isValid: boolean; message: string } {
+    const rulesValidation = this.validateRules();
+    if (!rulesValidation.isValid) {
+      return rulesValidation;
+    }
+
+    const callbacksValidation = this.validateCallbacks();
+    if (!callbacksValidation.isValid) {
+      return callbacksValidation;
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 
   onFormChange() {
@@ -380,23 +789,17 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
   }
 
   addRule(selectedPage: MGsapPage) {
-    const pageId = selectedPage?.pageId;
-    if (!pageId) {
-      this.NotificationService.showMessage('Page ID is required', 'Error', PopupMessageType.Error);
+    if (!selectedPage || !selectedPage.pageId) {
+      this.NotificationService.showMessage('Please select a page first', 'Error', PopupMessageType.Error);
       return;
     }
-    const newRule: GsapRule = {
-      ruleId: 0,
-      selector: '',
-      label: 'New Rule',
-      status: 'published',
-      type: 'tween',
-      duration: 1,
-      ease: 'power2.out',
-      scrollEnabled: false,
-      pageId: pageId
-    };
-    this.config.rules = [...(this.config.rules || []), newRule];
+    this.editingRule = this.getDefaultGsapRule();
+    this.editingRule.pageId = selectedPage.pageId;
+    this.editingIndex = null;
+    this.editingTimelineSteps = [];
+    this.ruleForm.reset();
+    this.editMode = 'rule';
+    this.showEditDialog = true;
   }
 
   getStatusSeverity(status: string): Severity {
@@ -407,17 +810,144 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
       default: return 'info';
     }
   }
+ 
+     
+    getStatusLabel(statusValue: string): string {
+    if (!statusValue || statusValue === '0') {
+      if (this.statusOptions && this.statusOptions.length > 0) {
+        const option = this.statusOptions.find(o => o.value === statusValue || o.value === statusValue?.toLowerCase());
+        return option?.label || statusValue;
+      }
+      return this.defaultMap[statusValue?.toLowerCase() || ''] || statusValue || '';
+    }
+
+    if (this.statusOptions && this.statusOptions.length > 0) {
+      const option = this.statusOptions.find(o => o.value === statusValue || o.label?.toLowerCase() === statusValue?.toLowerCase());
+      return option?.label || statusValue;
+    }
+
+    return statusValue;
+  }
+
+  getTypeLabel(typeValue: string): string {
+    if (!typeValue) return '';
+
+    if (this.animationTypes && this.animationTypes.length > 0) {
+      const option = this.animationTypes.find(o => o.value === typeValue || o.label?.toLowerCase() === typeValue?.toLowerCase());
+      return option?.label || typeValue;
+    }
+
+    const typeMap: Record<string, string> = {
+      'fromTo': 'From To', 'from': 'From', 'to': 'To', 'set': 'Set',
+      'timeline': 'Timeline', 'keyframes': 'Keyframes', 'tween': 'Tween'
+    };
+    return typeMap[typeValue.toLowerCase()] || typeValue;
+  }
+
+  getEaseLabel(easeValue: string): string {
+    if (!easeValue) return '';
+
+    if (this.easeOptions && this.easeOptions.length > 0) {
+      const option = this.easeOptions.find(o => o.value === easeValue || o.label?.toLowerCase() === easeValue?.toLowerCase());
+      return option?.label || easeValue;
+    }
+
+    return easeValue;
+  }
+
+  getPluginLabels(pluginValues: string[]): string {
+    if (!pluginValues || pluginValues.length === 0) return '';
+
+    if (this.pluginOptions && this.pluginOptions.length > 0) {
+      const labels = pluginValues.map(p => {
+        const option = this.pluginOptions.find(o => o.value === p || o.label?.toLowerCase() === p?.toLowerCase());
+        return option?.label || p;
+      });
+      return labels.join(', ');
+    }
+
+    return pluginValues.join(', ');
+  }
 
   editRule(rule: GsapRule, index: number) {
     debugger;
     this.editingRule = { ...rule };
     this.editingIndex = index;
-    this.editingRuleFromJson = JSON.stringify(rule.from || {}, null, 2);
-    this.editingRuleToJson = JSON.stringify(rule.to || {}, null, 2);
-    this.editingRuleStylesJson = JSON.stringify(rule.styles || {}, null, 2);
+    this.editingRuleFromJson = this.formatStylesForDisplay(rule.from);
+    this.editingRuleToJson = this.formatStylesForDisplay(rule.to);
+    this.editingRuleStylesJson = this.formatStylesForDisplay(rule.styles);
     this.editingTimelineSteps = rule.timelineSteps ? [...rule.timelineSteps] : [];
+    this.initTimelineStepForms();
+    this.populateRuleForm();
     this.editMode = 'rule';
     this.showEditDialog = true;
+  }
+
+  private populateRuleForm(): void {
+    const typeValue = this.getDropdownValue(this.editingRule.type, this.animationTypes);
+    const statusValue = this.getDropdownValue(this.editingRule.status, this.statusOptions);
+
+    this.ruleForm.patchValue({
+      label: this.editingRule.label || '',
+      type: typeValue,
+      status: statusValue,
+      selector: this.editingRule.selector || '',
+      duration: this.editingRule.duration ?? 1,
+      ease: this.editingRule.ease || 'power2.out',
+      stagger: this.editingRule.stagger ?? 0,
+      delay: this.editingRule.delay ?? 0,
+      editingRuleStylesJson: this.editingRuleStylesJson,
+      editingRuleFromJson: this.editingRuleFromJson,
+      editingRuleToJson: this.editingRuleToJson,
+      mediaUrl: this.editingRule.media?.url || '',
+      mediaType: this.editingRule.media?.type || 'none'
+    });
+  }
+
+  private getDropdownValue(actualValue: string | undefined, options: { label: string; value: string }[]): string {
+    if (!actualValue) return '';
+
+    const exactMatch = options.find(opt => opt.value === actualValue || opt.value?.toLowerCase() === actualValue?.toLowerCase());
+    if (exactMatch) return exactMatch.value;
+
+    const labelMatch = options.find(opt => opt.label?.toLowerCase() === actualValue?.toLowerCase());
+    if (labelMatch) return labelMatch.value;
+
+    const map: Record<string, string> = {
+      '0': '0', 'published': '0', 'draft': '1', 'archived': '2',
+      'fromto': 'fromTo', 'from': 'from', 'to': 'to', 'set': 'set',
+      'timeline': 'timeline', 'tween': 'tween'
+    };
+    const mapped = map[actualValue.toLowerCase()];
+    if (mapped && options.find(opt => opt.value === mapped)) {
+      return mapped;
+    }
+
+    return actualValue;
+  }
+
+  private initTimelineStepForms(): void {
+    this.timelineStepForms = [];
+    if (this.editingTimelineSteps && this.editingTimelineSteps.length > 0) {
+      this.editingTimelineSteps.forEach((step, i) => {
+        const stepFields: FormFieldConfig[] = [
+          { name: `timelineLabel${i}`, isMandatory: false, validationMessage: '', events: [] },
+          { name: `timelineSelector${i}`, isMandatory: false, validationMessage: '', events: [] },
+          { name: `timelineDuration${i}`, isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+          { name: `timelineEase${i}`, isMandatory: false, validationMessage: '', events: [] },
+          { name: `timelineDelay${i}`, isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+        ];
+        const stepForm = this.FormUtils.createFormGroup(stepFields, this.fb);
+        stepForm.patchValue({
+          [`timelineLabel${i}`]: step.label || '',
+          [`timelineSelector${i}`]: step.selector || '',
+          [`timelineDuration${i}`]: step.duration || 1,
+          [`timelineEase${i}`]: step.ease || 'power2.out',
+          [`timelineDelay${i}`]: step.delay || 0
+        });
+        this.timelineStepForms.push(stepForm);
+      });
+    }
   }
 
   deleteRule(index: number) {
@@ -427,19 +957,33 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
   }
 
   addCallback(selectedPage: MGsapPage) {
-    const newCallback: GsapCallback = {
-      eventName: '',
-      handlerName: '',
-      handlerCode: ''
-    };
-    this.config.callbacks = [...(this.config.callbacks || []), newCallback];
+    if (!selectedPage || !selectedPage.pageId) {
+      this.NotificationService.showMessage('Please select a page first', 'Error', PopupMessageType.Error);
+      return;
+    }
+    this.editingCallback = new SaveGsapCallback();
+    this.editingIndex = null;
+    this.callbackForm.reset();
+    this.editMode = 'callback';
+    this.showEditDialog = true;
   }
 
   editCallback(index: number) {
     const callback = this.config.callbacks?.[index];
     if (callback) {
-      this.editingCallback = { ...callback };
+      this.editingCallback = new SaveGsapCallback();
+      this.editingCallback.callbackId = callback.callbackId || 0;
+      this.editingCallback.ruleId = callback.ruleId || 0;
+      this.editingCallback.eventName = callback.eventName || '';
+      this.editingCallback.handlerName = callback.handlerName || '';
+      this.editingCallback.handlerCode = callback.handlerCode || '';
+      this.editingCallback.name = callback.name || callback.handlerName || '';
+      this.editingCallback.script = callback.script || callback.handlerCode || '';
       this.editingIndex = index;
+      this.callbackForm.patchValue({
+        name: this.editingCallback.name,
+        script: this.editingCallback.script
+      });
       this.editMode = 'callback';
       this.showEditDialog = true;
     }
@@ -462,6 +1006,15 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
 
   applyConfig() {
     if (this.previewContainer?.nativeElement) {
+      if (this.config.global) {
+        this.config.global.defaults = {
+          ...this.config.global.defaults,
+          duration: this.pageForm.get('duration')?.value ?? 1,
+          ease: this.pageForm.get('ease')?.value ?? 'power2.out',
+          stagger: this.pageForm.get('stagger')?.value ?? 0.1
+        };
+        this.config.global.registerPlugins = this.pageForm.get('registerPlugins')?.value || [];
+      }
       this.gsapConfigService.applyAnimations(this.config, this.previewContainer.nativeElement);
     }
   }
@@ -499,6 +1052,32 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
       delay: 0
     };
     this.editingTimelineSteps = [...(this.editingTimelineSteps || []), newStep];
+    this.timelineStepData = [...(this.timelineStepData || []), {
+      label: newStep.label || '',
+      selector: newStep.selector || '',
+      duration: newStep.duration || 1,
+      ease: newStep.ease || 'power2.out',
+      delay: newStep.delay || 0
+    }];
+    
+    const idx = this.editingTimelineSteps.length - 1;
+    const stepFields: FormFieldConfig[] = [
+      { name: `timelineLabel${idx}`, isMandatory: false, validationMessage: '', events: [] },
+      { name: `timelineSelector${idx}`, isMandatory: false, validationMessage: '', events: [] },
+      { name: `timelineDuration${idx}`, isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+      { name: `timelineEase${idx}`, isMandatory: false, validationMessage: '', events: [] },
+      { name: `timelineDelay${idx}`, isMandatory: false, min: 0, validationMessage: 'Must be >= 0', events: [] },
+    ];
+    const stepForm = this.FormUtils.createFormGroup(stepFields, this.fb);
+    stepForm.patchValue({
+      [`timelineLabel${idx}`]: newStep.label || '',
+      [`timelineSelector${idx}`]: newStep.selector || '',
+      [`timelineDuration${idx}`]: newStep.duration || 1,
+      [`timelineEase${idx}`]: newStep.ease || 'power2.out',
+      [`timelineDelay${idx}`]: newStep.delay || 0
+    });
+    this.timelineStepForms.push(stepForm);
+    
     this.onFormChange();
   }
 
@@ -506,35 +1085,214 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
     if (this.editingTimelineSteps) {
       this.editingTimelineSteps.splice(index, 1);
       this.editingTimelineSteps = [...this.editingTimelineSteps];
+      this.timelineStepData.splice(index, 1);
+      this.timelineStepData = [...this.timelineStepData];
+      this.timelineStepForms.splice(index, 1);
       this.onFormChange();
     }
   }
 
   saveEdit() {
-    if (this.editMode === 'rule' && this.editingIndex !== null) {
-      try {
-        this.editingRule.from = JSON.parse(this.editingRuleFromJson);
-        this.editingRule.to = JSON.parse(this.editingRuleToJson);
-        this.editingRule.styles = JSON.parse(this.editingRuleStylesJson);
-        this.editingRule.timelineSteps = this.editingTimelineSteps?.length > 0 ? this.editingTimelineSteps : undefined;
-      } catch (e) {
-        console.error('Invalid JSON in from/to fields');
+    debugger;
+    if (this.editMode === 'rule') {
+      const formValidation = this.FormUtils.validateFormFields(this.ruleFormFields, this.ruleForm, this.inputElements.toArray(), this.renderer);
+      if (formValidation.isError) {
+        this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
         return;
       }
-      
-      if (this.config.rules) {
-        this.config.rules[this.editingIndex] = { ...this.editingRule };
+
+      const ruleData: any = {
+        label: this.ruleForm.get('label')?.value,
+        type: this.ruleForm.get('type')?.value,
+        status: this.ruleForm.get('status')?.value,
+        selector: this.ruleForm.get('selector')?.value,
+        from: this.parseCssInput(this.ruleForm.get('editingRuleFromJson')?.value),
+        to: this.parseCssInput(this.ruleForm.get('editingRuleToJson')?.value),
+        styles: this.parseCssInput(this.ruleForm.get('editingRuleStylesJson')?.value),
+        timelineSteps: [] as any[],
+        media: {
+          type: this.ruleForm.get('mediaType')?.value,
+          url: this.ruleForm.get('mediaUrl')?.value,
+          id: '',
+          selector: ''
+        }
+      };
+
+      const gsapValidation = this.validateGsapObject(ruleData, 'Rule');
+      if (!gsapValidation.isValid) {
+        this.NotificationService.showMessage(gsapValidation.message, 'Validation Error', PopupMessageType.ValidationError);
+        return;
       }
-    } else if (this.editMode === 'callback' && this.editingIndex !== null) {
-      if (this.config.callbacks) {
-        this.config.callbacks[this.editingIndex] = { ...this.editingCallback };
+
+      if (this.timelineStepForms && this.timelineStepForms.length > 0) {
+        ruleData.timelineSteps = this.editingTimelineSteps.map((step, i) => ({
+          ...step,
+          label: this.timelineStepForms[i]?.get(`timelineLabel${i}`)?.value || step.label || '',
+          selector: this.timelineStepForms[i]?.get(`timelineSelector${i}`)?.value || step.selector || '',
+          duration: this.timelineStepForms[i]?.get(`timelineDuration${i}`)?.value ?? step.duration ?? 1,
+          ease: this.timelineStepForms[i]?.get(`timelineEase${i}`)?.value || step.ease || 'power2.out',
+          delay: this.timelineStepForms[i]?.get(`timelineDelay${i}`)?.value ?? step.delay ?? 0
+        }));
+      }
+
+      if (this.editingIndex !== null) {
+        this.editingRule = {
+          ...this.editingRule,
+          ...ruleData
+        };
+        if (this.config.rules) {
+          this.config.rules[this.editingIndex] = { ...this.editingRule };
+        }
+      } else {
+        const newRule: GsapRule = {
+          ruleId: 0,
+          pageId: this.selectedPage?.PageId || this.selectedPage?.pageId || 0,
+          ruleKey: '',
+          ...ruleData,
+          duration: 1,
+          ease: 'power2.out',
+          stagger: 0,
+          delay: 0,
+          repeat: 0,
+          yoyo: false,
+          scrollEnabled: false
+        };
+        this.config.rules = [...(this.config.rules || []), newRule];
+      }
+    } else if (this.editMode === 'callback') {
+      const formValidation = this.FormUtils.validateFormFields(this.callbackFormFields, this.callbackForm, this.inputElements.toArray(), this.renderer);
+      if (formValidation.isError) {
+        this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
+        return;
+      }
+
+      const callbackData = {
+        name: this.callbackForm.get('name')?.value || '',
+        script: this.callbackForm.get('script')?.value || '',
+        eventName: this.callbackForm.get('name')?.value || '',
+        handlerName: this.callbackForm.get('name')?.value || '',
+        handlerCode: this.callbackForm.get('script')?.value || ''
+      };
+
+      const callbackValidation = this.validateGsapCallback(callbackData);
+      if (!callbackValidation.isValid) {
+        this.NotificationService.showMessage(callbackValidation.message, 'Validation Error', PopupMessageType.ValidationError);
+        return;
+      }
+
+      if (this.editingIndex !== null) {
+        this.editingCallback = {
+          ...this.editingCallback,
+          ...callbackData
+        };
+        if (this.config.callbacks) {
+          this.config.callbacks[this.editingIndex] = { ...this.editingCallback };
+        }
+      } else {
+        const newCallback: SaveGsapCallback = {
+          callbackId: 0,
+          ruleId: 0,
+          ...callbackData
+        };
+        this.config.callbacks = [...(this.config.callbacks || []), newCallback];
       }
     }
-    
+
     this.showEditDialog = false;
     this.editMode = null;
     this.editingIndex = null;
     this.editingTimelineSteps = [];
+    this.timelineStepForms = [];
+    this.onConfigChange();
+  }
+
+  private validateGsapObject(rule: any, fieldName: string): { isValid: boolean; message: string } {
+    if (!rule.label || rule.label.trim() === '') {
+      return { isValid: false, message: `${fieldName}: Label is required` };
+    }
+
+    if (!rule.selector || rule.selector.trim() === '') {
+      return { isValid: false, message: `${fieldName}: Selector is required` };
+    }
+
+    const selectorValidation = this.validateSelector(rule.selector);
+    if (!selectorValidation.isValid) {
+      return { isValid: false, message: `${fieldName}: ${selectorValidation.message}` };
+    }
+
+    if (rule.from) {
+      const fromValidation = this.validateGsapJsonObject(rule.from);
+      if (!fromValidation.isValid) {
+        return { isValid: false, message: `${fieldName}: From - ${fromValidation.message}` };
+      }
+    }
+
+    if (rule.to) {
+      const toValidation = this.validateGsapJsonObject(rule.to);
+      if (!toValidation.isValid) {
+        return { isValid: false, message: `${fieldName}: To - ${toValidation.message}` };
+      }
+    }
+
+    if (rule.styles) {
+      const stylesValidation = this.validateGsapJsonObject(rule.styles);
+      if (!stylesValidation.isValid) {
+        return { isValid: false, message: `${fieldName}: Styles - ${stylesValidation.message}` };
+      }
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateGsapJsonObject(obj: any): { isValid: boolean; message: string } {
+    if (!obj || typeof obj !== 'object') {
+      return { isValid: true, message: '' };
+    }
+
+    const validProps = [
+      'opacity', 'x', 'y', 'xPercent', 'yPercent', 'z', 'zIndex',
+      'rotation', 'rotationX', 'rotationY', 'rotationZ',
+      'scale', 'scaleX', 'scaleY',
+      'skewX', 'skewY',
+      'backgroundColor', 'background', 'color', 'borderColor', 'borderWidth', 'borderRadius',
+      'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
+      'padding', 'margin', 'top', 'left', 'right', 'bottom',
+      'transform', 'transformOrigin', 'perspective',
+      'filter', 'blur', 'brightness', 'contrast', 'grayscale', 'saturate',
+      'clipPath', 'display', 'visibility', 'overflow'
+    ];
+
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      if (!validProps.includes(key.toLowerCase()) && !key.startsWith('border')) {
+        console.warn(`Unknown GSAP property: ${key}`);
+      }
+
+      const value = obj[key];
+      if (typeof value === 'string' && (value.includes('px') || value.includes('%') || value.includes('em') || value.includes('rem'))) {
+        continue;
+      }
+      if (typeof value === 'number') {
+        continue;
+      }
+      if (typeof value === 'string' && !value.includes('rgb') && !value.includes('rgba') && !value.includes('#')) {
+        console.warn(`Property ${key} may have invalid value: ${value}`);
+      }
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private validateGsapCallback(callback: any): { isValid: boolean; message: string } {
+    if (!callback.name || callback.name.trim() === '') {
+      return { isValid: false, message: 'Callback: Name is required' };
+    }
+
+    if (!callback.script || callback.script.trim() === '') {
+      return { isValid: false, message: 'Callback: Script is required' };
+    }
+
+    return this.validateScript(callback.script);
   }
 
   cancelEdit() {
@@ -558,6 +1316,12 @@ const pluginNames = this.config.global?.registerPlugins?.filter((p: any) => p) |
         observeDom: true,
         meta: { version: '1.0', description: '' }
       },
+      plugins: [{
+        pluginId: 0,
+        pageId: 0,
+        pluginName: '',
+        enabled: true
+      }],
       pages: {},
       rules: [],
       callbacks: []

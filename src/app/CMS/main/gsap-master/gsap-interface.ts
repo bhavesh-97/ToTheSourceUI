@@ -88,12 +88,14 @@ export interface GsapTimelineStep {
   order: number;
   label?: string;
   selector?: string;
-  from?: Record<string, any>;
-  to?: Record<string, any>;
+  from?: CssStyleValue;
+  to?: CssStyleValue;
   duration?: number;
   ease?: string;
   delay?: number;
 }
+
+export type CssStyleValue = Record<string, any> | string;
 
 export interface GsapRule {
   ruleId?: number;
@@ -101,8 +103,8 @@ export interface GsapRule {
   ruleKey?: string;
   label?: string;
   selector: string;
-  from?: Record<string, any>;
-  to?: Record<string, any>;
+  from?: CssStyleValue;
+  to?: CssStyleValue;
   duration?: number;
   ease?: string;
   stagger?: number | { each: number };
@@ -118,7 +120,7 @@ export interface GsapRule {
   callbacks?: GsapCallback[];
   media?: GsapMedia;
   version?: number;
-  styles?: Record<string, string>;
+  styles?: CssStyleValue;
   timelineSteps?: GsapTimelineStep[];
 }
 
@@ -130,6 +132,7 @@ export interface GsapPage {
 
 export interface GsapConfig {
   global: GsapGlobal;
+  plugins: GsapPlugin[];
   pages?: Record<string, GsapPage>;
   rules?: GsapRule[];
   callbacks?: GsapCallback[];
@@ -213,3 +216,64 @@ export interface PageConfig {
 export type MediaType = 'image' | 'video' | 'audio' | 'none';
 
 export type Severity =  'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
+
+export class SaveGsapConfigRequest {
+  pageId: string = '';
+  pageKey: string = '';
+  label: string = '';
+  globalDefaults: SaveGsapGlobalDefaults = new SaveGsapGlobalDefaults();
+  plugins: SaveGsapPlugin[] = [];
+  rules: SaveGsapRule[] = [];
+  callbacks: SaveGsapCallback[] = [];
+}
+
+export class SaveGsapGlobalDefaults {
+  defaultsId: number = 0;
+  pageId: string = '';
+  duration: number = 1;
+  ease: string = 'power2.out';
+  stagger: number = 0.1;
+  delay: number = 0;
+  repeat: number = 0;
+  yoyo: boolean = false;
+}
+
+export class SaveGsapPlugin {
+  pluginId: number = 0;
+  pageId: string = '';
+  pluginName: string = '';
+  enabled: boolean = true;
+}
+
+export class SaveGsapRule {
+  ruleId: number = 0;
+  pageId: string = '';
+  ruleKey: string = '';
+  label: string = '';
+  selector: string = '';
+  type: string = '';
+  status: string = '';
+  from: any = {};
+  to: any = {};
+  styles: any = {};
+}
+
+export class SaveGsapRuleProperty {
+  propertyId: number = 0;
+  ruleId: number = 0;
+  direction: string = 'to';
+  propName: string = '';
+  propValue: string = '';
+  valueType: string = 'number';
+  sortOrder: number = 0;
+}
+
+export class SaveGsapCallback {
+  callbackId: number = 0;
+  ruleId: number = 0;
+  eventName: string = '';
+  handlerName: string = '';
+  handlerCode: string = '';
+  name: string = '';
+  script: string = '';
+}

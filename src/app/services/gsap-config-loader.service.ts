@@ -95,7 +95,7 @@ export class GsapConfigLoaderService {
       }
     }
 
-    return { global, pages };
+    return { global, pages, plugins: [] };
   }
 
   private convertRules(apiRules: any[]): GsapRule[] {
@@ -134,7 +134,8 @@ export class GsapConfigLoaderService {
         status: 'Active',
         pageId: ''
       },
-      pages: this.getDefaultPages()
+      pages: this.getDefaultPages(),
+      plugins: []
     };
   }
 

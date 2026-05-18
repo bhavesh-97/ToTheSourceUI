@@ -1,44 +1,89 @@
 /* src/app/pages/gsap-config-page.css */
-.preview-area { 
-  border: 1px solid #ddd; 
-  padding: 10px; 
+.preview-area {
+  border: none;
+  padding: 0;
 }
-.form-control { 
-  margin-bottom: 10px; 
+.preview-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  flex-wrap: wrap;
 }
-.card { 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+.preview-toolbar .preview-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-size: 13px;
 }
-.text-truncate { 
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+.preview-toolbar .preview-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.nav-tabs .nav-link.active {
-  background-color: #fff;
-  border-color: #dee2e6 #dee2e6 #fff;
+.preview-content {
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 300px;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+  align-content: flex-start;
 }
-.tab-content .tab-pane {
-  display: none;
+.preview-rule-element {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 11px;
+  text-align: center;
+  word-break: break-word;
+  padding: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.tab-content .tab-pane.active {
-  display: block;
+.preview-rule-element:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
-/* src/app/pages/gsap-config-page.css */
-.preview-area { 
-  border: 1px solid #ddd; 
-  padding: 10px; 
+.preview-element {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
-.form-control { 
-  margin-bottom: 10px; 
+.preview-element:hover {
+  transform: scale(1.1);
+  z-index: 10;
 }
-.card { 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+.form-control {
+  margin-bottom: 10px;
 }
-.text-truncate { 
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+.card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .nav-tabs .nav-link.active {
   background-color: #fff;
@@ -55,25 +100,42 @@ small.text-muted {
   font-size: 0.875em;
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.preview-loading {
+  animation: pulse 1.5s infinite;
+}
+
 /* Responsive Dialogs */
 @media (max-width: 768px) {
   .p-dialog {
     width: 95vw !important;
     max-width: none !important;
   }
-  
+
   .p-dialog .p-dialog-content {
     max-height: 70vh;
     overflow-y: auto;
   }
-  
+
   .nav-tabs .nav-link {
     font-size: 0.875rem;
     padding: 0.5rem;
   }
-  
+
   .table-responsive {
     font-size: 0.875rem;
+  }
+
+  .preview-content {
+    justify-content: center;
+  }
+
+  .preview-rule-element, .preview-element {
+    width: 80px;
+    height: 80px;
   }
 }
 
@@ -88,12 +150,12 @@ small.text-muted {
   .row.g-3 > .col-12 {
     margin-bottom: 1rem;
   }
-  
+
   .card-footer .btn {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-  
+
   .card-footer small {
     text-align: center;
   }

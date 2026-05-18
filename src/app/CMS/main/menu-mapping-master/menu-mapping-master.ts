@@ -24,7 +24,6 @@ import { MMenuResourceMaster } from '../menu-resource-master/MenuResourceMaster'
 import { MenuTypeOption, MMenuMappingMaster, ParentMenuOption, SaveMenuMappingRequest, StatusOption } from './MenuMappingMaster';
 import { CardModule } from "primeng/card";
 import { MessageModule } from 'primeng/message';
-import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { TableModule } from "primeng/table";
@@ -33,6 +32,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { MMenuTypeMaster } from '../../../models/MMenuTypeMaster';
 import { MSiteAreaMaster } from '../../../models/MSiteAreaMaster';
 import { MenuResourceMasterService } from '../menu-resource-master/menu-resource-master.service';
+import { FormUtils } from '../../../shared/utilities/form-utils';
 @Component({
   selector: 'app-menu-mapping-master',
   standalone: true,

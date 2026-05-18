@@ -19,8 +19,8 @@ import { MRoleMaster } from './MRoleMaster';
 import { ConfirmationService } from 'primeng/api';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
-import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 import { RolemasterService } from './rolemaster.service';
+import { FormUtils } from '../../../shared/utilities/form-utils';
 
 @Component({
   selector: 'app-rolemaster',

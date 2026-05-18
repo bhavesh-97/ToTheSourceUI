@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
-import { GsapRule } from '../../CMS/main/gsap-master/gsap-interface';
+import { GsapRule, CssStyleValue } from '../../CMS/main/gsap-master/gsap-interface';
 
 @Injectable({
   providedIn: 'root'
@@ -51,8 +51,8 @@ export class WebGsapService {
       ruleId: r.id || r.ruleKey || r.RuleKey || `rule-${Math.random()}`,
       label: r.label || r.Label || '',
       selector: r.selector || r.Selector || '',
-      from: this.parseFromTo(r.from || r.From || r.fromProperties),
-      to: this.parseFromTo(r.to || r.To || r.toProperties),
+      from: r.from || r.From || r.fromProperties || { opacity: 0, y: 30 },
+      to: r.to || r.To || r.toProperties || { opacity: 1, y: 0 },
       duration: r.duration || r.Duration || 1,
       ease: r.ease || r.Ease || 'power2.out',
       stagger: r.stagger || r.Stagger,
@@ -63,20 +63,61 @@ export class WebGsapService {
       scrollEnabled: r.scrollEnabled || r.ScrollEnabled || false,
       status: r.status || r.Status || 'Published',
       type: r.type || r.Type || 'fromTo',
-      pageId: r.pageId || r.PageId || ''
+      pageId: r.pageId || r.PageId || '',
+      styles: r.styles || r.Styles || {}
     }));
   }
 
   private parseFromTo(data: any): Record<string, any> {
     if (!data) return { opacity: 0, y: 30 };
     if (typeof data === 'string') {
-      try {
-        return JSON.parse(data);
-      } catch {
+      return this.parseCssInput(data);
+    }
+    if (typeof data === 'object') return data;
         return { opacity: 0, y: 30 };
       }
+
+  private parseCssInput(input: string): Record<string, any> {
+    if (!input) return {};
+    const trimmed = input.trim();
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed === 'object' && parsed !== null) return parsed;
+      } catch (e) {}
     }
-    return data || { opacity: 0, y: 30 };
+
+    const cssRules: Record<string, any> = {};
+    const classMatch = trimmed.match(/\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*\{([^}]*)\}/);
+    if (classMatch && classMatch[2]) {
+      const declarations = classMatch[2].split(';').filter(d => d.trim());
+      declarations.forEach(decl => {
+        const [prop, val] = decl.split(':').map(s => s.trim());
+        if (prop && val) {
+          const camelProp = this.kebabToCamel(prop);
+          const numVal = parseFloat(val);
+          cssRules[camelProp] = isNaN(numVal) ? val : numVal;
+        }
+      });
+      return cssRules;
+    }
+
+    const styleProps = trimmed.split(';').filter(s => s.trim());
+    styleProps.forEach(style => {
+      const [prop, val] = style.split(':').map(s => s.trim());
+      if (prop && val) {
+        const camelProp = this.kebabToCamel(prop);
+        const numVal = parseFloat(val);
+        cssRules[camelProp] = isNaN(numVal) ? val : numVal;
+      }
+    });
+
+    return cssRules;
+  }
+
+  private kebabToCamel(str: string): string {
+    return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
   applyAnimations(pageKey: string, container: HTMLElement) {
@@ -85,16 +126,27 @@ export class WebGsapService {
     });
   }
 
-  private executeRules(rules: GsapRule[], container: HTMLElement) {
+private executeRules(rules: GsapRule[], container: HTMLElement) {
     rules.forEach(rule => {
       if (rule.status !== 'published' && rule.status !== 'Published') return;
-      
+
       const elements = container.querySelectorAll(rule.selector);
       if (!elements.length) return;
 
-      const from = rule.from || { opacity: 0, y: 30 };
-      const to = rule.to || { opacity: 1, y: 0 };
+      const from = this.parseFromTo(rule.from as CssStyleValue);
+      const to = this.parseFromTo(rule.to as CssStyleValue);
+      const styles = this.parseFromTo(rule.styles as CssStyleValue);
       const stagger = typeof rule.stagger === 'number' ? rule.stagger : 0;
+
+      elements.forEach(el => {
+        if (Object.keys(styles).length > 0) {
+          Object.entries(styles).forEach(([prop, value]) => {
+            try {
+              (el as HTMLElement).style.setProperty(prop, String(value));
+            } catch (e) {}
+          });
+        }
+      });
 
       if (rule.scrollEnabled) {
         gsap.fromTo(elements, from, {

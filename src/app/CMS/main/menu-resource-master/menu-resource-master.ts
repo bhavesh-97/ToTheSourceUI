@@ -16,11 +16,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Table, TableModule } from 'primeng/table';
 import { NotificationService } from '../../../services/notification.service';
 import { MenuResourceMasterService } from './menu-resource-master.service';
-import { FormUtils } from '../../../shared/utilities/form-utils.ts';
 import { MMenuResourceMaster } from './MenuResourceMaster';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { PopupMessageType } from '../../../models/PopupMessageType';
+import { FormUtils } from '../../../shared/utilities/form-utils';
 @Component({
   selector: 'app-menu-resource-master',
   imports: [   

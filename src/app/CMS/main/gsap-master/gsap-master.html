@@ -66,10 +66,11 @@
       </div>
 
       <!-- Add Page Dialog -->
-      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}">
+      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="pageForm">
         <div class="mb-2">
+          <input pInputText #inputField formControlName="newPageTitle" hidden/>
           <label class="form-label">Title</label>
-          <input type="text" class="form-control" [(ngModel)]="newPageTitle" placeholder="e.g., Landing Page">
+          <input type="text" class="form-control" formControlName="newPageTitle" placeholder="e.g., Landing Page">
         </div>
         <ng-template pTemplate="footer">
           <button pButton label="Add" icon="pi pi-check" (click)="addPage()"></button>
@@ -79,7 +80,7 @@
 
       <!-- Tabs Editor -->
       <div *ngIf="config && selectedPage" class="row">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-12">
           <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
               <h5 class="mb-0">Config Editor for {{ selectedPage.label }}</h5>
@@ -91,39 +92,52 @@
                         <p-tab [value]="0">Global</p-tab>
                         <p-tab [value]="1">Rules</p-tab>
                         <p-tab [value]="2">Callbacks</p-tab>
-                        <!-- <p-tab [value]="3">Raw JSON</p-tab> -->
                     </p-tablist>
                     <p-tabpanels>
                         <!-- Global Tab -->
-                        <p-tabpanel [value]="0">
+                        <p-tabpanel [value]="0" [formGroup]="pageForm">
                             <div class="row g-2 mb-3">
                                 <div class="col-12 col-sm-6">
+                                  <input pInputText #inputField formControlName="duration" hidden/>
                                   <label class="form-label">Duration</label>
-                                  <input type="number" class="form-control" [(ngModel)]="config.global.defaults.duration" (input)="onFormChange()">
+                                  <input type="number" class="form-control" formControlName="duration" (input)="onFormChange()">
                                 </div>
                                 <div class="col-12 col-sm-6">
+                                  <input pInputText #inputField formControlName="ease" hidden/>
                                   <label class="form-label">Ease</label>
-                                  <p-select [options]="easeOptions" [(ngModel)]="config.global.defaults.ease" optionLabel="label" optionValue="value" (onChange)="onFormChange()" placeholder="Select Ease" [style]="{'width':'100%'}"></p-select>
+                                  <p-select [options]="easeOptions" formControlName="ease" optionLabel="label" optionValue="value" (onChange)="onFormChange()" placeholder="Select Ease" [style]="{'width':'100%'}"></p-select>
                                 </div>
                             </div>
                             <div class="row g-2 mb-3">
                                 <div class="col-12 col-sm-6">
+                                  <input pInputText #inputField formControlName="stagger" hidden/>
                                   <label class="form-label">Stagger</label>
-                                  <input type="number" class="form-control" [(ngModel)]="config.global.defaults.stagger" step="0.1" (input)="onFormChange()">
+                                  <input type="number" class="form-control" formControlName="stagger" step="0.1" (input)="onFormChange()">
                                 </div>
                                 <div class="col-12 col-sm-6">
+                                  <input pInputText #inputField formControlName="registerPlugins" hidden/>
                                   <label class="form-label">Plugins</label>
-                                  <p-multiselect [options]="pluginOptions" [(ngModel)]="config.global.registerPlugins" optionLabel="label" optionValue="value" placeholder="Select Plugins" [style]="{'width':'100%'}"></p-multiselect>
+                                  <p-multiselect [options]="pluginOptions" formControlName="registerPlugins" optionLabel="label" optionValue="value" placeholder="Select Plugins" [style]="{'width':'100%'}"></p-multiselect>
                                 </div>
                             </div>
                              <div class="mb-3">
-                                    <p-checkbox [(ngModel)]="config.global.autoInit" [binary]="true" (onChange)="onFormChange()" inputId="autoInit"></p-checkbox>
+                                  <input pInputText #inputField formControlName="autoInit" hidden/>
+                                    <p-checkbox formControlName="autoInit" [binary]="true" (onChange)="onFormChange()" inputId="autoInit"></p-checkbox>
                                     <label for="autoInit" class="ms-2">Auto Init</label>
                               </div>
                         </p-tabpanel>
 
                          <!-- Rules Tab -->
                         <p-tabpanel [value]="1">
+                            <div class="alert alert-info small mb-2" role="alert">
+                                <strong><i class="pi pi-info-circle"></i> GSAP Rule Guide:</strong> Rules define animations for specific elements.
+                                <ul class="mb-0 mt-1">
+                                    <li><strong>Type</strong>: fromTo (animate from A to B), to (animate to target), from (animate from target), set (set values instantly), timeline (sequence multiple steps)</li>
+                                    <li><strong>Selector</strong>: CSS selector like <code>.classname</code>, <code>#id</code>, <code>div</code>, or <code>.parent .child</code></li>
+                                    <li><strong>From/To</strong>: JSON with GSAP properties - <code>opacity</code>, <code>x</code>, <code>y</code>, <code>scale</code>, <code>rotation</code>, <code>rotationX</code>, <code>rotationY</code>, <code>skewX</code>, <code>skewY</code>, <code>backgroundColor</code>, <code>borderRadius</code>, <code>filter</code>, <code>clipPath</code>, <code>transformOrigin</code></li>
+                                    <li><strong>Duration</strong>, <strong>Ease</strong>, <strong>Stagger</strong>, <strong>Delay</strong> are inherited from Global defaults - only set in rule if you want to override</li>
+                                </ul>
+                            </div>
                             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                                 <button pButton label="Add Rule" icon="pi pi-plus" class="p-button-sm p-button-primary mt-1 mt-md-0" (click)="addRule(selectedPage)"> </button>
                             </div>
@@ -143,10 +157,10 @@
                                       <tr>
                                         <td >{{ dt.first + i + 1 }}</td>
                                         <td>{{ rule.label }}</td>
-                                        <td>{{ rule.type }}</td>
+                                        <td>{{ getTypeLabel(rule.type) }}</td>
                                         <td>{{ rule.selector }}</td>
                                         <td>
-                                          <p-tag [value]="rule.status" [severity]="getStatusSeverity(rule.status)">
+                                          <p-tag [value]="getStatusLabel(rule.status)" [severity]="getStatusSeverity(rule.status)">
                                           </p-tag>
                                         </td>
                                         <td class="text-center">
@@ -161,6 +175,14 @@
 
                         <!-- Callbacks Tab -->
                         <p-tabpanel [value]="2">
+                            <div class="alert alert-warning small mb-2" role="alert">
+                                <strong><i class="pi pi-info-circle"></i> GSAP Callback Guide:</strong> Callbacks execute custom code at specific animation events.
+                                <ul class="mb-0 mt-1">
+                                    <li><strong>Name/Event</strong>: Use one of: <code>onStart</code> (animation begins), <code>onUpdate</code> (every frame), <code>onComplete</code> (animation finishes), <code>onRepeat</code> (each repeat), <code>onReverseComplete</code> (reverse finishes)</li>
+                                    <li><strong>Script</strong>: JavaScript code. Available variables: <code>tween</code> (the GSAP tween), <code>element</code> (animated DOM element)</li>
+                                    <li><strong>Example</strong>: <code>console.log('Animation started!'); element.classList.add('active');</code></li>
+                                </ul>
+                            </div>
                             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                               <button
                                 pButton
@@ -215,115 +237,63 @@
                               </p-table>
                             </div>
                         </p-tabpanel>
-                        <!-- Raw JSON Tab -->
-                        <!-- <p-tabpanel [value]="3"> -->
-                            <!-- <textarea
-                              class="form-control"
-                              rows="12"
-                              [(ngModel)]="configJson"
-                              (input)="onJsonChange($event)"
-                              placeholder="Full JSON config...">
-                            </textarea> -->
-                      
-                            <!-- <div class="mt-2 d-flex gap-2"> -->
-                              <!-- <button
-                                pButton
-                                label="Import JSON"
-                                icon="pi pi-upload"
-                                class="p-button-secondary"
-                                (click)="importJson()">
-                              </button>
-                      
-                              <button
-                                pButton
-                                label="Export JSON"
-                                icon="pi pi-download"
-                                class="p-button-secondary"
-                                (click)="exportJson()">
-                              </button> -->
-                            <!-- </div> -->
-                        <!-- </p-tabpanel> -->
                     </p-tabpanels>
 
                 </p-tabs>
             </div>
           </div>
         </div>
-
-        <!-- Preview Panel -->
-        <div class="col-12 col-md-6">
-          <div class="card h-100">
-            <div class="card-header">
-              <h5 class="mb-0">Live Preview for {{ selectedPage.label }}</h5>
-            </div>
-            <div class="card-body p-0" style="height: 400px; overflow: auto; background: #f5f5f5;">
-              <div #previewContainer class="preview-area bg-light position-relative" style="width:100%; height:100%;"></div>
-            </div>
-            <div class="card-footer d-flex flex-wrap justify-content-between align-items-center">
-              <div class="d-flex gap-2">
-                <button pButton label="Apply" icon="pi pi-play" class="p-button-success" (click)="applyConfig()"></button>
-                <button pButton label="Reset" icon="pi pi-refresh" class="p-button-secondary" (click)="resetPreview()"></button>
-                <button pButton label="Pause" icon="pi pi-pause" class="p-button-warning" (click)="pauseAnimation()"></button>
-                <button pButton label="Play" icon="pi pi-play" class="p-button-info" (click)="playAnimation()"></button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Rule/Callback Edit Dialog -->
-      <p-dialog [(visible)]="showEditDialog" modal="true" [header]="editMode === 'rule' ? 'Edit Rule' : 'Edit Callback'" [style]="{width: '90vw', maxWidth: '50vw'}">
-        <div *ngIf="editMode === 'rule'">
-          <div class="mb-2" *ngIf="editingRule.media">
-            <label>Media Type</label>
-            <p-select [options]="[{label: 'None', value: 'none'}, {label: 'Image', value: 'image'}, {label: 'Video', value: 'video'}, {label: 'Audio', value: 'audio'}]" [(ngModel)]="editingRule.media.type" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
-          </div>
-          <div class="mb-3" *ngIf="editingRule.media && editingRule.media.type !== 'none'">
-            <label class="form-label">Media URL</label>
-            <input type="url" class="form-control" [(ngModel)]="editingRule.media.url" placeholder="https://example.com/media.jpg" (input)="onFormChange()">
-            <div class="mt-3 text-center" *ngIf="editingRule.media.url">
-              <img *ngIf="editingRule.media.type === 'image'" [src]="editingRule.media.url" alt="Preview" class="img-fluid rounded" style="max-height: 150px;" onerror="this.style.display='none'">
-              <video *ngIf="editingRule.media.type === 'video'" [src]="editingRule.media.url" controls class="rounded" style="max-height: 150px;"></video>
-              <audio *ngIf="editingRule.media.type === 'audio'" [src]="editingRule.media.url" controls class="w-100"></audio>
-            </div>
-          </div>
-          <div class="row g-3">
-            <!-- <div class="col-12">
-              <label class="form-label">RuleId</label>
-              <input type="text" class="form-control" [(ngModel)]="editingRule.ruleId" (input)="onFormChange()">
-            </div> -->
+      <p-dialog [(visible)]="showEditDialog" [draggable]="false" modal="true" [header]="editMode === 'rule' ? (editingIndex !== null ? 'Edit Rule' : 'Add Rule') : (editingIndex !== null ? 'Edit Callback' : 'Add Callback')" [style]="{width: '90vw', maxWidth: '50vw'}">
+        <div *ngIf="editMode === 'rule'" [formGroup]="ruleForm">
+            <div class="mb-2">
+              <label>Media Type</label>
+             <p-select #inputField [options]="[{label: 'None', value: 'none'}, {label: 'Image', value: 'image'}, {label: 'Video', value: 'video'}, {label: 'Audio', value: 'audio'}]" formControlName="mediaType" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+           </div>
+           <div class="mb-3" *ngIf="ruleForm.get('mediaType')?.value && ruleForm.get('mediaType')?.value !== 'none'">
+             <label class="form-label">Media URL</label>
+             <input type="url" #inputField class="form-control" formControlName="mediaUrl" placeholder="https://example.com/media.jpg" (input)="onFormChange()">
+             <div class="mt-3 text-center" *ngIf="ruleForm.get('mediaUrl')?.value">
+               <img #inputField *ngIf="ruleForm.get('mediaType')?.value === 'image'" [src]="ruleForm.get('mediaUrl')?.value" alt="Preview" class="img-fluid rounded" style="max-height: 150px;" onerror="this.style.display='none'">
+               <video #inputField *ngIf="ruleForm.get('mediaType')?.value === 'video'" [src]="ruleForm.get('mediaUrl')?.value" controls class="rounded" style="max-height: 150px;"></video>
+               <audio #inputField *ngIf="ruleForm.get('mediaType')?.value === 'audio'" [src]="ruleForm.get('mediaUrl')?.value" controls class="w-100"></audio>
+             </div>
+           </div>
+           <div class="row g-3">
+             <div class="col-12">
+               <label class="form-label">Label</label>
+               <input type="text" #inputField class="form-control" formControlName="label" (input)="onFormChange()">
+             </div>
+             <div class="col-12 col-sm-6">
+               <label class="form-label">Type</label>
+               <p-select [options]="animationTypes" #inputField formControlName="type" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+             </div>
+             <div class="col-12 col-sm-6">
+               <label class="form-label">Status</label>
+               <p-select [options]="statusOptions" #inputField formControlName="status" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+             </div>
             <div class="col-12">
-              <label class="form-label">Label</label>
-              <input type="text" class="form-control" [(ngModel)]="editingRule.label" (input)="onFormChange()">
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label">Type</label>
-              <p-select [options]="animationTypes" [(ngModel)]="editingRule.type" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label">Status</label>
-              <p-select [options]="statusOptions" [(ngModel)]="editingRule.status" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Selector (CSS class or ID)</label>
-              <input type="text" class="form-control" [(ngModel)]="editingRule.selector" (input)="onFormChange()">
-              <small class="text-muted" *ngIf="editingRule.selector && getSelectorWarning(editingRule.selector)"> 
-                ⚠ {{ getSelectorWarning(editingRule.selector) }}
-              </small>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Styles (JSON)</label>
-              <textarea class="form-control" rows="2" [(ngModel)]="editingRuleStylesJson" (input)="onFormChange()"></textarea>
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label">From (JSON)</label>
-              <textarea class="form-control" rows="3" [(ngModel)]="editingRuleFromJson" (input)="onFormChange()"></textarea>
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label">To (JSON)</label>
-              <textarea class="form-control" rows="3" [(ngModel)]="editingRuleToJson" (input)="onFormChange()"></textarea>
-            </div>
-            <div class="col-12" *ngIf="editingRule.type === 'timeline' || editingRule.type === 'Timeline'">
+                <label class="form-label">Selector (CSS class or ID)</label>
+                <input type="text" #inputField class="form-control" formControlName="selector" (input)="onFormChange()">
+                <small class="text-muted" *ngIf="ruleForm.get('selector')?.value && getSelectorWarning(ruleForm.get('selector')?.value)">
+                  ⚠ {{ getSelectorWarning(ruleForm.get('selector')?.value) }}
+                </small>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Styles</label>
+                <textarea class="form-control" rows="2" #inputField formControlName="editingRuleStylesJson" (input)="onFormChange()" placeholder='{"background-color": "#1e1e1e"} or .master { background-color: #252526; }'></textarea>
+               </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label">From</label>
+                <textarea class="form-control" rows="3" #inputField formControlName="editingRuleFromJson" (input)="onFormChange()" placeholder='{"opacity": 0, "y": 30} or .from { opacity: 0; }'></textarea>
+               </div>
+              <div class="col-12 col-sm-6">
+                <label class="form-label">To</label>
+                <textarea class="form-control" rows="3" #inputField formControlName="editingRuleToJson" (input)="onFormChange()" placeholder='{"opacity": 1, "y": 0} or .to { opacity: 1; }'></textarea>
+              </div>
+            <div class="col-12" *ngIf="ruleForm.get('type')?.value === 'timeline' || ruleForm.get('type')?.value === 'Timeline'">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label class="form-label mb-0">Timeline Steps</label>
                 <button pButton label="Add Step" icon="pi pi-plus" class="p-button-sm p-button-outline-primary" (click)="addNestedStep()"></button>
@@ -337,23 +307,23 @@
                   <div class="row g-2">
                     <div class="col-12 col-sm-6">
                       <label class="form-label small">Label</label>
-                      <input type="text" class="form-control form-control-sm" [(ngModel)]="step.label" (input)="onFormChange()">
+                      <input type="text" #inputField class="form-control form-control-sm" [formControlName]="'timelineLabel' + i" (input)="onFormChange()">
                     </div>
                     <div class="col-12 col-sm-6">
                       <label class="form-label small">Selector</label>
-                      <input type="text" class="form-control form-control-sm" [(ngModel)]="step.selector" (input)="onFormChange()">
+                      <input type="text" #inputField class="form-control form-control-sm" [formControlName]="'timelineSelector' + i" (input)="onFormChange()">
                     </div>
                     <div class="col-12 col-sm-4">
                       <label class="form-label small">Duration</label>
-                      <input type="number" class="form-control form-control-sm" [(ngModel)]="step.duration" step="0.1" (input)="onFormChange()">
+                      <input type="number" #inputField class="form-control form-control-sm" [formControlName]="'timelineDuration' + i" step="0.1" (input)="onFormChange()">
                     </div>
                     <div class="col-12 col-sm-4">
                       <label class="form-label small">Ease</label>
-                      <input type="text" class="form-control form-control-sm" [(ngModel)]="step.ease" (input)="onFormChange()">
+                      <input type="text" #inputField class="form-control form-control-sm" [formControlName]="'timelineEase' + i" (input)="onFormChange()">
                     </div>
                     <div class="col-12 col-sm-4">
                       <label class="form-label small">Delay</label>
-                      <input type="number" class="form-control form-control-sm" [(ngModel)]="step.delay" step="0.1" (input)="onFormChange()">
+                      <input type="number" #inputField class="form-control form-control-sm" [formControlName]="'timelineDelay' + i" step="0.1" (input)="onFormChange()">
                     </div>
                   </div>
                 </div>
@@ -364,14 +334,14 @@
             </div>
           </div>
         </div>
-        <div *ngIf="editMode === 'callback'" class="row g-3">
+        <div *ngIf="editMode === 'callback'" [formGroup]="callbackForm" class="row g-3">
           <div class="col-12">
-            <label class="form-label">Name</label>
-            <input type="text" class="form-control" [(ngModel)]="editingCallback.name" (input)="onFormChange()">
+            <label class="form-label">Name *</label>
+            <input type="text" #inputField class="form-control" formControlName="name" (input)="onFormChange()">
           </div>
           <div class="col-12">
-            <label class="form-label">Script (JavaScript)</label>
-            <textarea class="form-control" rows="4" [(ngModel)]="editingCallback.script" (input)="onFormChange()"></textarea>
+            <label class="form-label">Script (JavaScript) *</label>
+            <textarea class="form-control" rows="4" #inputField formControlName="script" (input)="onFormChange()"></textarea>
           </div>
         </div>
         <ng-template pTemplate="footer">
