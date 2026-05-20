@@ -12,20 +12,15 @@ import { LoadingInterceptor } from '../app/interceptors/loading.interceptor';
 import { tokenInterceptor } from './interceptors/token-interceptor';
 import { provideNebular } from './@theme/theme.imports';
 import { NbMenuModule } from '@nebular/theme';
-import { GsapConfigLoaderService } from './services/gsap-config-loader.service';
-
-export function loadGsapConfig(configLoader: GsapConfigLoaderService) {
-  return () => configLoader.load();
-}
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync('animations'),
-    importProvidersFrom(BrowserAnimationsModule,NbMenuModule.forRoot() ),
+    importProvidersFrom(BrowserAnimationsModule, NbMenuModule.forRoot()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-     provideHttpClient(
+    provideHttpClient(
       withInterceptors([
         tokenInterceptor,
         encryptionInterceptor
@@ -34,25 +29,23 @@ export const appConfig: ApplicationConfig = {
     ),
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
     providePrimeNG({
-        theme: {
-            preset: Aura,
-            options: {
-                darkModeSelector: '.my-app-dark',
-                // darkMode: false 
-            }
-        },
-        ripple: true 
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: '.my-app-dark',
+        }
+      },
+      ripple: true
     }),
     provideToastr({
-        timeOut: 15000,
-        positionClass: 'toast-top-right',
-        preventDuplicates: true,
-        closeButton: true,
-        progressBar: true, 
-        tapToDismiss: true,
-        toastClass: 'ngx-toastr toast-animate',
+      timeOut: 15000,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      closeButton: true,
+      progressBar: true,
+      tapToDismiss: true,
+      toastClass: 'ngx-toastr toast-animate',
     }),
     provideNebular()
   ]
 };
-

@@ -3,6 +3,10 @@ import { inject, Injectable, NgZone } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Draggable } from 'gsap/Draggable';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { TextPlugin } from 'gsap/TextPlugin';
+import { CustomEase } from 'gsap/CustomEase';
+import { Flip } from 'gsap/Flip';
 import { delay, Observable, of, from, map } from 'rxjs';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { GsapConfigLoaderService } from '../../../services/gsap-config-loader.service';
@@ -76,10 +80,6 @@ export class GsapMasterService {
     return this.loader.load(configName);
   }
 
-  async getPagesFromApi(configName: string = 'default'): Promise<Record<string, GsapPage>> {
-    return this.loader.getPagesFromApi(configName);
-  }
-
   getConfigs(projectCode: string): Observable<GsapConfig> {
     return from(this.getConfigsFromApi(projectCode)).pipe(
       map(config => config as GsapConfig),
@@ -87,22 +87,38 @@ export class GsapMasterService {
     );
   }
   
-  getConfigForPage(pageId: string): Observable<GsapConfig> {
+  getConfigForPage(pageId: string): Observable<GsapConfig | null> {
     return from(this.getConfigForPageAsync(pageId)).pipe(delay(50));
   }
 
-  async getConfigForPageAsync(pageId: string): Promise<GsapConfig> {
-    const pages = await this.getPagesFromApi('default');
-    if (pages[pageId]) {
-      return {
-        global: this.getDefaultGlobal(),
-        plugins: this.getDefaultPlugin(),
-        pages: { [pageId]: pages[pageId] },
-        rules: pages[pageId].rules || [],
-        callbacks: pages[pageId].callbacks || []
-      };
-    }
-    return this.getDefaultConfig();
+  getConfigForPageFromCache(pageId: string): GsapConfig | null {
+    const cachedConfig = this.loader.getConfig();
+    const pages = cachedConfig?.pages;
+    if (!pages || !pages[pageId]) return null;
+    return {
+      global: cachedConfig?.global || this.getDefaultGlobal(),
+      plugins: cachedConfig?.plugins || this.getDefaultPlugin(),
+      pages: { [pageId]: pages[pageId] },
+      rules: pages[pageId].rules || [],
+      callbacks: pages[pageId].callbacks || []
+    };
+  }
+
+  getPagesFromCache(): Record<string, any> | null {
+    return this.loader.getConfig()?.pages || null;
+  }
+
+async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
+    const config = await this.loader.load(pageId);
+    const pages = config?.pages || {};
+    if (!pages[pageId]) return null;
+    return {
+      global: config.global || this.getDefaultGlobal(),
+      plugins: config.plugins || this.getDefaultPlugin(),
+      pages: { [pageId]: pages[pageId] },
+      rules: pages[pageId].rules || [],
+      callbacks: pages[pageId].callbacks || []
+    };
   }
   
   //#region Default Configs
@@ -424,23 +440,35 @@ export class GsapMasterService {
   }
 
   private registerPlugins(plugins: string[]) {
-    plugins.forEach(pluginName => {
+    plugins.forEach((pluginName: string) => {
       const pluginLower = pluginName.toLowerCase();
       if (this.registeredPlugins.includes(pluginLower)) return;
 
       try {
         switch (pluginLower) {
           case 'scrolltrigger':
-            if (!ScrollTrigger) {
-              gsap.registerPlugin(ScrollTrigger);
-            }
+            gsap.registerPlugin(ScrollTrigger);
             this.registeredPlugins.push('scrolltrigger');
             break;
           case 'draggable':
-            if (!Draggable) {
-              gsap.registerPlugin(Draggable);
-            }
+            gsap.registerPlugin(Draggable);
             this.registeredPlugins.push('draggable');
+            break;
+          case 'scrolltoplugin':
+            gsap.registerPlugin(ScrollToPlugin);
+            this.registeredPlugins.push('scrolltoplugin');
+            break;
+          case 'textplugin':
+            gsap.registerPlugin(TextPlugin);
+            this.registeredPlugins.push('textplugin');
+            break;
+          case 'customease':
+            gsap.registerPlugin(CustomEase);
+            this.registeredPlugins.push('customease');
+            break;
+          case 'flip':
+            gsap.registerPlugin(Flip);
+            this.registeredPlugins.push('flip');
             break;
         }
       } catch (e) {

@@ -4,95 +4,107 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { GsapConfig, GsapGlobal, GsapGlobalDefaults, GsapGlobalMeta, GsapPage, GsapRule } from '../CMS/main/gsap-master/gsap-interface';
 
+function parseJson(val: any): Record<string, any> {
+  if (!val) return {};
+  if (typeof val === 'object') return val;
+  try { return JSON.parse(String(val)); } catch { return {}; }
+}
+
 @Injectable({ providedIn: 'root' })
 export class GsapConfigLoaderService {
-  private config: GsapConfig | null = null;
+  private configCache: Map<string, GsapConfig> = new Map();
   private http = inject(HttpClient);
 
   async load(configName: string = 'default'): Promise<GsapConfig> {
-    if (this.config) return this.config;
-    return this.loadFromApi(configName);
+    if (this.configCache.has(configName)) {
+      console.log('[GSAP Loader] Cache hit:', configName);
+      return this.configCache.get(configName)!;
+    }
+    
+    console.log('[GSAP Loader] Cache miss, loading from API:', configName);
+    const result = await this.loadFromApi(configName);
+    
+    console.log('[GSAP Loader] Cache miss, loading from API: result', result);
+    if (result) {
+      this.configCache.set(configName, result);
+      console.log('[GSAP Loader] Loaded & cached:', configName, '| Pages:', Object.keys(result?.pages || {}).join(', '));
+      return result;
+    }
+    return this.getDefaultConfig();
   }
 
-  async loadFromApi(configName: string = 'default'): Promise<GsapConfig> {
+  getConfig(): GsapConfig | null {
+    for (const config of this.configCache.values()) {
+      return config;
+    }
+    return null;
+  }
+
+  isLoaded(): boolean {
+    return this.configCache.size > 0;
+  }
+
+  clearCache(pageKey?: string): void {
+    if (pageKey) {
+      console.log('[GSAP Loader] Clearing cache for:', pageKey);
+      this.configCache.delete(pageKey);
+    } else {
+      console.log('[GSAP Loader] Clearing all cache');
+      this.configCache.clear();
+    }
+  }
+
+  async loadFromApi(configName: string = 'default'): Promise<GsapConfig | null> {
     try {
       const apiUrl = `${environment.CMSUrl}/GsapConfig/name/${configName}`;
       const response = await firstValueFrom(this.http.get<any>(apiUrl));
       
+      console.log('[GSAP Loader] Cache miss, loading from API response:', response);
       if (response && !response.isError && response.result) {
         return this.convertApiToGsapConfig(response.result);
       }
-      return this.getDefaultConfig();
+      return null;
     } catch (err) {
       console.error('Failed to load GSAP config from API:', err);
-      return this.getDefaultConfig();
+      return null;
     }
   }
 
-  async getPagesFromApi(configName: string = 'default'): Promise<Record<string, GsapPage>> {
-    try {
-      const apiUrl = `${environment.CMSUrl}/GsapConfig/name/${configName}`;
-      const response = await firstValueFrom(this.http.get<any>(apiUrl));
-      
-      if (response && !response.isError && response.result?.pages) {
-        const pages: Record<string, GsapPage> = {};
-        for (const pageData of response.result.pages) {
-          const pageKey = pageData.page?.pageKey || pageData.pageKey;
-          if (pageKey) {
-            pages[pageKey] = {
-              label: pageData.page?.label || pageKey,
-              rules: this.convertRules(pageData.rules || []),
-              callbacks: []
-            };
-          }
-        }
-        return pages;
-      }
-    } catch (err) {
-      console.error('Failed to load pages from API:', err);
-    }
-    return this.getDefaultPages();
-  }
+  private convertApiToGsapConfig(apiResult: any): GsapConfig | null {
+    if (!apiResult) return null;
 
-  private convertApiToGsapConfig(apiConfig: any): GsapConfig {
-    const defaults: GsapGlobalDefaults = {
-      duration: apiConfig.defaults?.duration || 1,
-      ease: apiConfig.defaults?.ease || 'power2.out',
-      stagger: apiConfig.defaults?.stagger,
-      delay: apiConfig.defaults?.delay,
-      repeat: apiConfig.defaults?.repeat,
-      yoyo: apiConfig.defaults?.yoyo,
-      pageId: 0
-    };
-
-    const meta: GsapGlobalMeta = {
-      version: apiConfig.config?.version || '1.0',
-      description: apiConfig.config?.description || ''
-    };
+    const globalData = apiResult.global || {};
+    const defaults = globalData.defaults || {};
 
     const global: GsapGlobal = {
-      defaults,
-      registerPlugins: apiConfig.plugins?.map((p: any) => p.pluginName || p.PluginName) || ['ScrollTrigger'],
+      defaults: {
+        duration: Number(defaults.duration) || 1,
+        ease: String(defaults.ease) || 'power2.out',
+        stagger: Number(defaults.stagger) || 0.1,
+        delay: Number(defaults.delay) || 0,
+        repeat: Number(defaults.repeat) || 0,
+        yoyo: Boolean(defaults.yoyo) || false,
+        pageId: 0
+      },
+      registerPlugins: Array.isArray(globalData.registerPlugins) ? globalData.registerPlugins : [],
       autoInit: true,
       observeDom: true,
-      meta,
+      meta: { version: '1.0', description: '' },
       version: 1,
-      status: apiConfig.config?.status || 'Active',
+      status: globalData.status || 'Active',
       pageId: ''
     };
 
     const pages: Record<string, GsapPage> = {};
-    if (apiConfig.pages) {
-      for (const pageData of apiConfig.pages) {
-        const pageKey = pageData.page?.pageKey || pageData.pageKey;
-        if (pageKey) {
-          pages[pageKey] = {
-            label: pageData.page?.label || pageKey,
-            rules: this.convertRules(pageData.rules || []),
-            callbacks: []
-          };
-        }
-      }
+    const pagesData = apiResult.pages || {};
+
+    for (const [pageKey, pageData] of Object.entries(pagesData)) {
+      const pd = pageData as any;
+      pages[pageKey] = {
+        label: pd.label || pageKey,
+        rules: this.convertRules(pd.rules || []),
+        callbacks: this.convertCallbacks(pd.callbacks || [])
+      };
     }
 
     return { global, pages, plugins: [] };
@@ -100,42 +112,46 @@ export class GsapConfigLoaderService {
 
   private convertRules(apiRules: any[]): GsapRule[] {
     return (apiRules || []).map((r: any) => ({
-      ruleId: r.ruleId || r.id || r.ruleKey || r.RuleKey || `rule-${Math.random()}`,
-      label: r.label || r.Label || '',
-      selector: r.selector || r.Selector || '',
-      from: this.convertFromTo(r.from || r.From),
-      to: this.convertFromTo(r.to || r.To),
-      duration: r.duration || r.Duration || 1,
-      ease: r.ease || r.Ease || 'power2.out',
-      stagger: r.stagger || r.Stagger,
-      scrollEnabled: r.scrollEnabled || r.ScrollEnabled || false,
-      status: r.status || r.Status || 'Published',
-      type: r.type || r.Type || 'tween',
-      pageId: r.pageId || r.PageId || ''
+      ruleId: Number(r.ruleid) || 0,
+      label: r.label || '',
+      selector: r.selector || '',
+      from: parseJson(r.from),
+      to: parseJson(r.to),
+      duration: Number(r.duration) || 1,
+      ease: String(r.ease) || 'power2.out',
+      stagger: Number(r.stagger) || 0.1,
+      delay: Number(r.delay) || 0,
+      repeat: Number(r.repeat) || 0,
+      yoyo: Boolean(r.yoyo) || false,
+      paused: Boolean(r.paused) || false,
+      scrollEnabled: Boolean(r.scrollEnabled) || false,
+      status: String(r.status) === '1' ? 'Published' : (r.status || 'Published'),
+      type: String(r.type) || 'tween',
+      pageId: Number(r.pageId) || 0,
+      styles: parseJson(r.styles),
+      sortOrder: Number(r.sortOrder) || 0,
     }));
   }
 
-  private convertFromTo(from: any): Record<string, any> {
-    return from || {};
+  private convertCallbacks(apiCallbacks: any[]): any[] {
+    return (apiCallbacks || []).map((c: any) => ({
+      id: Number(c.callbackId) || 0,
+      eventName: c.eventName || '',
+      handlerName: c.handlerName || '',
+      handlerCode: c.handlerCode || ''
+    }));
   }
 
   getDefaultConfig(): GsapConfig {
     return {
       global: {
-        defaults: {
-          duration: 1, ease: 'power2.out', stagger: 0.1,
-          pageId: 0
-        },
+        defaults: { duration: 1, ease: 'power2.out', stagger: 0.1, pageId: 0, delay: 0, repeat: 0, yoyo: false },
         registerPlugins: ['ScrollTrigger'],
-        autoInit: true,
-        observeDom: true,
-        meta: { version: '1.0', description: 'Default GSAP configuration' },
-        version: 1,
-        status: 'Active',
-        pageId: ''
+        autoInit: true, observeDom: true,
+        meta: { version: '1.0', description: '' },
+        version: 1, status: 'Active', pageId: ''
       },
-      pages: this.getDefaultPages(),
-      plugins: []
+      pages: {}, plugins: []
     };
   }
 
@@ -143,31 +159,14 @@ export class GsapConfigLoaderService {
     return {
       home: {
         label: 'Home',
-        rules: [
-          {
-            ruleId: 0, 
-            selector: '.fade-up', 
-            from: { opacity: 0, y: 50 }, 
-            to: { opacity: 1, y: 0 }, 
-            duration: 1, 
-            ease: 'power2.out', 
-            stagger: 0.1, 
-            scrollEnabled: true, 
-            status: 'Published', 
-            type: 'tween',
-            pageId: 0
-          }
-        ],
+        rules: [{
+          ruleId: 0, selector: '.fade-up',
+          from: { opacity: 0, y: 50 }, to: { opacity: 1, y: 0 },
+          duration: 1, ease: 'power2.out', stagger: 0.1,
+          scrollEnabled: true, status: 'Published', type: 'tween', pageId: 0
+        }],
         callbacks: []
       }
     };
-  }
-
-  getConfig() {
-    return this.config;
-  }
-
-  isLoaded() {
-    return this.config !== null;
   }
 }

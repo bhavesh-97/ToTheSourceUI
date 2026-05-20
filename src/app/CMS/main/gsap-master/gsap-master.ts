@@ -231,7 +231,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   private async loadLookupData() {
     try {
       const [animationTypesRes, easeOptionsRes, statusOptionsRes, pluginOptionsRes] = await Promise.all([
-                firstValueFrom(this.lookupService.GetByCode('animationType')),
+                firstValueFrom(this.lookupService.GetByCode('RULE_TYPE')),
                 firstValueFrom(this.lookupService.GetByCode('easeOption')),
                 firstValueFrom(this.lookupService.GetByCode('GSAP_STATUS')),
                 firstValueFrom(this.lookupService.GetByCode('GSAP_PLUGIN'))
@@ -880,11 +880,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       return option?.label || typeValue;
     }
 
-    const typeMap: Record<string, string> = {
-      'fromTo': 'From To', 'from': 'From', 'to': 'To', 'set': 'Set',
-      'timeline': 'Timeline', 'keyframes': 'Keyframes', 'tween': 'Tween'
-    };
-    return typeMap[typeValue.toLowerCase()] || typeValue;
+    return typeValue;
   }
 
   getEaseLabel(easeValue: string): string {

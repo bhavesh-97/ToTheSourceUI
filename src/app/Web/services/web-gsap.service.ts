@@ -1,10 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { firstValueFrom } from 'rxjs';
-import { GsapRule, CssStyleValue } from '../../CMS/main/gsap-master/gsap-interface';
+import { GsapConfigLoaderService } from '../../services/gsap-config-loader.service';
+import { GsapRule, CssStyleValue, GsapConfig } from '../../CMS/main/gsap-master/gsap-interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,38 +10,34 @@ import { GsapRule, CssStyleValue } from '../../CMS/main/gsap-master/gsap-interfa
 export class WebGsapService {
   private currentPage = signal<string>('');
   private configLoaded = signal<boolean>(false);
-  private configName = 'default';
+  private config: GsapConfig | null = null;
+  private configLoader = inject(GsapConfigLoaderService);
 
-  constructor(private http: HttpClient) {
-    this.init();
-  }
-
-  async init() {
+  async init(): Promise<void> {
     gsap.registerPlugin(ScrollTrigger);
+    this.config = await this.configLoader.load();
+    this.configLoaded.set(true);
   }
 
   async loadPageAnimations(pageKey: string): Promise<GsapRule[]> {
-    try {
-      const apiUrl = `${environment.CMSUrl}/GsapConfig/name/${this.configName}`;
-      const response = await firstValueFrom(this.http.get<any>(apiUrl));
-      
-      if (response && !response.isError && response.result) {
-        const pages = response.result.pages || [];
-        const pageData = pages.find((p: any) => 
-          p.page?.pageKey?.toLowerCase() === pageKey.toLowerCase() || 
-          p.pageKey?.toLowerCase() === pageKey.toLowerCase()
-        );
-        
-        if (pageData && pageData.rules) {
-          return this.convertApiRules(pageData.rules);
-        }
-      }
-      
-      return this.getDefaultRules(pageKey);
-    } catch (err) {
-      console.error('Failed to load page animations from API:', err);
-      return this.getDefaultRules(pageKey);
+    if (!this.config) {
+      this.config = await this.configLoader.load();
     }
+
+    const pageKeyLower = pageKey.toLowerCase();
+    const page = this.config?.pages?.[pageKeyLower];
+
+    if (page?.rules?.length) {
+      return page.rules;
+    }
+
+    for (const [key, pageData] of Object.entries(this.config?.pages || {})) {
+      if (key.toLowerCase() === pageKeyLower && pageData.rules?.length) {
+        return pageData.rules;
+      }
+    }
+
+    return this.getDefaultRules(pageKey);
   }
 
   private convertApiRules(apiRules: any[]): GsapRule[] {
@@ -121,17 +115,29 @@ export class WebGsapService {
   }
 
   applyAnimations(pageKey: string, container: HTMLElement) {
+    console.log('[GSAP] applyAnimations called for:', pageKey);
+    console.log('[GSAP] Container:', container);
     this.loadPageAnimations(pageKey).then(rules => {
+      console.log('[GSAP] Rules loaded for', pageKey, ':', rules);
+      console.log('[GSAP] Rules count:', rules.length);
       this.executeRules(rules, container);
     });
   }
 
 private executeRules(rules: GsapRule[], container: HTMLElement) {
     rules.forEach(rule => {
-      if (rule.status !== 'published' && rule.status !== 'Published') return;
+      console.log('[GSAP] Processing rule:', rule.selector, 'status:', rule.status);
+      if (rule.status !== 'published' && rule.status !== 'Published') {
+        console.log('[GSAP] Skipping rule - not published');
+        return;
+      }
 
       const elements = container.querySelectorAll(rule.selector);
-      if (!elements.length) return;
+      console.log('[GSAP] Elements found for', rule.selector, ':', elements.length);
+      if (!elements.length) {
+        console.log('[GSAP] Skipping rule - no elements found');
+        return;
+      }
 
       const from = this.parseFromTo(rule.from as CssStyleValue);
       const to = this.parseFromTo(rule.to as CssStyleValue);

@@ -44,11 +44,14 @@ export interface GsapScrollTrigger {
   trigger?: string;
   start?: string;
   end?: string;
-  scrub?: boolean | number;
+  scrub?: boolean | number | string;
   pin?: boolean;
   markers?: boolean;
   toggleActions?: string;
   once?: boolean;
+  endPos?: string;
+  triggerSelector?: string;
+  pinSelector?: string;
 }
 
 export interface GsapRuleProperty {
@@ -75,6 +78,8 @@ export interface GsapMedia {
   id: string;
   selector: string;
 }
+
+export type GsapPluginName = 'ScrollTrigger' | 'Draggable' | 'ScrollToPlugin' | 'TextPlugin' | 'CustomEase' | 'Flip' | string;
 
 export interface GsapPlugin {
   pluginId?: number;
