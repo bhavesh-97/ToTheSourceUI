@@ -17,17 +17,17 @@ export class GsapConfigLoaderService {
 
   async load(configName: string = 'default'): Promise<GsapConfig> {
     if (this.configCache.has(configName)) {
-      console.log('[GSAP Loader] Cache hit:', configName);
+      //console.log('[GSAP Loader] Cache hit:', configName);
       return this.configCache.get(configName)!;
     }
     
-    console.log('[GSAP Loader] Cache miss, loading from API:', configName);
+ //   console.log('[GSAP Loader] Cache miss, loading from API:', configName);
     const result = await this.loadFromApi(configName);
     
-    console.log('[GSAP Loader] Cache miss, loading from API: result', result);
+   // console.log('[GSAP Loader] Cache miss, loading from API: result', result);
     if (result) {
       this.configCache.set(configName, result);
-      console.log('[GSAP Loader] Loaded & cached:', configName, '| Pages:', Object.keys(result?.pages || {}).join(', '));
+      // console.log('[GSAP Loader] Loaded & cached:', configName, '| Pages:', Object.keys(result?.pages || {}).join(', '));
       return result;
     }
     return this.getDefaultConfig();
@@ -46,10 +46,10 @@ export class GsapConfigLoaderService {
 
   clearCache(pageKey?: string): void {
     if (pageKey) {
-      console.log('[GSAP Loader] Clearing cache for:', pageKey);
+      // console.log('[GSAP Loader] Clearing cache for:', pageKey);
       this.configCache.delete(pageKey);
     } else {
-      console.log('[GSAP Loader] Clearing all cache');
+      // console.log('[GSAP Loader] Clearing all cache');
       this.configCache.clear();
     }
   }
@@ -59,13 +59,13 @@ export class GsapConfigLoaderService {
       const apiUrl = `${environment.CMSUrl}/GsapConfig/name/${configName}`;
       const response = await firstValueFrom(this.http.get<any>(apiUrl));
       
-      console.log('[GSAP Loader] Cache miss, loading from API response:', response);
+      // console.log('[GSAP Loader] Cache miss, loading from API response:', response);
       if (response && !response.isError && response.result) {
         return this.convertApiToGsapConfig(response.result);
       }
       return null;
     } catch (err) {
-      console.error('Failed to load GSAP config from API:', err);
+      // console.error('Failed to load GSAP config from API:', err);
       return null;
     }
   }

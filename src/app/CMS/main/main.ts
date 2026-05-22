@@ -54,7 +54,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     const initialPage = this.getPageFromUrl(this.router.url);
-    console.log('[GSAP Main] Initial page:', initialPage);
+    // console.log('[GSAP Main] Initial page:', initialPage);
     if (initialPage) {
       this.currentPage = initialPage;
       this.loadPageConfig(initialPage);
@@ -77,10 +77,10 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   private onRouteChange() {
     const url = this.router.url;
     const page = this.getPageFromUrl(url);
-    console.log('[GSAP Main] Route changed:', url, '| Page:', page);
+    // console.log('[GSAP Main] Route changed:', url, '| Page:', page);
     
     if (page !== this.currentPage) {
-      console.log('[GSAP Main] Page changed, loading config for:', page);
+      // console.log('[GSAP Main] Page changed, loading config for:', page);
       this.currentPage = page;
       this.zone.run(() => this.loadPageConfig(page));
     } else {
@@ -99,32 +99,32 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   private async loadPageConfig(page: string) {
     if (!page) return;
     
-    console.log('[GSAP Main] loadPageConfig called for:', page);
+    // console.log('[GSAP Main] loadPageConfig called for:', page);
     
     try {
       const config = await this.configLoader.load(page);
-      console.log('[GSAP Main] Config loaded:', page, '| global:', !!config?.global, '| pages keys:', Object.keys(config?.pages || {}));
-      
+      // console.log('[GSAP Main] Config loaded:', page, '| global:', !!config?.global, '| pages keys:', Object.keys(config?.pages || {}));
+
       const pages = config?.pages || {};
       const pageData = pages[page];
-      console.log('[GSAP Main] pageData for', page, ':', pageData ? 'found' : 'null', '| rules:', pageData?.rules?.length || 0);
+      // console.log('[GSAP Main] pageData for', page, ':', pageData ? 'found' : 'null', '| rules:', pageData?.rules?.length || 0);
       
       if (!pageData) {
-        console.log('[GSAP Main] No pageData found for:', page, '| Available pages:', Object.keys(pages));
+        // console.log('[GSAP Main] No pageData found for:', page, '| Available pages:', Object.keys(pages));
         return;
       }
       
       if (!pageData.rules?.length) {
-        console.log('[GSAP Main] No rules for:', page);
+        // console.log('[GSAP Main] No rules for:', page);
         return;
       }
       
       const publishedRules = pageData.rules.filter((r: any) => {
-        console.log('[GSAP Main] Rule status:', r.status, '| selector:', r.selector);
+        // console.log('[GSAP Main] Rule status:', r.status, '| selector:', r.selector);
         const s = String(r.status || '').toLowerCase();
         return s === '1' || s === 'published' || s === 'active';
       });
-      console.log('[GSAP Main] Published rules:', page, '| Count:', publishedRules.length);
+      // console.log('[GSAP Main] Published rules:', page, '| Count:', publishedRules.length);
       
       if (!publishedRules.length) return;
 
@@ -135,7 +135,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       };
       
       setTimeout(() => {
-        console.log('[GSAP Main] Running applyGsapAnimations for:', page, '| Rules:', publishedRules.length);
+        // console.log('[GSAP Main] Running applyGsapAnimations for:', page, '| Rules:', publishedRules.length);
         this.applyGsapAnimations(pageConfig);
       }, 300);
     } catch (err) {
@@ -165,11 +165,11 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       return s === '1' || s === 'published' || s === 'active';
     });
     
-    console.log('[GSAP Main] applyGsapAnimations, rules count:', rules.length);
+   // console.log('[GSAP Main] applyGsapAnimations, rules count:', rules.length);
     
     rules.forEach((rule: any) => {
       const elements = document.querySelectorAll(rule.selector);
-      console.log('[GSAP Main] Selector:', rule.selector, '| Found:', elements.length, '| Type:', rule.type, '| Scroll:', rule.scrollEnabled);
+      // console.log('[GSAP Main] Selector:', rule.selector, '| Found:', elements.length, '| Type:', rule.type, '| Scroll:', rule.scrollEnabled);
       if (!elements.length) return;
 
       const from = (rule.from && typeof rule.from === 'object' && Object.keys(rule.from).length > 0) ? rule.from : { opacity: 0 };
@@ -201,7 +201,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       }
 
       gsap.fromTo(elements, from, tweenConfig);
-      console.log('[GSAP Main] Animation applied for:', rule.selector, '| from:', from, '| to:', to);
+      // console.log('[GSAP Main] Animation applied for:', rule.selector, '| from:', from, '| to:', to);
     });
     
     ScrollTrigger.refresh();

@@ -344,7 +344,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
           ruleId: c?.ruleId || c?.RuleID || c?.ruleID,
           eventName: c?.eventName || c?.EventName || '',
           handlerName: c?.handlerName || c?.HandlerName || '',
-          handlerCode: c?.handlerCode || c?.HandlerCode || ''
+          handlerCode: c?.handlerCode || c?.HandlerCode || '',
+          name: c?.handlerName || c?.HandlerName || '',
+          script: c?.handlerCode || c?.HandlerCode || ''
         }))
       };
 

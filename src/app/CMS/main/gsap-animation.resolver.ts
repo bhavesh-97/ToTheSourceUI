@@ -11,18 +11,18 @@ export function gsapAnimationResolver(
   const page = getPageFromRoute(route);
   const fullUrl = state.url;
   
-  console.log('[GSAP Resolver] Full URL:', fullUrl, '| Route segments:', route.url.map(s => s.path));
+  // console.log('[GSAP Resolver] Full URL:', fullUrl, '| Route segments:', route.url.map(s => s.path));
   
   if (!page) {
     console.log('[GSAP Resolver] No page found in route, skipping');
     return of(null);
   }
 
-  console.log('[GSAP Resolver] Loading config for page:', page);
+  // console.log('[GSAP Resolver] Loading config for page:', page);
   loader.load(page).then(config => {
-    console.log('[GSAP Resolver] Config loaded for:', page, '| Pages:', Object.keys(config?.pages || {}));
+    // console.log('[GSAP Resolver] Config loaded for:', page, '| Pages:', Object.keys(config?.pages || {}));
   }).catch(err => {
-    console.error('[GSAP Resolver] Failed to load config for:', page, err);
+    // console.error('[GSAP Resolver] Failed to load config for:', page, err);
   });
   
   return of(null);

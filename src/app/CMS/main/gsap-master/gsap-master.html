@@ -199,7 +199,6 @@
                                 [value]="config.callbacks || []"
                                 [tableStyle]="{'min-width':'30rem'}"
                                 styleClass="p-datatable-sm">
-
                                 <ng-template pTemplate="header">
                                   <tr>
                                     <th>Sr No.</th>
@@ -212,9 +211,9 @@
                                 <ng-template pTemplate="body" let-cb let-i="rowIndex">
                                   <tr>
                                     <td>{{ dt.first + i + 1 }}</td>
-                                    <td>{{ cb.name }}</td>
+                                    <td>{{ cb.handlerName }}</td>
                                     <td class="text-truncate" style="max-width:200px;">
-                                      {{ cb.script }}
+                                      {{ cb.handlerCode }}
                                     </td>
                                     <td class="text-center">
                                       <button

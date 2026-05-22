@@ -115,27 +115,27 @@ export class WebGsapService {
   }
 
   applyAnimations(pageKey: string, container: HTMLElement) {
-    console.log('[GSAP] applyAnimations called for:', pageKey);
-    console.log('[GSAP] Container:', container);
+  //  console.log('[GSAP] applyAnimations called for:', pageKey);
+   // console.log('[GSAP] Container:', container);
     this.loadPageAnimations(pageKey).then(rules => {
-      console.log('[GSAP] Rules loaded for', pageKey, ':', rules);
-      console.log('[GSAP] Rules count:', rules.length);
+      // console.log('[GSAP] Rules loaded for', pageKey, ':', rules);
+      // console.log('[GSAP] Rules count:', rules.length);
       this.executeRules(rules, container);
     });
   }
 
 private executeRules(rules: GsapRule[], container: HTMLElement) {
     rules.forEach(rule => {
-      console.log('[GSAP] Processing rule:', rule.selector, 'status:', rule.status);
+      // console.log('[GSAP] Processing rule:', rule.selector, 'status:', rule.status);
       if (rule.status !== 'published' && rule.status !== 'Published') {
-        console.log('[GSAP] Skipping rule - not published');
+        // console.log('[GSAP] Skipping rule - not published');
         return;
       }
 
       const elements = container.querySelectorAll(rule.selector);
-      console.log('[GSAP] Elements found for', rule.selector, ':', elements.length);
+      // console.log('[GSAP] Elements found for', rule.selector, ':', elements.length);
       if (!elements.length) {
-        console.log('[GSAP] Skipping rule - no elements found');
+        // console.log('[GSAP] Skipping rule - no elements found');
         return;
       }
 
