@@ -1,4 +1,5 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, Inject, forwardRef,OnDestroy,Renderer2,HostListener,ChangeDetectorRef,Input,  Output,EventEmitter,OnChanges,SimpleChanges} from '@angular/core';
+import { gsap } from 'gsap';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -26,6 +27,13 @@ import { ResizableModule, ResizeEvent } from 'angular-resizable-element';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DrawerModule } from 'primeng/drawer';
 import { FileSizePipe } from "../../pipes/filesize.pipe";
+import { TextEditorService } from './text-editor.service';
+import { TextFormattingService } from './text-formatting.service';
+import { TextHistoryService } from './text-history.service';
+import { TextAutosaveService } from './text-autosave.service';
+import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
+import { AnalyticsService } from '../../../@core/utils';
+import { NotificationService } from '../../../services/notification.service';
 
 // New Interfaces
 interface EditorConfig {
@@ -133,10 +141,17 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   @Input() enableTrackChanges: boolean = false;
   @Input() enableExport: boolean = true;
   @Input() enableImport: boolean = true;
-  @Input() enablePrint: boolean = true;
-  @Input() enableHistory: boolean = true;
-  @Input() enableCollaboration: boolean = false;
-  @Input() enableAIAssistant: boolean = false;
+    @Input() enablePrint: boolean = true;
+    @Input() enableHistory: boolean = true;
+    @Input() enableCollaboration: boolean = false;
+    @Input() enableAIAssistant: boolean = false;
+    
+    // Alignment and positioning properties
+    @Input() align: 'left' | 'center' | 'right' = 'left';
+    @Input() top: string = 'auto';
+    @Input() bottom: string = 'auto';
+    @Input() left: string = 'auto';
+    @Input() right: string = 'auto';
   
   // New Output Events
   @Output() contentChanged = new EventEmitter<string>();
@@ -455,7 +470,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   saveInterval = 30000;
   saveTriggerCount = 0;
   
-  // Enhanced Editor State
+   // Enhanced Editor State
   editorState: EditorState = {
     content: '',
     selection: null,
@@ -2548,7 +2563,13 @@ private insertText(text: string): void {
     public renderer: Renderer2,
     public messageService: MessageService,
     public cdRef: ChangeDetectorRef,
-    public sanitizer: DomSanitizer
+    public sanitizer: DomSanitizer,
+       public textEditorService: TextEditorService,
+    public textFormattingService: TextFormattingService,
+    public textHistoryService: TextHistoryService,
+    public textAutosaveService: TextAutosaveService,
+    @Inject(DOCUMENT) private document: Document,
+    public domSanitizer: DomSanitizer
   ) {
     // Initialize feature flags
     this.initializeFeatureFlags();
@@ -4984,6 +5005,7 @@ public aiImproveWriting() {
       this.isDark = this.theme === 'dark';
     }
     this.themeChanged.emit(this.isDark ? 'dark' : 'light');
+    this.applyThemeToEditorContent();
   }
 
   public updateEditorMode() {
@@ -5056,6 +5078,7 @@ public aiImproveWriting() {
           break;
         case 's':
           event.preventDefault();
+          this.sync();
           this.saveRequested.emit(this._content);
           break;
         case 'p':
@@ -5243,7 +5266,7 @@ public aiImproveWriting() {
   // Enhanced Auto-save
   public autoSaveContent() {
     if (!this.autoSave) return;
-    
+    this.sync(); 
     const content = this._content;
     const timestamp = new Date().toISOString();
     
@@ -5967,39 +5990,46 @@ public aiImproveWriting() {
     }
   }
 
-  // Enhanced Sync Method
-  public sync() {
-    if (!this.editor?.nativeElement) return;
+    // Enhanced Sync Method
+     public sync() {
+       this.onChange(this._content);
+       this.onTouched();
+       this.updateStatistics();
+       this.saveToHistory();
+     }
     
-    let newContent: string;
-    
-    if (this.isSource && this.sourceEditor) {
-      newContent = this.sourceEditor.nativeElement.value;
-    } else {
-      newContent = this.editor.nativeElement.innerHTML;
-    }
-    
-    // Update internal value and notify
-    if (newContent !== this._content) {
-      this._content = newContent;
-      this.onChange(this._content);
-      this.contentChanged.emit(this._content);
-      this.isDirty = true;
-      this.updateStatistics();
-      this.detectFormatting();
+    // GSAP Animations for dialogs
+    public onDialogShow(): void {
+      // Animate dialog content when shown
+      gsap.fromTo('.p-dialog:visible .dialog-content', 
+        { opacity: 0, y: -20 },
+        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+      );
       
-      // Update editor state
-      this.editorState.content = newContent;
-      this.editorState.lastModified = new Date();
+      // Animate dialog header
+      gsap.fromTo('.p-dialog:visible .p-dialog-header', 
+        { opacity: 0, y: -10 },
+        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+      );
     }
-  }
-
-  // Enhanced ControlValueAccessor Implementation
-  writeValue(value: string): void {
-    this._content = value || '';
-    this.updateEditorContent(this._content);
-    this.editorState.content = this._content;
-  }
+    
+    public onDialogHide(): void {
+      // Reverse animation when hiding
+      gsap.to('.p-dialog:visible .dialog-content', 
+        { opacity: 0, y: -20, duration: 0.2, ease: 'power2.in' }
+      );
+      
+      gsap.to('.p-dialog:visible .p-dialog-header', 
+        { opacity: 0, y: -10, duration: 0.2, ease: 'power2.in' }
+      );
+    }
+   
+    // Enhanced ControlValueAccessor Implementation
+    writeValue(value: string): void {
+     this._content = value || '';
+     this.updateEditorContent(this._content);
+     this.textEditorService.updateContent(this._content);
+   }
 
   registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
@@ -6020,26 +6050,30 @@ public aiImproveWriting() {
   }
 
   // Helper Methods
-  public updateEditorContent(content?: string) {
-    const valueToUse = content !== undefined ? content : this._content;
-    
-    if (!this.editor?.nativeElement) return;
-    
-    if (this.isSource && this.sourceEditor) {
-      this.sourceEditor.nativeElement.value = valueToUse || '';
-      this.editor.nativeElement.style.display = 'none';
-      this.sourceEditor.nativeElement.style.display = 'block';
-    } else {
-      this.editor.nativeElement.innerHTML = valueToUse || `<p style="color: #6b7280; font-style: italic;">${this.placeholder}</p>`;
-      this.editor.nativeElement.style.display = 'block';
-      if (this.sourceEditor) {
-        this.sourceEditor.nativeElement.style.display = 'none';
-      }
+ public updateEditorContent(content?: string) {
+  const valueToUse = content !== undefined ? content : this._content;
+  
+  if (!this.editor?.nativeElement) return;
+  
+  if (this.isSource && this.sourceEditor) {
+    this.sourceEditor.nativeElement.value = valueToUse || '';
+    this.editor.nativeElement.style.display = 'none';
+    this.sourceEditor.nativeElement.style.display = 'block';
+  } else {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = valueToUse || '';
+    const wrapper = tempDiv.querySelector('div[style*="background-color"]');
+    const valueToRender = wrapper ? wrapper.innerHTML : (valueToUse || '');
+    this.editor.nativeElement.innerHTML = valueToRender || `<p style="color: #6b7280; font-style: italic;">${this.placeholder}</p>`;
+    this.editor.nativeElement.style.display = 'block';
+    if (this.sourceEditor) {
+      this.sourceEditor.nativeElement.style.display = 'none';
     }
-    
-    this.updateStatistics();
-    this.cdRef.detectChanges();
   }
+  
+  this.updateStatistics();
+  this.cdRef.detectChanges();
+}
 
   public updateEditorDimensions() {
     if (this.editorContainer?.nativeElement) {
@@ -6055,13 +6089,14 @@ public aiImproveWriting() {
     // Set default font and size
     this.editor.nativeElement.style.fontFamily = this.defaultFontFamily;
     this.editor.nativeElement.style.fontSize = this.defaultFontSize;
-    
+    this.editor.nativeElement.style.color = '#1f2937';          
+    this.editor.nativeElement.style.backgroundColor = '#ffffff';
+
     // Set spellcheck
     this.editor.nativeElement.spellcheck = this.spellCheck;
     
     // Set autocorrect
     this.editor.nativeElement.autocorrect = this.autoCorrect;
-    
     // Set autocapitalize
     this.editor.nativeElement.autocapitalize = 'sentences';
   }
@@ -6626,13 +6661,6 @@ public aiImproveWriting() {
       }
       
       this.sync();
-      
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Undo',
-        detail: 'Action undone',
-        life: 2000
-      });
     }
   }
 
@@ -6648,30 +6676,32 @@ public aiImproveWriting() {
       }
       
       this.sync();
-      
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Redo',
-        detail: 'Action redone',
-        life: 2000
-      });
     }
   }
 
   // Enhanced fullscreen
-  toggleFullscreen() {
-    if (!this.allowFullscreen) return;
-    
-    this.isFullscreen = !this.isFullscreen;
-    
-    if (this.isFullscreen) {
-      this.enterFullscreen();
+async toggleFullscreen() {
+  if (!this.allowFullscreen) return;
+
+  const element = this.editorContainer?.nativeElement;
+
+  try {
+    if (!document.fullscreenElement) {
+      await element.requestFullscreen();
+      this.isFullscreen = true;
+      document.body.style.overflow = 'hidden';
     } else {
-      this.exitFullscreen();
+      await document.exitFullscreen();
+      this.isFullscreen = false;
+      document.body.style.overflow = '';
     }
-    
+
     this.fullscreenToggled.emit(this.isFullscreen);
+
+  } catch (error) {
+    console.error('Fullscreen error:', error);
   }
+}
 
   public enterFullscreen() {
     const element = this.editorContainer.nativeElement;
@@ -6710,7 +6740,10 @@ public aiImproveWriting() {
     this.restoreFullscreenStyles();
     document.body.style.overflow = '';
   }
-
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange() {
+    this.isFullscreen = !!document.fullscreenElement;
+  }
   public restoreFullscreenStyles() {
     const element = this.editorContainer.nativeElement;
     if (this.originalStyles) {
@@ -6750,12 +6783,25 @@ public aiImproveWriting() {
   }
 
   // Enhanced theme toggle
+  // toggleTheme() {
+  //   this.isDark = !this.isDark;
+  //   this.theme = this.isDark ? 'dark' : 'light';
+  //   this.themeChanged.emit(this.theme);
+  // }
   toggleTheme() {
     this.isDark = !this.isDark;
     this.theme = this.isDark ? 'dark' : 'light';
     this.themeChanged.emit(this.theme);
-  }
 
+    this.applyThemeToEditorContent();
+    this.sync(); 
+  }
+  private applyThemeToEditorContent() {
+    const el = this.editor?.nativeElement;
+      if (!el) return;
+    el.style.color = this.isDark ? '#f9fafb' : '#1f2937';
+    el.style.backgroundColor = this.isDark ? '#1f2937' : '#ffffff';
+  }
   setTheme(theme: 'light' | 'dark' | 'auto') {
     this.theme = theme;
     this.updateTheme();

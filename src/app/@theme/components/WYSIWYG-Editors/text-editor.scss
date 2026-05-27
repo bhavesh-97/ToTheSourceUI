@@ -107,7 +107,14 @@ $transition: all 0.3s ease;
     overflow: auto;
   }
 }
-
+.pro-editor-container.fullscreen .pro-editor-wrapper {
+  width: 100vw;
+  height: 100vh;
+}
+.editor-area {
+  flex: 1;
+  min-height: 0;
+}
 // Main Toolbar
 .main-toolbar {
   display: flex;
@@ -206,61 +213,67 @@ $transition: all 0.3s ease;
     }
   }
   
-  .toolbar-dropdown {
-    position: relative;
-      &.open {
-    .dropdown-menu {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-      visibility: visible;
-    }
-    
-    .toolbar-btn i {
-      transform: rotate(180deg);
-    }
-  }
-  
-    .toolbar-btn {
-      width: auto;
-      padding: 0 10px;
-      justify-content: flex-start;
-    }
-    
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: $light-bg;
-      border: 1px solid $border-color;
-      border-radius: $border-radius;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      min-width: 200px;
-      z-index: 1000;
-      margin-top: 4px;
-      padding: 8px 0;
-      
-      .dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        cursor: pointer;
-        color: $light-text;
-        font-size: 14px;
-        
-        &:hover {
-          background: color-mix(in srgb, $border-color, white 5%);
-        }
-        
-        i {
-          width: 16px;
-          font-size: 14px;
-          color: $secondary-color;
-        }
-      }
-    }
-  }
+   .toolbar-dropdown {
+     position: relative;
+       &.open {
+     .dropdown-menu {
+       display: block;
+       opacity: 1;
+       transform: translateY(0);
+       visibility: visible;
+       animation: fadeInDown 0.2s ease;
+     }
+     
+     .toolbar-btn i {
+       transform: rotate(180deg);
+       transition: transform 0.3s ease;
+     }
+   }
+   
+     .toolbar-btn {
+       width: auto;
+       padding: 0 10px;
+       justify-content: flex-start;
+     }
+     
+     .dropdown-menu {
+       position: absolute;
+       top: 100%;
+       left: 0;
+       background: $light-bg;
+       border: 1px solid $border-color;
+       border-radius: $border-radius;
+       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+       min-width: 200px;
+       z-index: 1000;
+       margin-top: 4px;
+       padding: 8px 0;
+       opacity: 0;
+       transform: translateY(-10px);
+       visibility: hidden;
+       transition: all 0.2s ease;
+       
+       .dropdown-item {
+         display: flex;
+         align-items: center;
+         gap: 10px;
+         padding: 10px 16px;
+         cursor: pointer;
+         color: $light-text;
+         font-size: 14px;
+         
+         &:hover {
+           background: color-mix(in srgb, $border-color, white 5%);
+         }
+         
+         i {
+           width: 16px;
+           font-size: 14px;
+           color: $secondary-color;
+         }
+       }
+     }
+   }
   
   .color-picker-btn {
     .p-colorpicker-preview {

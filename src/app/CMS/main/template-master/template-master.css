@@ -1,30 +1,49 @@
 :host ::ng-deep {
-  .template-editor-dialog {
-    .p-dialog-content {
-      background: #f8fafc !important;
-      padding: 2rem !important;
-    }
-    .ck-editor__editable {
-      min-height: 680px !important;
-      font-size: 15px !important;
-      line-height: 1.7 !important;
-      background: white !important;
-    }
-
-    .ck-toolbar {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      border-bottom: none !important;
-    }
-
-    .ck-content {
-      padding: 1.5rem !important;
-    }
-
-    .ck-source-editing-area {
-      font-family: 'Fira Code', 'Courier New', monospace !important;
-      background: #1e1e1e !important;
-      color: #d4d4d4 !important;
-    }
+  .p-dialog-content {
+    background: #f8fafc !important;
+    padding: 2rem !important;
+  }
+  
+  .p-inputtext {
+    border-radius: 6px !important;
+    border-color: #d1d5db !important;
+  }
+  
+  .p-inputtext:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  }
+  
+  .p-button {
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  .p-button:hover {
+    transform: translateY(-1px) !important;
+  }
+  
+  .p-toggle-button {
+    border-radius: 4px !important;
+  }
+  
+  .p-tag {
+    border-radius: 4px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Center the text-editor content */
+  .text-editor-wrapper {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    min-height: 400px !important;
+  }
+  
+  /* Ensure the editor takes full width but centers content */
+  .p-element {
+    width: 100% !important;
   }
 }

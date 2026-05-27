@@ -27,7 +27,7 @@ interface EditorStyle {
   textAlign: string;
 }
 
-interface HistoryItem {
-  content: string;
-  timestamp: Date;
-}
+// interface HistoryItem {
+//   content: string;
+//   timestamp: Date;
+// }

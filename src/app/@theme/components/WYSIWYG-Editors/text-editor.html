@@ -1,17 +1,25 @@
 <div class="pro-editor-container" [class.fullscreen]="isFullscreen" [class.dark]="isDark">
   <p-toast></p-toast>
   
-  <!-- Advanced Editor Component -->
-  <div class="pro-editor-wrapper" 
-       [style.width]="width"
-       [style.height]="height"
-       [style.min-height]="minHeight"
-       [style.max-height]="maxHeight"
-       [style.min-width]="minWidth"
-       [style.max-width]="maxWidth"
-       [class.resizable]="allowResize"
-       [class.dark]="isDark"
-       #editorContainer>
+    <!-- Advanced Editor Component -->
+    <div class="pro-editor-wrapper" 
+         [style.width]="width"
+         [style.height]="height"
+         [style.min-height]="minHeight"
+         [style.max-height]="maxHeight"
+         [style.min-width]="minWidth"
+         [style.max-width]="maxWidth"
+         [style.margin-left]="align === 'left' ? '0' : (align === 'right' ? 'auto' : 'auto')"
+         [style.margin-right]="align === 'right' ? '0' : (align === 'left' ? 'auto' : 'auto')"
+         [style.margin]="'0 auto'"
+         [style.position]="'relative'"
+         [style.top]="top"
+         [style.bottom]="bottom"
+         [style.left]="left"
+         [style.right]="right"
+         [class.resizable]="allowResize"
+         [class.dark]="isDark"
+         #editorContainer>
     
     <!-- Main Toolbar -->
     <div class="main-toolbar" *ngIf="showToolbar">
@@ -23,25 +31,25 @@
           <button class="toolbar-btn" pTooltip="New Document (Ctrl+N)" tooltipPosition="bottom" (click)="newDocument()">
             <i class="fa fa-file"></i>
           </button>
-          <button class="toolbar-btn" pTooltip="Save (Ctrl+S)" tooltipPosition="bottom" (click)="saveRequested.emit(content)">
+          <button class="toolbar-btn" pTooltip="Save (Ctrl+S)" tooltipPosition="bottom" (click)="sync(); saveRequested.emit(this._content)">
             <i class="fa fa-save"></i>
           </button>
         </div>
         
         <!-- Basic Formatting -->
         <div class="toolbar-group">
-          <button class="toolbar-btn" pTooltip="Bold (Ctrl+B)" tooltipPosition="bottom"
-                  [class.active]="isBold" (click)="exec('bold')">
-            <i class="fa fa-bold"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Italic (Ctrl+I)" tooltipPosition="bottom"
-                  [class.active]="isItalic" (click)="exec('italic')">
-            <i class="fa fa-italic"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Underline (Ctrl+U)" tooltipPosition="bottom"
-                  [class.active]="isUnderline" (click)="exec('underline')">
-            <i class="fa fa-underline"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Bold (Ctrl+B)" tooltipPosition="bottom"
+                   [class.active]="isBold" (click)="textFormattingService.toggleBold()">
+             <i class="fa fa-bold"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Italic (Ctrl+I)" tooltipPosition="bottom"
+                   [class.active]="isItalic" (click)="textFormattingService.toggleItalic()">
+             <i class="fa fa-italic"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Underline (Ctrl+U)" tooltipPosition="bottom"
+                   [class.active]="isUnderline" (click)="textFormattingService.toggleUnderline()">
+             <i class="fa fa-underline"></i>
+           </button>
           
           <!-- Font Size Dropdown -->
           <div class="toolbar-dropdown desktop-only" clickOutside
@@ -82,29 +90,29 @@
       <div class="toolbar-center desktop-only" *ngIf="toolbarPreset === 'full'">
         <!-- Lists -->
         <div class="toolbar-group">
-          <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="exec('insertUnorderedList')">
-            <i class="fa fa-list-ul"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="exec('insertOrderedList')">
-            <i class="fa fa-list-ol"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="textFormattingService.toggleUnorderedList()">
+             <i class="fa fa-list-ul"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="textFormattingService.toggleOrderedList()">
+             <i class="fa fa-list-ol"></i>
+           </button>
         </div>
         
         <!-- Colors -->
         <div class="toolbar-group">
-          <p-colorPicker [(ngModel)]="currentTextColor" (onChange)="exec('foreColor', currentTextColor)" 
-                        class="color-picker-btn" pTooltip="Text Color">
-            <div class="color-icon" [style.color]="currentTextColor">
-              <i class="fa fa-font"></i>
-            </div>
-          </p-colorPicker>
-          
-          <p-colorPicker [(ngModel)]="currentBackgroundColor" (onChange)="exec('backColor', currentBackgroundColor)" 
-                        class="color-picker-btn" pTooltip="Background Color">
-            <div class="color-icon" [style.background]="currentBackgroundColor">
-              <i class="fa fa-fill-drip"></i>
-            </div>
-          </p-colorPicker>
+           <p-colorPicker [(ngModel)]="currentTextColor" (onChange)="textFormattingService.setTextColor(currentTextColor)" 
+                         class="color-picker-btn" pTooltip="Text Color">
+             <div class="color-icon" [style.color]="currentTextColor">
+               <i class="fa fa-font"></i>
+             </div>
+           </p-colorPicker>
+           
+           <p-colorPicker [(ngModel)]="currentBackgroundColor" (onChange)="textFormattingService.setBackgroundColor(currentBackgroundColor)" 
+                         class="color-picker-btn" pTooltip="Background Color">
+             <div class="color-icon" [style.background]="currentBackgroundColor">
+               <i class="fa fa-fill-drip"></i>
+             </div>
+           </p-colorPicker>
         </div>
         
         <!-- Format Painter -->
@@ -241,13 +249,13 @@
     </div>
     
     <!-- Source Mode Indicator -->
-    <div class="source-indicator" *ngIf="isSource && showToolbar">
+    <!-- <div class="source-indicator" *ngIf="isSource && showToolbar">
       <i class="fa fa-code"></i>
       <span>Source Mode</span>
       <button class="toolbar-btn ml-2" (click)="toggleSource()" pTooltip="Switch to WYSIWYG">
         <i class="fa fa-eye"></i>
       </button>
-    </div>
+    </div> -->
     
     <!-- Editor Area -->
     <div class="editor-area" [class.split-view]="isSplitView">
@@ -335,8 +343,8 @@
   
   <!-- All Dialogs -->
   
-  <!-- Font Dialog -->
-  <p-dialog header="Font Settings" [(visible)]="showFontDialog" [modal]="true" [style]="{width: '500px'}">
+   <!-- Font Dialog -->
+   <p-dialog header="Font Settings" [(visible)]="showFontDialog" [modal]="true" [style]="{width: '500px'}" (onShow)="onDialogShow()" (onHide)="onDialogHide()">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -381,25 +389,25 @@
         <div class="form-group">
           <label>Text Color</label>
           <p-colorPicker [(ngModel)]="currentTextColor"></p-colorPicker>
-          <div class="color-palette">
-            <div *ngFor="let color of colorPalettes.text" 
-                 class="color-swatch"
-                 [style.background]="color"
-                 [class.active]="currentTextColor === color"
-                 (click)="currentTextColor = color; exec('foreColor', color)"></div>
-          </div>
+           <div class="color-palette">
+             <div *ngFor="let color of colorPalettes.text" 
+                  class="color-swatch"
+                  [style.background]="color"
+                  [class.active]="currentTextColor === color"
+                  (click)="currentTextColor = color; textFormattingService.setTextColor(color)"></div>
+           </div>
         </div>
         
         <div class="form-group">
           <label>Background Color</label>
           <p-colorPicker [(ngModel)]="currentBackgroundColor"></p-colorPicker>
-          <div class="color-palette">
-            <div *ngFor="let color of colorPalettes.background" 
-                 class="color-swatch"
-                 [style.background]="color"
-                 [class.active]="currentBackgroundColor === color"
-                 (click)="currentBackgroundColor = color; exec('backColor', color)"></div>
-          </div>
+           <div class="color-palette">
+             <div *ngFor="let color of colorPalettes.background" 
+                  class="color-swatch"
+                  [style.background]="color"
+                  [class.active]="currentBackgroundColor === color"
+                  (click)="currentBackgroundColor = color; textFormattingService.setBackgroundColor(color)"></div>
+           </div>
         </div>
       </div>
       

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, ElementRef, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -9,36 +8,38 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
-import { DrawerModule } from 'primeng/drawer';
 import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/text-editor';
 import { Template, TemplateStatus } from './Template';
-import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
+
 @Component({
   selector: 'app-template-master',
   imports: [CommonModule, 
             FormsModule, 
-            RouterModule,
             ButtonModule, 
-            TableModule, 
-            TagModule, 
-            DrawerModule,
             DialogModule,
             InputTextModule, 
+            TableModule, 
+            TagModule, 
             TextareaModule, 
             TextEditorComponent,
-            ConfirmDialogModule],
+            ConfirmDialogModule,
+            ToggleButtonModule],
   templateUrl: './template-master.html',
   styleUrl: './template-master.css'
 })
-
 export class TemplateMaster implements OnInit {
-  @ViewChild('previewFrame') previewFrame!: ElementRef<HTMLIFrameElement>;
-  messageContent = '';
   templates = signal<Template[]>([]);
   dialogVisible = false;
   isNew = false;
+  showImportDialog = false;
+
+  // Import form properties
+  importName = '';
+  importType = '';
+  importHtml = '';
 
   form = {
     TemplateID: 0,
@@ -47,6 +48,15 @@ export class TemplateMaster implements OnInit {
     status: 'draft' as TemplateStatus,
     html: ``
   };
+
+  // Helper property for toggle button
+  get isPublished(): boolean {
+    return this.form.status === 'published';
+  }
+
+  set isPublished(value: boolean) {
+    this.form.status = value ? 'published' : 'draft';
+  }
 
   constructor(private notificationService: NotificationService) {}
 
@@ -65,19 +75,20 @@ export class TemplateMaster implements OnInit {
               TemplateName: 'Modern Hero 2025',
               TemplateType: 'Website',
               status: 'published',
-              html: this.form.html
-        };
+              html: ''
+          };
   }
 
+  // Dialog methods
   openDialog(isNew: boolean, tpl?: Template) {
     this.isNew = isNew;
     if (isNew) {
       this.form = {
         TemplateID: 0,
         TemplateName: '',
-        TemplateType:'',
+        TemplateType: '',
         status: 'draft',
-        html: '<div class="py-32 text-center"><h1 class="fade-up">New Template</h1></div>'
+        html: ''
       }
     } else if (tpl) {
       this.form = {
@@ -92,14 +103,12 @@ export class TemplateMaster implements OnInit {
   }
 
   save() {
-    debugger;
     if (!this.form.TemplateName.trim()) {
       this.notificationService.showMessage('Name is required!', 'Error', PopupMessageType.Error);
       return;
     }
 
     const template: Template = {
-      // TemplateID: this.isNew ? Date.now().toString() : this.templates().find(t => t.TemplateName === this.form.TemplateName)?.TemplateID || Date.now().toString(),
       TemplateID: this.form.TemplateID,
       TemplateName: this.form.TemplateName.trim(),
       TemplateType: this.form.TemplateType.trim(),
@@ -130,5 +139,31 @@ export class TemplateMaster implements OnInit {
     const copy = { ...tpl, TemplateID: 0, TemplateName: tpl.TemplateName + ' (Copy)' };
     this.templates.update(t => [...t, copy]);
     localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
+  }
+
+  // Import template methods
+  importTemplate() {
+    if (!this.importName.trim()) {
+      this.notificationService.showMessage('Template name is required!', 'Error', PopupMessageType.Error);
+      return;
+    }
+    
+    const template: Template = {
+      TemplateID: Date.now(),
+      TemplateName: this.importName.trim(),
+      TemplateType: this.importType.trim() || 'Custom',
+      status: 'draft',
+      html: this.importHtml
+    };
+    
+    this.templates.update(t => [...t, template]);
+    localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
+    this.showImportDialog = false;
+    this.notificationService.showMessage('Template imported Successfully!', 'Success', PopupMessageType.Success);
+    
+    // Reset import form
+    this.importName = '';
+    this.importType = '';
+    this.importHtml = '';
   }
 }

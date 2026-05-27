@@ -20,66 +20,116 @@
 </div> -->
 
 <div class="p-6 bg-gray-50 min-h-screen">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-4xl font-bold text-gray-800">Template Master</h1>
-    <button pButton label="New Template" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)"></button>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Template Master</h1>
+    <div class="flex space-x-3">
+      <button pButton label="New Template" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)"></button>
+      <button pButton label="Import" icon="pi pi-upload" class="p-button-outlined" (click)="showImportDialog = true"></button>
+    </div>
   </div>
 
-  <p-table [value]="templates()" class="shadow-lg rounded-lg">
-    <ng-template pTemplate="header">
-      <tr class="bg-indigo-600 text-white">
-        <th>Template Name</th><th>Template Type</th><th>Status</th><th>Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-tpl>
-      <tr class="hover:bg-gray-100">
-        <td class="font-bold">{{ tpl.TemplateName }}</td>
-        <td class="font-bold">{{ tpl.TemplateTye }}</td>
-        <td><p-tag [value]="tpl.status" [severity]="tpl.status === 'published' ? 'success' : 'warn'"></p-tag></td>
-        <td class="space-x-2">
-          <button pButton icon="pi pi-eye" class="p-button-rounded" (click)="openDialog(false, tpl)"></button>
-          <button pButton icon="pi pi-copy" class="p-button-rounded p-button-outlined" (click)="duplicate(tpl)"></button>
-          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteTemplate(tpl)"></button>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+  <!-- Templates Grid -->
+  <div class="grid gap-4" [ngClass]="{'grid-cols-1': templates().length < 2, 'grid-cols-2': templates().length < 4, 'grid-cols-3': true}">
+    <ng-container *ngFor="let template of templates()">
+      <div class="bg-white rounded-lg shadow hover:shadow-lg transition-all cursor-pointer p-6"
+           (click)="openDialog(false, template)">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-800">{{ template.TemplateName }}</h2>
+            <p class="text-sm text-gray-500">{{ template.TemplateType }}</p>
+          </div>
+          <p-tag [value]="template.status" [severity]="template.status === 'published' ? 'success' : 'warn'"></p-tag>
+        </div>
+        <div class="flex items-center text-sm text-gray-600">
+          <i class="pi pi-file mr-2"></i>
+          <span>{{ template.html.length }} characters</span>
+        </div>
+      </div>
+    </ng-container>
+    
+    <div *ngIf="templates().length === 0" class="col-span-full text-center py-12">
+      <div class="text-gray-400 text-2xl mb-4">
+        <i class="pi pi-folder-open"></i>
+      </div>
+      <p class="text-gray-600">No templates found. Create your first template.</p>
+    </div>
+  </div>
 </div>
 
-<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'95vw', height:'95vh', maxWidth:'1700px'}"
-    header="{{ isNew ? 'Create Template' : 'Edit: ' + form.TemplateName }}" [baseZIndex]="10000">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden p-6">
-      <div class="space-y-6 overflow-y-auto">
-        <div class="grid grid-cols-3 gap-4">
-          <div><input pInputText [(ngModel)]="form.TemplateName" placeholder="Name *" class="w-full"></div>
-          <div><input pInputText [(ngModel)]="form.TemplateType" placeholder="Name *" class="w-full"></div>
-          <div><select [(ngModel)]="form.status" class="w-full p-3 border rounded"><option>draft</option><option>published</option></select></div>
+<!-- Template Editor Dialog -->
+<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'90%', maxWidth:'800px', height:'85vh'}"
+    header="{{ isNew ? 'Create New Template' : 'Edit: ' + form.TemplateName }}" [baseZIndex]="10000">
+  <div class="p-6">
+    <!-- Template Info -->
+    <div class="mb-6">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+          <input pInputText [(ngModel)]="form.TemplateName" placeholder="Enter template name" class="w-full">
         </div>
-       <!-- <app-text-editor
-            [(ngModel)]="form.html"
-            name="htmlContent"
-            placeholder="Write your message with formatting..."
-            height="50px"
-            width="50px">
-        </app-text-editor> -->
-        <app-text-editor
-            [(ngModel)]="form.html"
-            [width]="'1000px'"
-            [height]="'600px'"
-            [minHeight]="'300px'"
-            [maxHeight]="'1000px'"
-            [allowResize]="true"
-            [allowFullscreen]="true"
-            [autoSave]="true"
-            placeholder="Start typing your content...">
-        </app-text-editor>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Template Type</label>
+          <input pInputText [(ngModel)]="form.TemplateType" placeholder="e.g., Email, Landing Page" class="w-full">
+        </div>
+      </div>
+      <div class="flex items-center">
+        <label class="block text-sm font-medium text-gray-700 mb-1 mr-4">Status</label>
+        <p-toggleButton 
+            [(ngModel)]="isPublished" 
+            onLabel="Published" 
+            offLabel="Draft" 
+            (onChange)="form.status = $event ? 'published' : 'draft'"
+            class="p-toggle-button"></p-toggleButton>
+      </div>
+    </div>
+    
+    <!-- Template Editor -->
+    <div class="rounded-lg p-4">
+      <app-text-editor
+        [(ngModel)]="form.html"
+        [width]="'100%'"
+        [height]="'100%'"
+        [minHeight]="'400px'"
+        [maxHeight]="'600px'"
+        [align]="'center'"
+        [allowResize]="true"
+        [allowFullscreen]="true"
+        [autoSave]="true">
+      </app-text-editor>
     </div>
   </div>
-
+  
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-4">
-      <button pButton label="Save" icon="pi pi-save" class="p-button-success" (click)="save()"></button>
+    <div class="flex justify-end space-x-3">
       <button pButton label="Cancel" class="p-button-outlined" (click)="dialogVisible = false"></button>
+      <button pButton label="Save" icon="pi pi-save" class="p-button-success" (click)="save()"></button>
     </div>
   </ng-template>
+</p-dialog>
+
+<!-- Import Template Dialog -->
+<p-dialog [(visible)]="showImportDialog" [modal]="true" [style]="{width:'500px'}"
+    header="Import Template">
+  <div class="p-6">
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+      <input pInputText [(ngModel)]="importName" placeholder="Enter template name" class="w-full">
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Template Type</label>
+      <input pInputText [(ngModel)]="importType" placeholder="Enter template type" class="w-full">
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Template Content (HTML)</label>
+      <textarea [(ngModel)]="importHtml" 
+                class="w-full h-64 p-3 border rounded font-mono"
+                placeholder="Paste HTML content here..."></textarea>
+    </div>
+    <div class="flex justify-end mt-6">
+      <button pButton label="Cancel" icon="pi pi-times" 
+              class="p-button-text" (click)="showImportDialog = false"></button>
+      <button pButton label="Import" icon="pi pi-upload" 
+              class="p-button-success" (click)="importTemplate()"></button>
+    </div>
+  </div>
 </p-dialog>
