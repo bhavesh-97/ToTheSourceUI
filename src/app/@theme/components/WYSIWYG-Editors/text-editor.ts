@@ -31,33 +31,9 @@ import { TextEditorService } from './text-editor.service';
 import { TextFormattingService } from './text-formatting.service';
 import { TextHistoryService } from './text-history.service';
 import { TextAutosaveService } from './text-autosave.service';
-import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
+import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorConfig, EditorPreset, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, ToolbarPreset, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
 import { AnalyticsService } from '../../../@core/utils';
 import { NotificationService } from '../../../services/notification.service';
-
-// New Interfaces
-interface EditorConfig {
-  enableSpellCheck: boolean;
-  enableAutoCorrect: boolean;
-  enableAutoSave: boolean;
-  enableKeyboardShortcuts: boolean;
-  defaultViewMode: 'wysiwyg' | 'source' | 'preview';
-  allowedContentTypes: string[];
-  maxImageSize: number;
-  enableDragAndDrop: boolean;
-  preserveFormatOnPaste: boolean;
-}
-
-interface ToolbarPreset {
-  name: string;
-  tools: string[];
-}
-
-interface EditorPreset {
-  name: string;
-  toolbar: ToolbarPreset;
-  config: EditorConfig;
-}
 
 @Component({
   selector: 'app-text-editor',
@@ -99,9 +75,10 @@ interface EditorPreset {
   styleUrls: ['./text-editor.scss']
 })
 export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlValueAccessor, OnChanges {
-  @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
-  @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
-  @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
+
+   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
+   @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
+   @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
   @Output() clickOutside = new EventEmitter<void>();
   // Enhanced Input Properties
   @Input() width: string = '100%';
@@ -110,7 +87,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   @Input() maxHeight: string = '800px';
   @Input() minWidth: string = '200px';
   @Input() maxWidth: string = '800px';
-  @Input() placeholder: string = 'Start typing here...';
+  @Input() placeholder: string = '';
   @Input() showToolbar: boolean = true;
   @Input() showStatusBar: boolean = true;
   @Input() allowResize: boolean = true;
@@ -170,9 +147,11 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   @Output() errorOccurred = new EventEmitter<Error>();
   @Output() selectionChanged = new EventEmitter<Selection>();
   @Output() formattingChanged = new EventEmitter<FormattingState>();
-  @Output() historyChanged = new EventEmitter<HistoryItem[]>();
+  @Output() historyChanged = new EventEmitter<EditorState[]>();
 
-  // Enhanced State Variables
+    // Enhanced State Variables
+  currentHistoryIndex: number = -1;
+  history: any[] = [];
   isDark = false;
   isSource = false;
   isFullscreen = false;
@@ -207,6 +186,10 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   showFormatPainter = false;
   showFindReplace = false;
   
+  get editorState(): EditorState {
+    return this.textEditorService.getState();
+  }
+
   // Enhanced Formatting State
   currentAlignment = 'left';
   currentLineHeight = 1.5;
@@ -459,84 +442,14 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   isLegend = false;
   isFormatted = false;
   
-  // Enhanced History
-  history: HistoryItem[] = [];
-  currentHistoryIndex = -1;
-  maxHistorySize = 100;
+
   
   // Enhanced Auto-save
   public autoSaveTimer: any;
   lastSaved: Date | null = null;
   saveInterval = 30000;
   saveTriggerCount = 0;
-  
-   // Enhanced Editor State
-  editorState: EditorState = {
-    content: '',
-    selection: null,
-    formatting: {
-      bold: false,
-      italic: false,
-      underline: false,
-      strikethrough: false,
-      superscript: false,
-      subscript: false,
-      code: false,
-      blockquote: false,
-      list: false,
-      orderedList: false,
-      unorderedList: false,
-      heading: false,
-      paragraph: false,
-      link: false,
-      image: false,
-      table: false,
-      pre: false,
-      codeBlock: false
-    },
-    metadata: {
-      version: '',
-      generator: '',
-      lastModifiedBy: '',
-      createdBy: '',
-      createdDate: new Date(),
-      modifiedDate: new Date(),
-      totalEdits: 0,
-      totalTime: 0,
-      wordCount: 0,
-      charCount: 0
-    },
-    version: '1.0.0',
-    lastModified: new Date(),
-    created: new Date(),
-    author: '',
-    title: '',
-    description: '',
-    keywords: [],
-    language: 'en',
-    category: '',
-    tags: [],
-    status: 'draft',
-    visibility: 'public',
-    permissions: {},
-    collaborators: [],
-    comments: [],
-    trackChanges: [],
-    revisions: [],
-    bookmarks: [],
-    annotations: [],
-    highlights: [],
-    links: [],
-    images: [],
-    tables: [],
-    media: [],
-    codeBlocks: [],
-    templates: [],
-    styles: [],
-    scripts: [],
-    customData: {}
-  };
-  
+
   // Enhanced Configuration
   config: EditorConfig = {
     enableSpellCheck: true,
@@ -2568,8 +2481,6 @@ private insertText(text: string): void {
     public textFormattingService: TextFormattingService,
     public textHistoryService: TextHistoryService,
     public textAutosaveService: TextAutosaveService,
-    @Inject(DOCUMENT) private document: Document,
-    public domSanitizer: DomSanitizer
   ) {
     // Initialize feature flags
     this.initializeFeatureFlags();
@@ -2593,17 +2504,17 @@ private insertText(text: string): void {
     this.initializeAccessibilityMetrics();
     this.initializeContentMetrics();
   }
-  newDocument(): void {
-    // Implementation
-    this.editorState = this.getEditorState();
-    this.editor.nativeElement.innerHTML = '';
-    this.messageService.add({
-      severity: 'success',
-      summary: 'New Document',
-      detail: 'Created new document',
-      life: 3000
-    });
-  }
+   newDocument(): void {
+     // Implementation
+     this.textEditorService.resetState();
+     this.editor.nativeElement.innerHTML = '';
+     this.messageService.add({
+       severity: 'success',
+       summary: 'New Document',
+       detail: 'Created new document',
+       life: 3000
+     });
+   }
   
   public initializeFeatureFlags() {
     // Performance features
@@ -3270,7 +3181,6 @@ private insertText(text: string): void {
   public initializeEditor() {
     this.updateEditorContent();
     this.setupEditor();
-    this.setupWordCounter();
     this.setupAutoSave();
     this.updateEditorDimensions();
     this.checkViewport();
@@ -3279,10 +3189,6 @@ private insertText(text: string): void {
     this.updateSpellCheck();
     this.updateEditorMode();
     this.updateToolbarPreset();
-    this.setupAutoFormat();
-    this.setupSpellCheck();
-    this.setupCollaboration();
-    this.setupBackup();
     this.setupAnalytics();
     this.setupPerformance();
     this.setupSecurity();
@@ -5205,41 +5111,22 @@ public aiImproveWriting() {
     this.charCountChanged.emit(this.charCount);
   }
 
-  // Enhanced History Management
-  public saveToHistory() {
-    const content = this.isSource && this.sourceEditor 
-      ? this.sourceEditor.nativeElement.value 
-      : this.editor.nativeElement.innerHTML;
-    
-    // Don't save if content hasn't changed
-    if (this.history.length > 0 && this.history[this.currentHistoryIndex]?.content === content) {
-      return;
+    // Enhanced History Management
+    public saveToHistory() {
+      const content = this.isSource && this.sourceEditor 
+        ? this.sourceEditor.nativeElement.value 
+        : this.editor.nativeElement.innerHTML;
+      
+      // Update editor state with current content
+      const State = this.textEditorService.getState();
+      State.content = content;
+      
+        // Save to history service
+        this.textHistoryService.push(State);
+        // Update local history array for undo/redo buttons
+        this.history = this.textHistoryService.getHistory();
+        this.historyChanged.emit(this.history);
     }
-    
-    // Remove any future history if we're not at the end
-    if (this.currentHistoryIndex < this.history.length - 1) {
-      this.history = this.history.slice(0, this.currentHistoryIndex + 1);
-    }
-    
-    // Add new history item
-    const historyItem: HistoryItem = {
-      content: content,
-      timestamp: new Date(),
-      wordCount: this.wordCount,
-      charCount: this.charCount,
-      preview: content.substring(0, 100) + (content.length > 100 ? '...' : '')
-    };
-    
-    this.history.push(historyItem);
-    
-    // Limit history size
-    if (this.history.length > this.maxHistorySize) {
-      this.history.shift();
-    }
-    
-    this.currentHistoryIndex = this.history.length - 1;
-    this.historyChanged.emit(this.history);
-  }
 
   restoreFromHistory(index: number) {
     if (index >= 0 && index < this.history.length) {
@@ -5767,17 +5654,20 @@ public aiImproveWriting() {
       range.insertNode(commentSpan);
     }
 
-    // Store comment data
-    const comment = {
-      id: commentId,
-      author: this.commentAuthor || 'Anonymous',
-      text: this.commentText,
-      date: new Date(),
-      resolved: false,
-      selection: range.toString()
-    } as any;
+     // Store comment data
+     const comment = {
+       id: commentId,
+       author: this.commentAuthor || 'Anonymous',
+       text: this.commentText,
+       date: new Date(),
+       resolved: false,
+       selection: range.toString()
+     } as any;
 
-    this.editorState.comments.push(comment);
+     // Update state via service
+     const state = this.textEditorService.getState();
+     state.comments.push(comment);
+     this.textEditorService.setState(state);
     
     // Add click handler to show comment
     commentSpan.addEventListener('click', (e) => {
@@ -5827,32 +5717,37 @@ public aiImproveWriting() {
     });
   }
 
-  acceptAllChanges() {
-    this.editorState.trackChanges.forEach(change => {
-      change.accepted = true;
-      change.rejected = false;
-    });
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Track Changes',
-      detail: 'All changes accepted'
-    });
-  }
-
-  rejectAllChanges() {
-    this.editorState.trackChanges.forEach(change => {
-      change.accepted = false;
-      change.rejected = true;
-    });
-    
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Track Changes',
-      detail: 'All changes rejected'
-    });
-  }
-
+   acceptAllChanges() {
+     // Update track changes via service
+     const state = this.textEditorService.getState();
+     state.trackChanges.forEach(change => {
+       change.accepted = true;
+       change.rejected = false;
+     });
+     this.textEditorService.setState(state);
+     
+     this.messageService.add({
+       severity: 'success',
+       summary: 'Track Changes',
+       detail: 'All changes accepted'
+     });
+   }
+   
+   rejectAllChanges() {
+     // Update track changes via service
+     const state = this.textEditorService.getState();
+     state.trackChanges.forEach(change => {
+       change.accepted = false;
+       change.rejected = true;
+     });
+     this.textEditorService.setState(state);
+     
+     this.messageService.add({
+       severity: 'warn',
+       summary: 'Track Changes',
+       detail: 'All changes rejected'
+     });
+   }
   // Enhanced Collaboration
   startCollaboration() {
     if (!this.enableCollaboration) {
@@ -5992,11 +5887,52 @@ public aiImproveWriting() {
 
     // Enhanced Sync Method
      public sync() {
-       this.onChange(this._content);
-       this.onTouched();
-       this.updateStatistics();
-       this.saveToHistory();
-     }
+        // Update _content from the current editor view before notifying form
+        this.updateContentFromView();
+        this.onChange(this._content);
+        this.onTouched();
+        this.updateStatistics();
+        this.saveToHistory();
+      }
+      
+      /**
+       * Updates the internal _content value from the current editor view
+       * (either WYSIWYG editor or source editor)
+       */
+      public updateContentFromView(): void {
+        if (!this.editor?.nativeElement) {
+          return;
+        }
+        
+        if (this.isSource && this.sourceEditor?.nativeElement) {
+          // In source mode, get content from textarea
+          this._content = this.sourceEditor.nativeElement.value;
+        } else {
+          // In WYSIWYG mode, get content from div's innerHTML
+          let content = this.editor.nativeElement.innerHTML;
+          
+          // Handle placeholder case - if only placeholder is present, treat as empty
+          const placeholderElement = this.editor.nativeElement.querySelector('p[style*="color: #6b7280"]');
+          if (placeholderElement && 
+              content.trim() === placeholderElement.outerHTML.trim()) {
+            this._content = '';
+            return;
+          }
+          
+          // Normalize content for empty detection
+          // Replace common empty patterns with empty string
+          const normalizedContent = content
+            .replace(/<br\s*\/?>/gi, '')  // Remove BR tags
+            .replace(/<p[^>]*>\s*<\/p>/gi, '')  // Remove empty P tags
+            .replace(/<p[^>]*><br\s*\/?><\/p>/gi, '')  // Remove P tags with only BR
+            .replace(/&nbsp;/g, ' ')  // Replace non-breaking spaces
+            .replace(/\s+/g, ' ')  // Normalize whitespace
+            .trim();
+          
+          // If after normalization there's no meaningful content, treat as empty
+          this._content = normalizedContent === '' ? '' : content;
+        }
+      }
     
     // GSAP Animations for dialogs
     public onDialogShow(): void {
@@ -6026,10 +5962,20 @@ public aiImproveWriting() {
    
     // Enhanced ControlValueAccessor Implementation
     writeValue(value: string): void {
-     this._content = value || '';
-     this.updateEditorContent(this._content);
-     this.textEditorService.updateContent(this._content);
-   }
+      this._content = value || '';
+     
+      if (this.editor) {
+         this.editor.nativeElement.innerHTML = this._content;
+       }
+
+       if (this.sourceEditor) {
+         this.sourceEditor.nativeElement.value = this._content;
+       }
+      this.updateEditorContent(this._content);
+      this.textEditorService.updateContent(this._content);
+      // Notify the form of the value change
+      this.onChange(this._content);
+    }
 
   registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
@@ -6101,10 +6047,6 @@ public aiImproveWriting() {
     this.editor.nativeElement.autocapitalize = 'sentences';
   }
 
-  public setupWordCounter() {
-    // Already handled by mutation observer
-  }
-
   public setupAutoSave() {
     if (this.autoSaveTimer) {
       clearInterval(this.autoSaveTimer);
@@ -6116,19 +6058,7 @@ public aiImproveWriting() {
       }, this.autoSaveInterval);
     }
   }
-
-  public setupAutoFormat() {
-    // Already handled by autoFormatTimer
-  }
-
-  public setupSpellCheck() {
-    // Already handled by spellCheckTimer
-  }
-
-  public setupCollaboration() {
-    // Already handled by collaborationTimer
-  }
-
+  
   public setupBackup() {
     // Already handled by backupTimer
   }
@@ -6317,15 +6247,17 @@ public aiImproveWriting() {
     return new Map(this.analyticsMetrics);
   }
 
-  getEditorState(): EditorState {
-    return { ...this.editorState };
-  }
+
 
   // Event Handlers
-  onBlur() {
-    this.onTouched();
-    this.editorBlur.emit();
-  }
+   onBlur() {
+     // Sync content when editor loses focus
+     this.updateContentFromView();
+     this.onChange(this._content);
+     
+     this.onTouched();
+     this.editorBlur.emit();
+   }
 
   // Utility Methods
   public shouldCleanPaste(event: ClipboardEvent): boolean {
@@ -6981,13 +6913,13 @@ async toggleFullscreen() {
     return this.isDirty;
   }
 
-  get canUndo(): boolean {
-    return this.currentHistoryIndex > 0;
-  }
-
-  get canRedo(): boolean {
-    return this.currentHistoryIndex < this.history.length - 1;
-  }
+    get canUndo(): boolean {
+      return this.history && this.currentHistoryIndex > 0;
+    }
+  
+    get canRedo(): boolean {
+      return this.history && this.currentHistoryIndex < this.history.length - 1;
+    }
 
   get performanceScore(): number {
     // Calculate overall performance score

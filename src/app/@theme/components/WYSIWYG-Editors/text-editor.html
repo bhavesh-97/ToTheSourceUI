@@ -28,38 +28,38 @@
       <div class="toolbar-left">
         <!-- File Operations -->
         <div class="toolbar-group" *ngIf="toolbarPreset === 'full'">
-          <button class="toolbar-btn" pTooltip="New Document (Ctrl+N)" tooltipPosition="bottom" (click)="newDocument()">
-            <i class="fa fa-file"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Save (Ctrl+S)" tooltipPosition="bottom" (click)="sync(); saveRequested.emit(this._content)">
-            <i class="fa fa-save"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="New Document (Ctrl+N)" tooltipPosition="bottom" (click)="newDocument()" type="button">
+             <i class="fa fa-file"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Save (Ctrl+S)" tooltipPosition="bottom" (click)="sync(); saveRequested.emit(this._content)" type="button">
+             <i class="fa fa-save"></i>
+           </button>
         </div>
         
         <!-- Basic Formatting -->
         <div class="toolbar-group">
-           <button class="toolbar-btn" pTooltip="Bold (Ctrl+B)" tooltipPosition="bottom"
-                   [class.active]="isBold" (click)="textFormattingService.toggleBold()">
-             <i class="fa fa-bold"></i>
-           </button>
-           <button class="toolbar-btn" pTooltip="Italic (Ctrl+I)" tooltipPosition="bottom"
-                   [class.active]="isItalic" (click)="textFormattingService.toggleItalic()">
-             <i class="fa fa-italic"></i>
-           </button>
-           <button class="toolbar-btn" pTooltip="Underline (Ctrl+U)" tooltipPosition="bottom"
-                   [class.active]="isUnderline" (click)="textFormattingService.toggleUnderline()">
-             <i class="fa fa-underline"></i>
-           </button>
+            <button class="toolbar-btn" pTooltip="Bold (Ctrl+B)" tooltipPosition="bottom"
+                    [class.active]="isBold" (click)="textFormattingService.toggleBold()" type="button">
+              <i class="fa fa-bold"></i>
+            </button>
+            <button class="toolbar-btn" pTooltip="Italic (Ctrl+I)" tooltipPosition="bottom"
+                    [class.active]="isItalic" (click)="textFormattingService.toggleItalic()" type="button">
+              <i class="fa fa-italic"></i>
+            </button>
+            <button class="toolbar-btn" pTooltip="Underline (Ctrl+U)" tooltipPosition="bottom"
+                    [class.active]="isUnderline" (click)="textFormattingService.toggleUnderline()" type="button">
+              <i class="fa fa-underline"></i>
+            </button>
           
           <!-- Font Size Dropdown -->
           <div class="toolbar-dropdown desktop-only" clickOutside
                 (clickOutside)="closeFontSizeDropdown()" 
                 [class.open]="showFontSizeDropdown">
-              <button class="toolbar-btn" pTooltip="Font Size" 
-                  (click)="toggleFontSizeDropdown()">
-                    <span class="font-size-label">{{currentFontSize.label || 'Font Size'}}</span>
-                      <i class="fa fa-chevron-down ml-1"></i>
-              </button>
+            <button class="toolbar-btn" pTooltip="Font Size" 
+                   (click)="toggleFontSizeDropdown()" type="button">
+                     <span class="font-size-label">{{currentFontSize.label || 'Font Size'}}</span>
+                       <i class="fa fa-chevron-down ml-1"></i>
+            </button>
               <div class="dropdown-menu" *ngIf="showFontSizeDropdown">
                   <div *ngFor="let size of fontSizeOptions" class="dropdown-item"
                       (click)="changeFontSize(size); closeFontSizeDropdown()">
@@ -71,18 +71,18 @@
         
         <!-- Alignment -->
         <div class="toolbar-group desktop-only">
-          <button class="toolbar-btn" pTooltip="Align Left (Ctrl+L)" (click)="changeAlignment('left')"
-                  [class.active]="currentAlignment === 'left'">
-            <i class="fa fa-align-left"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Align Center (Ctrl+E)" (click)="changeAlignment('center')"
-                  [class.active]="currentAlignment === 'center'">
-            <i class="fa fa-align-center"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Align Right (Ctrl+R)" (click)="changeAlignment('right')"
-                  [class.active]="currentAlignment === 'right'">
-            <i class="fa fa-align-right"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Align Left (Ctrl+L)" (click)="changeAlignment('left')" type="button"
+                   [class.active]="currentAlignment === 'left'">
+             <i class="fa fa-align-left"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Align Center (Ctrl+E)" (click)="changeAlignment('center')" type="button"
+                   [class.active]="currentAlignment === 'center'">
+             <i class="fa fa-align-center"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Align Right (Ctrl+R)" (click)="changeAlignment('right')" type="button"
+                   [class.active]="currentAlignment === 'right'">
+             <i class="fa fa-align-right"></i>
+           </button>
         </div>
       </div>
       
@@ -90,12 +90,12 @@
       <div class="toolbar-center desktop-only" *ngIf="toolbarPreset === 'full'">
         <!-- Lists -->
         <div class="toolbar-group">
-           <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="textFormattingService.toggleUnorderedList()">
-             <i class="fa fa-list-ul"></i>
-           </button>
-           <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="textFormattingService.toggleOrderedList()">
-             <i class="fa fa-list-ol"></i>
-           </button>
+            <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="textFormattingService.toggleUnorderedList()" type="button">
+              <i class="fa fa-list-ul"></i>
+            </button>
+            <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="textFormattingService.toggleOrderedList()" type="button">
+              <i class="fa fa-list-ol"></i>
+            </button>
         </div>
         
         <!-- Colors -->
@@ -117,12 +117,12 @@
         
         <!-- Format Painter -->
         <div class="toolbar-group" *ngIf="enableAutoFormat">
-          <button class="toolbar-btn format-painter" 
-                  pTooltip="Format Painter (Ctrl+Shift+C)"
-                  [class.active]="formatPainterActive"
-                  (click)="formatPainterActive ? applyFormatPainter() : activateFormatPainter()">
-            <i class="fa fa-paint-brush"></i>
-          </button>
+           <button class="toolbar-btn format-painter" 
+                   pTooltip="Format Painter (Ctrl+Shift+C)"
+                   [class.active]="formatPainterActive"
+                   (click)="formatPainterActive ? applyFormatPainter() : activateFormatPainter()" type="button">
+             <i class="fa fa-paint-brush"></i>
+           </button>
         </div>
       </div>
       
@@ -130,40 +130,40 @@
       <div class="toolbar-right">
         <!-- Essential Actions -->
         <div class="toolbar-group">
-          <button class="toolbar-btn" pTooltip="Insert Link (Ctrl+K)" (click)="showLink = true">
-            <i class="fa fa-link"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Insert Image" (click)="showImage = true">
-            <i class="fa fa-image"></i>
-          </button>
-          <button class="toolbar-btn" pTooltip="Insert Table" (click)="showTableConfig = true">
-            <i class="fa fa-table"></i>
-          </button>
-          <button class="toolbar-btn desktop-only" pTooltip="Undo (Ctrl+Z)" (click)="undo()" [disabled]="!canUndo">
-            <i class="fa fa-undo"></i>
-          </button>
-          <button class="toolbar-btn desktop-only" pTooltip="Redo (Ctrl+Y)" (click)="redo()" [disabled]="!canRedo">
-            <i class="fa fa-redo"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Insert Link (Ctrl+K)" (click)="showLink = true" type="button">
+             <i class="fa fa-link"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Insert Image" (click)="showImage = true" type="button">
+             <i class="fa fa-image"></i>
+           </button>
+           <button class="toolbar-btn" pTooltip="Insert Table" (click)="showTableConfig = true" type="button">
+             <i class="fa fa-table"></i>
+           </button>
+           <button class="toolbar-btn desktop-only" pTooltip="Undo (Ctrl+Z)" (click)="undo()" [disabled]="!canUndo" type="button">
+             <i class="fa fa-undo"></i>
+           </button>
+           <button class="toolbar-btn desktop-only" pTooltip="Redo (Ctrl+Y)" (click)="redo()" [disabled]="!canRedo" type="button">
+             <i class="fa fa-redo"></i>
+           </button>
         </div>
         
         <!-- View Controls -->
         <div class="toolbar-group">
           <!-- Source Mode Toggle -->
-          <button class="toolbar-btn" pTooltip="Source Mode (Ctrl+Shift+S)" 
-                  (click)="toggleSource()" [class.active]="isSource">
-            <i class="fa fa-code"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Source Mode (Ctrl+Shift+S)" 
+                   (click)="toggleSource()" [class.active]="isSource" type="button">
+             <i class="fa fa-code"></i>
+           </button>
+           
+           <!-- Split View Toggle -->
+           <button class="toolbar-btn desktop-only" pTooltip="Split View" 
+                   (click)="toggleSplitView()" [class.active]="isSplitView" type="button">
+             <i class="fa fa-columns"></i>
+           </button>
           
-          <!-- Split View Toggle -->
-          <button class="toolbar-btn desktop-only" pTooltip="Split View" 
-                  (click)="toggleSplitView()" [class.active]="isSplitView">
-            <i class="fa fa-columns"></i>
-          </button>
-          
-          <button class="toolbar-btn" pTooltip="Toggle Theme" (click)="toggleTheme()">
-            <i class="fa" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
-          </button>
+           <button class="toolbar-btn" pTooltip="Toggle Theme" (click)="toggleTheme()" type="button">
+             <i class="fa" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
+           </button>
           
           <button class="toolbar-btn" pTooltip="Fullscreen (F11)" (click)="toggleFullscreen()"
                   *ngIf="allowFullscreen">
@@ -180,12 +180,12 @@
             
             <div class="overflow-menu fadeInOut" *ngIf="showOverflowMenu">
               <div class="overflow-menu-content">
-                <button class="overflow-menu-item" (click)="showFontDialog = true; showOverflowMenu = false">
+                <button class="overflow-menu-item" (click)="showFontDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-font"></i>
                   <span>Font Settings</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showCodeDialog = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showCodeDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-code"></i>
                   <span>Insert Code</span>
                 </button>
@@ -195,52 +195,52 @@
                   <span>Insert Emoji</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showSpecialChars = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showSpecialChars = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-percentage"></i>
                   <span>Special Characters</span>
                 </button>
                 
                 <div class="overflow-menu-item separator"></div>
                 
-                <button class="overflow-menu-item" (click)="wordCountInfo(); showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="wordCountInfo(); showOverflowMenu = false" type="button">
                   <i class="fa fa-chart-bar"></i>
                   <span>Document Statistics</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showHistoryDialog = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showHistoryDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-history"></i>
                   <span>History</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showFindReplace = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showFindReplace = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-search"></i>
                   <span>Find & Replace</span>
                 </button>
                 
                 <div class="overflow-menu-item separator"></div>
                 
-                <button class="overflow-menu-item" (click)="showSettingsDialog = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showSettingsDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-cog"></i>
                   <span>Settings</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showExportDialog = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showExportDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-download"></i>
                   <span>Export</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showPrintDialog = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showPrintDialog = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-print"></i>
                   <span>Print</span>
                 </button>
                 
-                <div class="overflow-menu-item separator" *ngIf="enableAIAssistant"></div>
-                
-                <button class="overflow-menu-item" *ngIf="enableAIAssistant" 
-                        (click)="showAIDialog = true; showOverflowMenu = false">
-                  <i class="fa fa-robot"></i>
-                  <span>AI Assistant</span>
-                </button>
+                 <div class="overflow-menu-item separator" *ngIf="enableAIAssistant"></div>
+                 
+                 <button class="overflow-menu-item" *ngIf="enableAIAssistant" 
+                         (click)="showAIDialog = true; showOverflowMenu = false" type="button">
+                   <i class="fa fa-robot"></i>
+                   <span>AI Assistant</span>
+                 </button>
               </div>
             </div>
           </div>
@@ -252,9 +252,9 @@
     <!-- <div class="source-indicator" *ngIf="isSource && showToolbar">
       <i class="fa fa-code"></i>
       <span>Source Mode</span>
-      <button class="toolbar-btn ml-2" (click)="toggleSource()" pTooltip="Switch to WYSIWYG">
-        <i class="fa fa-eye"></i>
-      </button>
+       <button class="toolbar-btn ml-2" (click)="toggleSource()" pTooltip="Switch to WYSIWYG" type="button">
+         <i class="fa fa-eye"></i>
+       </button>
     </div> -->
     
     <!-- Editor Area -->
@@ -412,10 +412,10 @@
       </div>
       
       <div class="dialog-actions">
-        <button pButton label="Apply" icon="fa fa-check" (click)="changeFont(currentFont); showFontDialog = false;" 
-                class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showFontDialog = false" 
-                class="p-button-secondary"></button>
+         <button pButton label="Apply" icon="fa fa-check" (click)="changeFont(currentFont); showFontDialog = false;" 
+                 class="p-button-success" type="button"></button>
+         <button pButton label="Cancel" icon="fa fa-times" (click)="showFontDialog = false" 
+                 class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
@@ -458,8 +458,8 @@
         <input pInputText [(ngModel)]="linkStyle" placeholder="color: blue; text-decoration: none;" class="form-input">
       </div>
       <div class="dialog-actions">
-        <button pButton label="Insert Link" icon="fa fa-link" (click)="insertLink()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showLink=false" class="p-button-secondary"></button>
+         <button pButton label="Insert Link" icon="fa fa-link" (click)="insertLink()" class="p-button-success" type="button"></button>
+         <button pButton label="Cancel" icon="fa fa-times" (click)="showLink=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
@@ -537,9 +537,9 @@
         </div>
       </div>
       <div class="dialog-actions">
-        <button pButton label="Update" icon="fa fa-check" (click)="updateImage()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showImageEditor=false" 
-                class="p-button-secondary"></button>
+         <button pButton label="Update" icon="fa fa-check" (click)="updateImage()" class="p-button-success" type="button"></button>
+         <button pButton label="Cancel" icon="fa fa-times" (click)="showImageEditor=false" 
+                 class="p-button-secondary" type="button"></button>
         <button pButton label="Remove" icon="fa fa-trash" 
                 class="p-button-danger ml-auto"></button>
                 <!-- (click)="removeImage()"  -->

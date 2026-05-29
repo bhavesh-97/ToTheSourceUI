@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, ElementRef, inject, OnInit, QueryList, Renderer2, signal, ViewChild, ViewChildren } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -13,157 +13,219 @@ import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/text-editor';
 import { Template, TemplateStatus } from './Template';
+import { IconField } from "primeng/iconfield";
+import { InputIcon } from "primeng/inputicon";
+import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
+import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
+import { ConfirmationService } from 'primeng/api';
+import { FormUtils } from '../../../shared/utilities/form-utils';
+import { MRoleMaster } from '../rolemaster/MRoleMaster';
+import { RolemasterService } from '../rolemaster/rolemaster.service';
+import { TemplateMasterService } from './template-master.service';
+import { Select } from "primeng/select";
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 @Component({
   selector: 'app-template-master',
-  imports: [CommonModule, 
-            FormsModule, 
-            ButtonModule, 
-            DialogModule,
-            InputTextModule, 
-            TableModule, 
-            TagModule, 
-            TextareaModule, 
-            TextEditorComponent,
-            ConfirmDialogModule,
-            ToggleButtonModule],
+  imports: [CommonModule,
+    FormsModule,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    TableModule,
+    TagModule,
+    TextareaModule,
+    ReactiveFormsModule,
+    TextEditorComponent,
+    ConfirmDialogModule,
+    ToggleSwitchModule,
+     IconField, InputIcon, Select],
   templateUrl: './template-master.html',
   styleUrl: './template-master.css'
 })
 export class TemplateMaster implements OnInit {
-  templates = signal<Template[]>([]);
+  
+  @ViewChild('dt') dt!: Table;
+  @ViewChildren('inputField') inputElements!: QueryList<ElementRef>;
+  private confirmationService = inject(ConfirmationService);
+  private messageService = inject(NotificationService);
+  private TemplateMasterService = inject(TemplateMasterService);
+  private fb = inject(FormBuilder); 
+  private FormUtils = inject(FormUtils);
+  private renderer = inject(Renderer2);
+  
   dialogVisible = false;
   isNew = false;
+  loading: boolean = true;
   showImportDialog = false;
-
-  // Import form properties
   importName = '';
   importType = '';
   importHtml = '';
-
-  form = {
-    TemplateID: 0,
-    TemplateName: '',
-    TemplateType: '',
-    status: 'draft' as TemplateStatus,
-    html: ``
-  };
-
-  // Helper property for toggle button
-  get isPublished(): boolean {
-    return this.form.status === 'published';
+  templetelist: Template[] = [];
+  saving: boolean = false;
+  searchValue: string = '';
+  rows: number = 10;
+  totalRecords: number = 0;
+  roleDialogHeader: string = '';
+  templateForm!: FormGroup; 
+  
+  private formFields: FormFieldConfig[] = [
+      { name: 'TemplateID', isMandatory: false, events: [] },
+      { name: 'TemplateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+      { name: 'TemplateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
+      { name: 'html', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
+      { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+    ];
+  
+  constructor(){
+    this.templateForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
   }
-
-  set isPublished(value: boolean) {
-    this.form.status = value ? 'published' : 'draft';
-  }
-
-  constructor(private notificationService: NotificationService) {}
-
   ngOnInit() {
-    const saved = localStorage.getItem('cms_templates');
-    if (saved) {
-      this.templates.set(JSON.parse(saved));
-    } else {
-      this.templates.set([this.demoTemplate()]);
-    }
-  }
+    this.loadData();
 
-  demoTemplate(): Template {
-    return {
-              TemplateID: 1,
-              TemplateName: 'Modern Hero 2025',
-              TemplateType: 'Website',
-              status: 'published',
-              html: ''
-          };
+  console.log("form",this.templateForm);
   }
-
-  // Dialog methods
+  ngAfterViewInit() {
+    debugger;
+      this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.templateForm);
+  }
+  loadData() {
+       this.loading = true;
+       this.TemplateMasterService.GetAllTemplateDetails().subscribe({
+          next: (res) => {
+            if (!res.isError) {
+              debugger;
+              var response = JSON.parse(res.result);
+              this.loading = false;
+              this.templetelist = response;
+              this.totalRecords = this.templetelist.length;
+              // this.messageService.showMessage(res.strMessage, res.title, res.type);
+            } else {
+              this.messageService.showMessage(res.strMessage, res.title, res.type);
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.messageService.showMessage(
+              'Something went wrong while connecting to the server.',
+              'Error',
+              PopupMessageType.Error
+            );
+          }
+        });
+  }
+    // Dialog methods
   openDialog(isNew: boolean, tpl?: Template) {
     this.isNew = isNew;
     if (isNew) {
-      this.form = {
+      this.templateForm.reset( {
         TemplateID: 0,
         TemplateName: '',
         TemplateType: '',
-        status: 'draft',
+        MCommonEntitiesMaster:{
+            IsActive: true
+        },
         html: ''
-      }
-    } else if (tpl) {
-      this.form = {
+      });
+    } 
+    else if (tpl) {
+      this.templateForm.patchValue({
         TemplateID: tpl.TemplateID,
         TemplateName: tpl.TemplateName,
         TemplateType: tpl.TemplateType,
-        status: tpl.status,
+        MCommonEntitiesMaster:{
+            IsActive: tpl.status
+        },
         html: tpl.html
-      };
+      });
     }
     this.dialogVisible = true;
   }
+  deletetemplate(temp: Template) {
+    this.confirmationService.confirm({
+      key: 'roleDialog',
+      message: `Are you sure you want to delete <b>${temp.TemplateName}</b>? This action cannot be undone.`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+            try {
+                  this.TemplateMasterService.DeleteTemplate(temp).subscribe({
+                          next: (res) => {
+                                    if (!res.isError) {
+                                      this.templateForm.reset();
+                                      this.loadData();
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                      this.dialogVisible = false;
+                                    } else {
+                                      this.messageService.showMessage(res.strMessage, res.title, res.type);
+                                  }
+                              },
+                          error: () => {
+                                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
+                              }
+                        });
+              } catch (error) {
+                    this.messageService.showMessage('Failed to delete role. Please try again.', 'Error', PopupMessageType.Error);
+              } finally {
+                    this.dialogVisible = false;
+              } 
+        }
+    });
+  }
 
-  save() {
-    if (!this.form.TemplateName.trim()) {
-      this.notificationService.showMessage('Name is required!', 'Error', PopupMessageType.Error);
+  async SaveTemplate() {
+    debugger;
+     if (this.templateForm.invalid) {
+
+    this.templateForm.markAllAsTouched();
+
+    Object.keys(this.templateForm.controls).forEach(key => {
+
+      const control = this.templateForm.get(key);
+
+      if (control?.invalid) {
+        console.log('Invalid Field:', key);
+        console.log('Errors:', control.errors);
+      }
+    });
+
+    return;
+  }
+
+  console.log(this.templateForm.value);
+    // Mark all controls as touched to show validation errors
+    // this.markFormGroupTouched(this.roleForm);
+    const outcome = this.FormUtils.validateFormFields(this.formFields, this.templateForm, this.inputElements.toArray(), this.renderer);
+    if (outcome.isError) {
+      this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
+    }  
+    const tempModel = this.FormUtils.getAllFormFieldData(this.formFields, this.templateForm, this.inputElements.toArray(), Template);
+    this.saving = true;
+    try {
+         this.TemplateMasterService.SaveTemplate(tempModel).subscribe({
+            next: (res) => {
+                if (!res.isError) {
+                  debugger;
+                  // var response = JSON.parse(res.result);
+                  const response = res.result;
+                  this.templateForm.reset();
+                  this.loadData();
+                  this.messageService.showMessage(res.strMessage, res.title, res.type);
+                  this.dialogVisible = false;
+                } else {
+                  this.messageService.showMessage(res.strMessage, res.title, res.type);
+              }
+            },
+            error: () => {
+                this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
+              }
+          });
+    } catch (error) {
+      this.messageService.showMessage('Failed to save role. Please try again.', 'Error', PopupMessageType.Error);
+    } finally {
+      this.saving = false;
+      this.dialogVisible = false;
     }
-
-    const template: Template = {
-      TemplateID: this.form.TemplateID,
-      TemplateName: this.form.TemplateName.trim(),
-      TemplateType: this.form.TemplateType.trim(),
-      status: this.form.status,
-      html: this.form.html
-    };
-
-    if (this.isNew) {
-      this.templates.update(t => [...t, template]);
-    } else {
-      this.templates.update(t => t.map(x => x.TemplateID === template.TemplateID ? template : x));
-    }
-
-    localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
-    this.notificationService.showMessage('Saved!', 'Success', PopupMessageType.Success);
-    this.dialogVisible = false;
-  }
-
-  deleteTemplate(tpl: Template) {
-    if (confirm(`Delete "${tpl.TemplateName}" permanently?`)) {
-      this.templates.update(t => t.filter(x => x.TemplateID !== tpl.TemplateID));
-      localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
-      this.notificationService.showMessage('Deleted', 'Info', PopupMessageType.Info);
-    }
-  }
-
-  duplicate(tpl: Template) {
-    const copy = { ...tpl, TemplateID: 0, TemplateName: tpl.TemplateName + ' (Copy)' };
-    this.templates.update(t => [...t, copy]);
-    localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
-  }
-
-  // Import template methods
-  importTemplate() {
-    if (!this.importName.trim()) {
-      this.notificationService.showMessage('Template name is required!', 'Error', PopupMessageType.Error);
-      return;
-    }
-    
-    const template: Template = {
-      TemplateID: Date.now(),
-      TemplateName: this.importName.trim(),
-      TemplateType: this.importType.trim() || 'Custom',
-      status: 'draft',
-      html: this.importHtml
-    };
-    
-    this.templates.update(t => [...t, template]);
-    localStorage.setItem('cms_templates', JSON.stringify(this.templates()));
-    this.showImportDialog = false;
-    this.notificationService.showMessage('Template imported Successfully!', 'Success', PopupMessageType.Success);
-    
-    // Reset import form
-    this.importName = '';
-    this.importType = '';
-    this.importHtml = '';
   }
 }

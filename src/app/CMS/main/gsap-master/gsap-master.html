@@ -66,15 +66,19 @@
       </div>
 
       <!-- Add Page Dialog -->
-      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="pageForm">
-        <div class="mb-2">
-          <input pInputText #inputField formControlName="newPageTitle" hidden/>
-          <label class="form-label">Title</label>
-          <input type="text" class="form-control" formControlName="newPageTitle" placeholder="e.g., Landing Page">
+      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="pageForm" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
+        <div class="w-full p-4 md:p-6">
+          <div class="mb-2">
+            <input pInputText #inputField formControlName="newPageTitle" hidden/>
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" formControlName="newPageTitle" placeholder="e.g., Landing Page">
+          </div>
         </div>
         <ng-template pTemplate="footer">
-          <button pButton label="Add" icon="pi pi-check" (click)="addPage()"></button>
-          <button pButton label="Cancel" icon="pi pi-times" (click)="showAddPageDialog = false" class="p-button-text"></button>
+           <div class="flex flex-col sm:flex-row justify-end gap-2">
+              <button pButton label="Add" icon="pi pi-check" (click)="addPage()"></button>
+              <button pButton label="Cancel" icon="pi pi-times" (click)="showAddPageDialog = false" class="p-button-text"></button>
+          </div>
         </ng-template>
       </p-dialog>
 

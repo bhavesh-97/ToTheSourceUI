@@ -114,4 +114,23 @@ export class TextHistoryService {
   getCurrentIndex(): number {
     return this.currentIndex;
   }
+
+  /**
+   * Get a copy of the entire history stack
+   */
+  getHistory(): EditorState[] {
+    return [...this.history];
+  }
+
+  /**
+   * Get the state at a specific index
+   * @param index The index to retrieve
+   * @returns The state at the index or null if out of bounds
+   */
+  getStateAtIndex(index: number): EditorState | null {
+    if (index >= 0 && index < this.history.length) {
+      return this.history[index];
+    }
+    return null;
+  }
 }

@@ -160,3 +160,21 @@ small.text-muted {
     text-align: center;
   }
 }
+:host ::ng-deep .p-dialog {
+  width: 95vw !important;
+  max-width: 800px !important;
+}
+
+:host ::ng-deep .p-dialog-content {
+  overflow-x: hidden;
+}
+
+:host ::ng-deep .p-dialog .p-inputtext {
+  width: 100%;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

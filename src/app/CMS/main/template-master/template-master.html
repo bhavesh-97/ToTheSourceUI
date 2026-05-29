@@ -1,135 +1,211 @@
-<!-- <div class="main-wrapper">
-  <section class="hero-section">
-    <div class="hero-image-container">
-        <img src="../../../../assets/images/bhavesh.jpg" style="width: 500px; height: 300px;" alt="Hero Background" class="hero-image" />
-    </div>
-    
-    <div class="hero-content">
-      <nav class="navbar">
-        <div class="logo">Brand.</div>
-        <ul class="nav-links">
-          <li><a href="#">Work</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </nav>
-      
-      <h1 class="hero-title">Creative Excellence</h1>
-    </div>
-  </section>
-</div> -->
+<div class="card">
+  <p-table #dt 
+           [value]="templetelist" 
+           dataKey="TemplateID" 
+           [rows]="10" 
+           [rowsPerPageOptions]="[10, 25, 50]" 
+           [loading]="loading" 
+           [paginator]="true" 
+           [globalFilterFields]="['TemplateName']" 
+           [showGridlines]="true"
+           styleClass="p-datatable-sm">
 
-<div class="p-6 bg-gray-50 min-h-screen">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Template Master</h1>
-    <div class="flex space-x-3">
-      <button pButton label="New Template" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)"></button>
-      <button pButton label="Import" icon="pi pi-upload" class="p-button-outlined" (click)="showImportDialog = true"></button>
-    </div>
-  </div>
-
-  <!-- Templates Grid -->
-  <div class="grid gap-4" [ngClass]="{'grid-cols-1': templates().length < 2, 'grid-cols-2': templates().length < 4, 'grid-cols-3': true}">
-    <ng-container *ngFor="let template of templates()">
-      <div class="bg-white rounded-lg shadow hover:shadow-lg transition-all cursor-pointer p-6"
-           (click)="openDialog(false, template)">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800">{{ template.TemplateName }}</h2>
-            <p class="text-sm text-gray-500">{{ template.TemplateType }}</p>
+    <ng-template pTemplate="caption">
+      <div style="display:flex; align-items:center; width:100%;">
+          <h1 style="margin:0; font-size:1.75rem; font-weight:700;">Template Master</h1>
+          <div style="margin-left:auto;">
+              <p-button label="Add New Template" icon="pi pi-plus" class="p-button-success" (click)="openDialog(true)">
+              </p-button>
           </div>
-          <p-tag [value]="template.status" [severity]="template.status === 'published' ? 'success' : 'warn'"></p-tag>
-        </div>
-        <div class="flex items-center text-sm text-gray-600">
-          <i class="pi pi-file mr-2"></i>
-          <span>{{ template.html.length }} characters</span>
-        </div>
       </div>
-    </ng-container>
-    
-    <div *ngIf="templates().length === 0" class="col-span-full text-center py-12">
-      <div class="text-gray-400 text-2xl mb-4">
-        <i class="pi pi-folder-open"></i>
-      </div>
-      <p class="text-gray-600">No templates found. Create your first template.</p>
-    </div>
-  </div>
-</div>
 
+      <div class="flex mt-3">
+        <p-iconField iconPosition="left" class="ml-auto">
+          <p-inputIcon>
+            <i class="pi pi-search"></i>
+          </p-inputIcon>
+          <input pInputText 
+                 type="text" 
+                 (input)="dt.filterGlobal($event.target.value, 'contains')" 
+                 placeholder="Search templates..." />
+        </p-iconField>
+      </div>
+    </ng-template>
+
+    <!-- Table Header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <!-- <th style="width: 3.5rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th> -->
+        <th style="width: 4rem">#</th>
+        <th style="min-width: 16rem">
+          <div class="flex align-items-center justify-content-between">
+            Template Name
+            <p-columnFilter type="text" field="TemplateName" display="menu"></p-columnFilter>
+          </div>
+        </th>
+        <th style="min-width: 16rem">
+          <div class="flex align-items-center justify-content-between">
+            Template Code
+            <p-columnFilter type="text" field="TemplateCode" display="menu"></p-columnFilter>
+          </div>
+        </th>
+        <th style="min-width: 10rem">
+          <div class="flex align-items-center justify-content-between">
+            Status
+            <p-columnFilter field="isActive" matchMode="equals" display="menu">
+              <ng-template pTemplate="filter" let-filter="filterCallback">
+                <p-select [options]="[
+                    { label: 'All', value: null },
+                    { label: 'Active', value: true },
+                    { label: 'Inactive', value: false }
+                  ]" 
+                  (onChange)="filter($event.value)" 
+                  placeholder="All">
+                </p-select>
+              </ng-template>
+            </p-columnFilter>
+          </div>
+        </th>
+        <th style="width: 8rem">Actions</th>
+      </tr>
+    </ng-template>
+
+    <!-- Table Body -->
+    <ng-template pTemplate="body" let-template let-rowIndex="rowIndex">
+      <tr>
+        <!-- <td>
+          <p-tableCheckbox [value]="Template"></p-tableCheckbox>
+        </td> -->
+        <td>
+              {{ (dt.first || 0) + rowIndex + 1 }}
+        </td>
+        <td>
+          <div class="flex align-items-center gap-3">
+            <span class="font-medium">{{ template.TemplateName }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex align-items-center gap-3">
+            <span class="font-medium">{{ template.TemplateCode }}</span>
+          </div>
+        </td>
+        <td>
+          <p-tag 
+            [value]="template.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
+            [severity]="template.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
+            class="text-sm">
+          </p-tag>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <button pButton 
+                    icon="pi pi-pencil" 
+                    class="p-button-rounded p-button-text p-button-info" 
+                    pTooltip="Edit" 
+                    (click)="openDialog(false, template)">
+            </button>
+            <button pButton 
+                    icon="pi pi-trash" 
+                    class="p-button-rounded p-button-text p-button-danger" 
+                    pTooltip="Delete" 
+                    (click)="deletetemplate(template)">
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty State -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center py-6 text-600">
+          <i class="pi pi-inbox text-4xl mb-3"></i>
+          <div class="text-lg">No template found</div>
+          <p-button label="Add First Template" icon="pi pi-plus" class="mt-3 p-button-success" (click)="openDialog(true)"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
 <!-- Template Editor Dialog -->
 <p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'90%', maxWidth:'800px', height:'85vh'}"
-    header="{{ isNew ? 'Create New Template' : 'Edit: ' + form.TemplateName }}" [baseZIndex]="10000">
-  <div class="p-6">
-    <!-- Template Info -->
-    <div class="mb-6">
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
-          <input pInputText [(ngModel)]="form.TemplateName" placeholder="Enter template name" class="w-full">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Template Type</label>
-          <input pInputText [(ngModel)]="form.TemplateType" placeholder="e.g., Email, Landing Page" class="w-full">
-        </div>
-      </div>
-      <div class="flex items-center">
-        <label class="block text-sm font-medium text-gray-700 mb-1 mr-4">Status</label>
-        <p-toggleButton 
-            [(ngModel)]="isPublished" 
-            onLabel="Published" 
-            offLabel="Draft" 
-            (onChange)="form.status = $event ? 'published' : 'draft'"
-            class="p-toggle-button"></p-toggleButton>
-      </div>
+    header="{{ isNew ? 'Create New Template' : 'Edit: ' + templateForm.get('TemplateName')?.value }}" [baseZIndex]="10000">
+    <div class="container d-flex justify-content-center">
+      <form [formGroup]="templateForm" id="templateForm" (ngSubmit)="SaveTemplate()"> 
+         <input pInputText #templateIdInput formControlName="TemplateID"  hidden/>
+           
+           <div class="mb-3">
+               <label class="form-label fw-medium mb-0">
+                 Template Name <span class="text-danger">*</span>
+               </label>
+           </div>
+           
+           <div class="mb-3">
+             <input pInputText
+                   #templateNameInput
+                   formControlName="TemplateName"
+                   class="form-control input100"
+                   [class.is-invalid]="templateForm.get('TemplateName')?.invalid && templateForm.get('TemplateName')?.touched"/>
+             <div *ngIf="templateForm.get('TemplateName')?.invalid && templateForm.get('TemplateName')?.touched" class="invalid-feedback">
+               <div *ngIf="templateForm.get('TemplateName')?.errors?.['required']">Template name is required</div>
+                 <div *ngIf="templateForm.get('TemplateName')?.errors?.['minlength']">
+                   Template name must be at least {{templateForm.get('TemplateName')?.errors?.['minlength']?.requiredLength}} characters
+                 </div>
+             </div>
+           </div>
+           <div class="mt-3 ">
+             <label class="form-label fw-medium mb-0">
+               Template Code <span class="text-danger">*</span>
+             </label>
+           </div>
+           <div class="mb-3">
+             <input pInputText
+                 #templateCodeInput
+                 formControlName="TemplateCode"
+                 class="form-control input100"
+                 [class.is-invalid]="templateForm.get('TemplateCode')?.invalid && templateForm.get('TemplateCode')?.touched" />
+   
+               <div *ngIf="templateForm.get('TemplateCode')?.invalid && templateForm.get('TemplateCode')?.touched" class="invalid-feedback">
+               <div *ngIf="templateForm.get('TemplateCode')?.errors?.['required']">Template code is required</div>
+                 <div *ngIf="templateForm.get('TemplateCode')?.errors?.['minlength']">
+                   Template code must be at least {{templateForm.get('TemplateCode')?.errors?.['minlength']?.requiredLength}} characters
+                 </div>
+             </div>
+           </div>
+           <div class="mt-3 " formGroupName="MCommonEntitiesMaster">
+               <div class="row mb-3 align-items-center">
+                 <div class="col-8 d-flex align-items-center gap-3">
+                     <p-toggleswitch #isActiveInput formControlName="IsActive"></p-toggleswitch>
+                     <span>
+                           {{ templateForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}
+                     </span>
+                 </div>
+             </div>
+           </div>
+           
+           <div class="mt-3 rounded-lg">
+             <app-text-editor
+               #htmlEditor
+               formControlName="html"
+               [width]="'100%'"
+               [height]="'100%'"
+               [minHeight]="'400px'"
+               [maxHeight]="'600px'"
+               [align]="'center'"
+               [allowResize]="true"
+               [allowFullscreen]="true"
+               [autoSave]="true">
+             </app-text-editor>
+           </div> 
+     </form>
     </div>
-    
-    <!-- Template Editor -->
-    <div class="rounded-lg p-4">
-      <app-text-editor
-        [(ngModel)]="form.html"
-        [width]="'100%'"
-        [height]="'100%'"
-        [minHeight]="'400px'"
-        [maxHeight]="'600px'"
-        [align]="'center'"
-        [allowResize]="true"
-        [allowFullscreen]="true"
-        [autoSave]="true">
-      </app-text-editor>
-    </div>
-  </div>
-  
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end space-x-3">
-      <button pButton label="Cancel" class="p-button-outlined" (click)="dialogVisible = false"></button>
-      <button pButton label="Save" icon="pi pi-save" class="p-button-success" (click)="save()"></button>
-    </div>
+    <ng-template pTemplate="footer">
+    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="dialogVisible = false">
+    </button>
+    <button type="submit" pButton label="Save" icon="pi pi-check" [loading]="saving" 
+             class="p-button-success" form="templateForm">
+    </button>
   </ng-template>
-</p-dialog>
-
-<!-- Import Template Dialog -->
-<p-dialog [(visible)]="showImportDialog" [modal]="true" [style]="{width:'500px'}"
-    header="Import Template">
-  <div class="p-6">
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
-      <input pInputText [(ngModel)]="importName" placeholder="Enter template name" class="w-full">
-    </div>
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Template Type</label>
-      <input pInputText [(ngModel)]="importType" placeholder="Enter template type" class="w-full">
-    </div>
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">Template Content (HTML)</label>
-      <textarea [(ngModel)]="importHtml" 
-                class="w-full h-64 p-3 border rounded font-mono"
-                placeholder="Paste HTML content here..."></textarea>
-    </div>
-    <div class="flex justify-end mt-6">
-      <button pButton label="Cancel" icon="pi pi-times" 
-              class="p-button-text" (click)="showImportDialog = false"></button>
-      <button pButton label="Import" icon="pi pi-upload" 
-              class="p-button-success" (click)="importTemplate()"></button>
-    </div>
-  </div>
 </p-dialog>

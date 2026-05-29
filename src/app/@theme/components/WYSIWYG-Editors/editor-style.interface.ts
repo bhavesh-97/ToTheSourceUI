@@ -1418,6 +1418,29 @@ export interface BaseProvider {
   config: Record<string, any>;
 }
 
+export interface EditorConfig {
+  enableSpellCheck: boolean;
+  enableAutoCorrect: boolean;
+  enableAutoSave: boolean;
+  enableKeyboardShortcuts: boolean;
+  defaultViewMode: 'wysiwyg' | 'source' | 'preview';
+  allowedContentTypes: string[];
+  maxImageSize: number;
+  enableDragAndDrop: boolean;
+  preserveFormatOnPaste: boolean;
+}
+
+export interface ToolbarPreset {
+  name: string;
+  tools: string[];
+}
+
+export interface EditorPreset {
+  name: string;
+  toolbar: ToolbarPreset;
+  config: EditorConfig;
+}
+
 // Create type aliases for the rest
 export type PerformanceService = BaseService;
 export type SecurityService = BaseService;
