@@ -3242,14 +3242,33 @@ private insertText(text: string): void {
           this.showOverflowMenu = false;
         }
       },
-      { 
-        label: 'Insert Table', 
-        icon: 'fa fa-table',
-        command: () => {
-          this.showTableConfig = true;
-          this.showOverflowMenu = false;
-        }
-      },
+       { 
+         label: 'Insert Table', 
+         icon: 'fa fa-table',
+         command: () => {
+           this.tableConfig = {
+             rows: this.tableRows,
+             cols: this.tableCols,
+             header: false,
+             footer: false,
+             border: true,
+             striped: false,
+             hover: false,
+             bordered: false,
+             condensed: false,
+             responsive: false,
+             cellPadding: 8,
+             cellSpacing: 0,
+             width: '100%',
+             height: '',
+             alignment: 'none',
+             caption: '',
+             summary: ''
+           };
+           this.showTableConfig = true;
+           this.showOverflowMenu = false;
+         }
+       },
       { 
         label: 'Insert Code', 
         icon: 'fa fa-code',
@@ -4361,7 +4380,7 @@ public generateAccessibilityIssues(): AccessibilityIssue[] {
     const text = clipboardData.getData('text/plain');
     
     if (html && !this.shouldCleanPaste(e)) {
-      this.exec('insertHTML', this.sanitizeHtml(html));
+       this.exec('insertHTML', this.sanitizeHtml(html));
     } else {
       this.exec('insertText', this.sanitizeText(text));
     }
@@ -4624,7 +4643,12 @@ public aiImproveWriting() {
       if (this.importClearExisting) {
         this.editor.nativeElement.innerHTML = content;
       } else {
-        this.exec('insertHTML', content);
+         // Prevent inserting HTML when there's no meaningful content
+         if (!this.hasMeaningfulContent()) {
+           return;
+         }
+         
+         this.exec('insertHTML', content);
       }
       this.sync();
       
@@ -4675,6 +4699,16 @@ public aiImproveWriting() {
       if (this.importClearExisting) {
         this.editor.nativeElement.innerHTML = html;
       } else {
+        // Prevent inserting HTML when there's no meaningful content
+        if (!this.hasMeaningfulContent()) {
+          return;
+        }
+        
+        // Prevent inserting HTML when there's no meaningful content
+        if (!this.hasMeaningfulContent()) {
+          return;
+        }
+        
         this.exec('insertHTML', html);
       }
       this.sync();
@@ -4839,7 +4873,12 @@ public aiImproveWriting() {
     if (this.importClearExisting) {
       this.editor.nativeElement.innerHTML = template.html;
     } else {
-      this.exec('insertHTML', template.html);
+       // Prevent inserting HTML when there's no meaningful content
+       if (!this.hasMeaningfulContent()) {
+         return;
+       }
+       
+       this.exec('insertHTML', template.html);
     }
     this.sync();
     
@@ -5232,11 +5271,11 @@ public aiImproveWriting() {
       
       this.imageUploaded.emit(file);
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Image uploaded successfully'
-      });
+      // this.messageService.add({
+      //   severity: 'success',
+      //   summary: 'Success',
+      //   detail: 'Image uploaded successfully'
+      // });
     };
     
     reader.onerror = () => {
@@ -5272,34 +5311,126 @@ public aiImproveWriting() {
     this.showImageEditor = true;
   }
 
-  updateImage() {
-    if (!this.currentImage) return;
-    
-    this.currentImage.src = this.imageUrl;
-    this.currentImage.alt = this.imageAlt;
-    this.currentImage.title = this.imageTitle;
-    this.currentImage.style.width = this.imageWidth;
-    this.currentImage.style.height = this.imageHeight;
-    this.currentImage.style.float = this.imageAlignment;
-    this.currentImage.style.border = `${this.imageBorder} solid #ddd`;
-    this.currentImage.style.margin = this.imageMargin;
-    this.currentImage.style.padding = this.imagePadding;
-    this.currentImage.style.borderRadius = this.imageBorderRadius;
-    this.currentImage.style.boxShadow = this.imageBoxShadow;
-    this.currentImage.style.filter = this.imageFilter;
-    this.currentImage.style.opacity = this.imageOpacity;
-    this.currentImage.style.objectFit = this.imageObjectFit;
-    this.currentImage.style.objectPosition = this.imageObjectPosition;
-    
-    this.sync();
-    this.showImageEditor = false;
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Image updated successfully'
-    });
-  }
+   insertImageFromUrl() {
+    debugger;
+     if (!this.imageUrl) {
+       this.messageService.add({
+         severity: 'warn',
+         summary: 'Warning',
+         detail: 'Please enter an image URL'
+       });
+       return;
+     }
+     
+     // Prevent inserting image when there's no meaningful content
+     if (!this.hasMeaningfulContent()) {
+       this.messageService.add({
+         severity: 'warn',
+         summary: 'Warning',
+         detail: 'Please enter some text before inserting an image'
+       });
+       return;
+     }
+     
+     const img = document.createElement('img');
+     img.src = this.imageUrl;
+     img.alt = this.imageAlt || 'Image';
+     img.title = this.imageTitle || '';
+     img.style.maxWidth = '100%';
+     
+     // Apply styling if provided
+     if (this.imageWidth) {
+       img.style.width = this.imageWidth;
+     }
+     if (this.imageHeight) {
+       img.style.height = this.imageHeight;
+     }
+     if (this.imageAlignment && this.imageAlignment !== 'none') {
+       img.style.float = this.imageAlignment;
+     }
+     if (this.imageBorder && this.imageBorder !== '0') {
+       img.style.border = `${this.imageBorder} solid #ddd`;
+     }
+     if (this.imageMargin && this.imageMargin !== '0') {
+       img.style.margin = this.imageMargin;
+     }
+     if (this.imagePadding && this.imagePadding !== '0') {
+       img.style.padding = this.imagePadding;
+     }
+     if (this.imageBorderRadius && this.imageBorderRadius !== '0') {
+       img.style.borderRadius = this.imageBorderRadius;
+     }
+     if (this.imageBoxShadow && this.imageBoxShadow !== 'none') {
+       img.style.boxShadow = this.imageBoxShadow;
+     }
+     if (this.imageFilter && this.imageFilter !== 'none') {
+       img.style.filter = this.imageFilter;
+     }
+     if (this.imageOpacity && this.imageOpacity !== '1') {
+       img.style.opacity = this.imageOpacity;
+     }
+     if (this.imageObjectFit && this.imageObjectFit !== 'cover') {
+       img.style.objectFit = this.imageObjectFit;
+     }
+     if (this.imageObjectPosition && this.imageObjectPosition !== 'center') {
+       img.style.objectPosition = this.imageObjectPosition;
+     }
+     
+     this.exec('insertElement', img);
+     this.showImage = false;
+     
+     // Reset form
+     this.imageUrl = '';
+     this.imageAlt = '';
+     this.imageTitle = '';
+     this.imageWidth = '';
+     this.imageHeight = '';
+     this.imageAlignment = 'none';
+     this.imageBorder = '0';
+     this.imageMargin = '0';
+     this.imagePadding = '0';
+     this.imageBorderRadius = '0';
+     this.imageBoxShadow = 'none';
+     this.imageFilter = 'none';
+     this.imageOpacity = '1';
+     this.imageObjectFit = 'cover';
+     this.imageObjectPosition = 'center';
+     
+    //  this.messageService.add({
+    //    severity: 'success',
+    //    summary: 'Success',
+    //    detail: 'Image inserted successfully'
+    //  });
+   }
+   
+   updateImage() {
+     if (!this.currentImage) return;
+     
+     this.currentImage.src = this.imageUrl;
+     this.currentImage.alt = this.imageAlt;
+     this.currentImage.title = this.imageTitle;
+     this.currentImage.style.width = this.imageWidth;
+     this.currentImage.style.height = this.imageHeight;
+     this.currentImage.style.float = this.imageAlignment;
+     this.currentImage.style.border = `${this.imageBorder} solid #ddd`;
+     this.currentImage.style.margin = this.imageMargin;
+     this.currentImage.style.padding = this.imagePadding;
+     this.currentImage.style.borderRadius = this.imageBorderRadius;
+     this.currentImage.style.boxShadow = this.imageBoxShadow;
+     this.currentImage.style.filter = this.imageFilter;
+     this.currentImage.style.opacity = this.imageOpacity;
+     this.currentImage.style.objectFit = this.imageObjectFit;
+     this.currentImage.style.objectPosition = this.imageObjectPosition;
+     
+     this.sync();
+     this.showImageEditor = false;
+     
+     this.messageService.add({
+       severity: 'success',
+       summary: 'Success',
+       detail: 'Image updated successfully'
+     });
+   }
 
   // Enhanced Table Editor
   public editTable(table: HTMLTableElement) {
@@ -5444,7 +5575,12 @@ public aiImproveWriting() {
         break;
     }
     
-    this.exec('insertHTML', mediaHTML);
+     // Prevent inserting HTML when there's no meaningful content
+     if (!this.hasMeaningfulContent()) {
+       return;
+     }
+     
+     this.exec('insertHTML', mediaHTML);
     this.showMediaDialog = false;
     this.mediaUrl = '';
     
@@ -5931,10 +6067,97 @@ public aiImproveWriting() {
           
           // If after normalization there's no meaningful content, treat as empty
           this._content = normalizedContent === '' ? '' : content;
-        }
-      }
-    
-    // GSAP Animations for dialogs
+       }
+       }
+       
+     /**
+      * Checks if the editor has meaningful content (not just empty tags or placeholders)
+      * @returns {boolean} True if editor has meaningful content
+      */
+     public hasMeaningfulContent(): boolean {
+       if (!this.editor?.nativeElement) {
+         return false;
+       }
+       
+       if (this.isSource && this.sourceEditor?.nativeElement) {
+         // In source mode, check textarea value
+         return this.sourceEditor.nativeElement.value.trim() !== '';
+       } else {
+         // In WYSIWYG mode, check div's innerHTML
+         let content = this.editor.nativeElement.innerHTML;
+         
+         // Handle placeholder case - if only placeholder is present, treat as empty
+         const placeholderElement = this.editor.nativeElement.querySelector('p[style*="color: #6b7280"]');
+         if (placeholderElement && 
+             content.trim() === placeholderElement.outerHTML.trim()) {
+           return false;
+         }
+         
+         // Normalize content for empty detection
+         // Replace common empty patterns with empty string
+         const normalizedContent = content
+           .replace(/<br\s*\/?>/gi, '')  // Remove BR tags
+           .replace(/<p[^>]*>\s*<\/p>/gi, '')  // Remove empty P tags
+           .replace(/<p[^>]*><br\s*\/?><\/p>/gi, '')  // Remove P tags with only BR
+           .replace(/&nbsp;/g, ' ')  // Replace non-breaking spaces
+           .replace(/\s+/g, ' ')  // Normalize whitespace
+           .trim();
+         
+         // If after normalization there's no meaningful content, treat as empty
+         return normalizedContent !== '';
+       }
+     }
+     
+     // Wrapper methods for formatting commands that require meaningful content
+     public onBold(): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.toggleBold();
+       }
+     }
+     
+     public onItalic(): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.toggleItalic();
+       }
+     }
+     
+     public onUnderline(): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.toggleUnderline();
+       }
+     }
+     
+     public onUnorderedList(): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.toggleUnorderedList();
+       }
+     }
+     
+     public onOrderedList(): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.toggleOrderedList();
+       }
+     }
+     
+     public onTextColorChange(color: string): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.setTextColor(color);
+       }
+     }
+     
+     public onBackgroundColorChange(color: string): void {
+       if (this.hasMeaningfulContent()) {
+         this.textFormattingService.setBackgroundColor(color);
+       }
+     }
+     
+     public onFontSizeChange(sizeOption: any): void {
+       if (this.hasMeaningfulContent()) {
+         this.changeFontSize(sizeOption);
+       }
+     }
+     
+     // GSAP Animations for dialogs
     public onDialogShow(): void {
       // Animate dialog content when shown
       gsap.fromTo('.p-dialog:visible .dialog-content', 
@@ -6264,7 +6487,6 @@ public aiImproveWriting() {
     const kbEvent = event as ClipboardEvent & KeyboardEvent;
     return kbEvent.shiftKey || this.doc.queryCommandState('pasteAsText');
   }
-
   public sanitizeHtml(html: string): string {
     const div = document.createElement('div');
     div.innerHTML = html;
@@ -6317,6 +6539,7 @@ public aiImproveWriting() {
   // Exec command with enhanced functionality
   exec(cmd: string, value?: any, showDefaultUI = false) {
     try {
+      debugger
       if (cmd === 'insertElement' && value instanceof HTMLElement) {
         const selection = this.doc.getSelection();
         if (selection && selection.rangeCount > 0) {
@@ -6340,7 +6563,8 @@ public aiImproveWriting() {
           
           range.insertNode(fragment);
         }
-      } else {
+      } 
+      else {
         this.doc.execCommand(cmd, showDefaultUI, value);
       }
       
@@ -6357,21 +6581,45 @@ public aiImproveWriting() {
       this.errorOccurred.emit(e as Error);
     }
   }
+private insertElement(element: HTMLElement): void {
+  const selection = this.doc.getSelection();
 
+  if (!selection || selection.rangeCount === 0) {
+    return;
+  }
+
+  const range = selection.getRangeAt(0);
+
+  range.deleteContents();
+  range.insertNode(element);
+
+  range.setStartAfter(element);
+  range.setEndAfter(element);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
   // Detect current formatting
   public detectFormatting() {
     const selection = this.doc.getSelection();
     if (!selection || selection.rangeCount === 0) return;
 
     try {
-      this.isBold = this.doc.queryCommandState('bold');
-      this.isItalic = this.doc.queryCommandState('italic');
-      this.isUnderline = this.doc.queryCommandState('underline');
-      this.isStrikethrough = this.doc.queryCommandState('strikethrough');
+      // this.isBold = this.doc.queryCommandState('bold');
+      // this.isItalic = this.doc.queryCommandState('italic');
+      // this.isUnderline = this.doc.queryCommandState('underline');
+      // this.isStrikethrough = this.doc.queryCommandState('strikethrough');
       
       // Detect superscript/subscript
       const range = selection.getRangeAt(0);
+      const node = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer;
       const parentElement = range.commonAncestorContainer.parentElement;
+
+      // this.isBold = this.hasAncestorTag(node, ['b', 'strong']);
+      // this.isItalic = this.hasAncestorTag(node, ['i', 'em']);
+      // this.isUnderline = this.hasAncestorTag(node, ['u']);
+      // this.isStrikethrough = this.hasAncestorTag(node, ['s', 'strike', 'del']);
+
       if (parentElement) {
         this.isSuperscript = parentElement.tagName === 'SUP' || 
                             window.getComputedStyle(parentElement).verticalAlign === 'super';
@@ -6380,19 +6628,38 @@ public aiImproveWriting() {
       }
       
       // Detect other formatting
-      this.isCode = parentElement?.tagName === 'CODE';
-      this.isBlockquote = parentElement?.tagName === 'BLOCKQUOTE';
-      this.isList = parentElement?.tagName === 'UL' || parentElement?.tagName === 'OL';
-      this.isOrderedList = parentElement?.tagName === 'OL';
-      this.isUnorderedList = parentElement?.tagName === 'UL';
-      this.isHeading = /^H[1-6]$/.test(parentElement?.tagName || '');
-      this.isParagraph = parentElement?.tagName === 'P';
-      this.isLink = parentElement?.tagName === 'A';
-      this.isImage = parentElement?.tagName === 'IMG';
-      this.isTable = parentElement?.tagName === 'TABLE';
-      this.isPre = parentElement?.tagName === 'PRE';
-      this.isCodeBlock = parentElement?.tagName === 'PRE' && parentElement?.firstChild?.nodeName === 'CODE';
-      
+      // this.isCode = parentElement?.tagName === 'CODE';
+      // this.isBlockquote = parentElement?.tagName === 'BLOCKQUOTE';
+      // this.isList = parentElement?.tagName === 'UL' || parentElement?.tagName === 'OL';
+      // this.isOrderedList = parentElement?.tagName === 'OL';
+      // this.isUnorderedList = parentElement?.tagName === 'UL';
+      // this.isHeading = /^H[1-6]$/.test(parentElement?.tagName || '');
+      // this.isParagraph = parentElement?.tagName === 'P';
+      // this.isLink = parentElement?.tagName === 'A';
+      // this.isImage = parentElement?.tagName === 'IMG';
+      // this.isTable = parentElement?.tagName === 'TABLE';
+      // this.isPre = parentElement?.tagName === 'PRE';
+      // this.isCodeBlock = parentElement?.tagName === 'PRE' && parentElement?.firstChild?.nodeName === 'CODE';
+      this.isBold = this.hasAncestor(parentElement, 'b,strong');
+      this.isItalic = this.hasAncestor(parentElement, 'i,em');
+      this.isUnderline = this.hasAncestor(parentElement, 'u');
+      this.isStrikethrough = this.hasAncestor(parentElement, 's,strike,del');
+
+      this.isSuperscript = this.hasAncestor(parentElement, 'sup');
+      this.isSubscript = this.hasAncestor(parentElement, 'sub');
+
+      this.isCode = this.hasAncestor(parentElement, 'code');
+      this.isBlockquote = this.hasAncestor(parentElement, 'blockquote');
+      this.isOrderedList = this.hasAncestor(parentElement, 'ol');
+      this.isUnorderedList = this.hasAncestor(parentElement, 'ul');
+      this.isList = this.isOrderedList || this.isUnorderedList;
+      this.isHeading = !!parentElement?.closest('h1,h2,h3,h4,h5,h6');
+      this.isParagraph = this.hasAncestor(parentElement, 'p');
+      this.isLink = this.hasAncestor(parentElement, 'a');
+      this.isImage = this.hasAncestor(parentElement, 'img');
+      this.isTable = this.hasAncestor(parentElement, 'table');
+      this.isPre = this.hasAncestor(parentElement, 'pre');
+      this.isCodeBlock = !!parentElement?.closest('pre > code');
       // Emit formatting state
       const formattingState: FormattingState = {
         bold: this.isBold,
@@ -6421,7 +6688,23 @@ public aiImproveWriting() {
       console.warn('Could not detect formatting:', e);
     }
   }
-
+  private hasAncestorTag(node: Node | null, tags: string[]): boolean {
+      while (node) {
+        if (
+            node.nodeType === Node.ELEMENT_NODE &&
+            tags.includes((node as Element).tagName.toLowerCase())
+            ) 
+            {
+                return true;
+            }
+          node = node.parentNode;
+        }
+      return false;
+    }
+    private hasAncestor(element: Element | null,selector: string): boolean 
+    {
+        return !!element?.closest(selector);
+    }
   // Enhanced change methods
   changeFont(font: FontOption) {
     // this.currentFont = font;
@@ -6444,51 +6727,66 @@ public aiImproveWriting() {
      }
   }
 
-  changeFontSize(sizeOption: any) {
-    this.currentFontSize = sizeOption.size;
-    
-    const selection = this.doc.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (!range.collapsed) {
-        const span = this.doc.createElement('span');
-        span.style.fontSize = sizeOption.value;
-        span.style.lineHeight = this.currentLineHeight.toString();
-        try {
-          range.surroundContents(span);
-        } catch (e) {
-          const text = range.toString();
-          span.textContent = text;
-          range.deleteContents();
-          range.insertNode(span);
-        }
-        this.sync();
+   changeFontSize(sizeOption: any) {
+     // Prevent formatting when there's no meaningful content
+     if (!this.hasMeaningfulContent()) {
+       return;
+     }
+     
+     this.currentFontSize = sizeOption.size;
+     
+     const selection = this.doc.getSelection();
+     if (selection && selection.rangeCount > 0) {
+       const range = selection.getRangeAt(0);
+       if (!range.collapsed) {
+         const span = this.doc.createElement('span');
+         span.style.fontSize = sizeOption.value;
+         span.style.lineHeight = this.currentLineHeight.toString();
+         try {
+           range.surroundContents(span);
+         } catch (e) {
+           const text = range.toString();
+           span.textContent = text;
+           range.deleteContents();
+           range.insertNode(span);
+         }
+         this.sync();
+       }
+     }
+   }
+
+   changeHeading(heading: any) {
+     // Prevent formatting when there's no meaningful content
+     if (!this.hasMeaningfulContent()) {
+       return;
+     }
+     
+     this.currentHeading = heading;
+     if (heading.value === 'p') {
+       this.exec('formatBlock', '<p>');
+     } else if (heading.value === 'title') {
+       this.exec('formatBlock', '<h1>');
+       this.exec('fontSize', '7');
+     } else if (heading.value === 'subtitle') {
+       this.exec('formatBlock', '<h2>');
+       this.exec('fontSize', '6');
+     } else {
+       this.exec('formatBlock', `<${heading.value}>`);
+     }
+   }
+
+    changeAlignment(alignment: string) {
+      // Prevent formatting when there's no meaningful content
+      if (!this.hasMeaningfulContent()) {
+        return;
+      }
+      
+      this.currentAlignment = alignment;
+      this.exec('justifyLeft');
+      if (alignment !== 'left') {
+        this.exec('justify' + alignment.charAt(0).toUpperCase() + alignment.slice(1));
       }
     }
-  }
-
-  changeHeading(heading: any) {
-    this.currentHeading = heading;
-    if (heading.value === 'p') {
-      this.exec('formatBlock', '<p>');
-    } else if (heading.value === 'title') {
-      this.exec('formatBlock', '<h1>');
-      this.exec('fontSize', '7');
-    } else if (heading.value === 'subtitle') {
-      this.exec('formatBlock', '<h2>');
-      this.exec('fontSize', '6');
-    } else {
-      this.exec('formatBlock', `<${heading.value}>`);
-    }
-  }
-
-  changeAlignment(alignment: string) {
-    this.currentAlignment = alignment;
-    this.exec('justifyLeft');
-    if (alignment !== 'left') {
-      this.exec('justify' + alignment.charAt(0).toUpperCase() + alignment.slice(1));
-    }
-  }
 
   changeLineHeight(lineHeight: number) {
     this.currentLineHeight = lineHeight;
@@ -6496,36 +6794,36 @@ public aiImproveWriting() {
   }
 
   // Enhanced insert methods
-  insertLink() {
-    if (!this.linkUrl) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Please enter a URL'
-      });
-      return;
-    }
-    const linkNoFollow: boolean = this.linkNoFollow;
-    const rel = linkNoFollow ? 'nofollow' : '';
-    const target = this.linkNewTab ? '_blank' : '_self';
-    const text = this.linkText || this.linkUrl;
-    const title = this.linkTitle ? ` title="${this.linkTitle}"` : '';
-    const style = this.linkStyle ? ` style="${this.linkStyle}"` : '';
-    const className = this.linkClass ? ` class="${this.linkClass}"` : '';
-    const id = this.linkId ? ` id="${this.linkId}"` : '';
-    
-    const html = `<a href="${this.linkUrl}" target="${target}"${title}${style}${className}${id} ${rel ? `rel="${rel}"` : ''}>${text}</a>`;
-    
-    this.exec('insertHTML', html);
-    this.showLink = false;
-    this.linkUrl = this.linkText = this.linkTitle = this.linkStyle = this.linkClass = this.linkId = '';
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Link inserted successfully'
-    });
-  }
+   insertLink() {
+     if (!this.linkUrl) {
+       this.messageService.add({
+         severity: 'warn',
+         summary: 'Warning',
+         detail: 'Please enter a URL'
+       });
+       return;
+     }
+     const linkNoFollow: boolean = this.linkNoFollow;
+     const rel = linkNoFollow ? 'nofollow' : '';
+     const target = this.linkNewTab ? '_blank' : '_self';
+     const text = this.linkText || this.linkUrl;
+     const title = this.linkTitle ? ` title="${this.linkTitle}"` : '';
+     const style = this.linkStyle ? ` style="${this.linkStyle}"` : '';
+     const className = this.linkClass ? ` class="${this.linkClass}"` : '';
+     const id = this.linkId ? ` id="${this.linkId}"` : '';
+     
+     const html = `<a href="${this.linkUrl}" target="${target}"${title}${style}${className}${id} ${rel ? `rel="${rel}"` : ''}>${text}</a>`;
+     
+     this.exec('insertHTML', html);
+     this.showLink = false;
+     this.linkUrl = this.linkText = this.linkTitle = this.linkStyle = this.linkClass = this.linkId = '';
+     
+     this.messageService.add({
+       severity: 'success',
+       summary: 'Success',
+       detail: 'Link inserted successfully'
+     });
+   }
 
   // Enhanced table methods
   insertTable() {

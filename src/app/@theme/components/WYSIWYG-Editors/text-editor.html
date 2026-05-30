@@ -39,15 +39,15 @@
         <!-- Basic Formatting -->
         <div class="toolbar-group">
             <button class="toolbar-btn" pTooltip="Bold (Ctrl+B)" tooltipPosition="bottom"
-                    [class.active]="isBold" (click)="textFormattingService.toggleBold()" type="button">
+                     [class.active]="isBold" (click)="onBold()" type="button">
               <i class="fa fa-bold"></i>
             </button>
             <button class="toolbar-btn" pTooltip="Italic (Ctrl+I)" tooltipPosition="bottom"
-                    [class.active]="isItalic" (click)="textFormattingService.toggleItalic()" type="button">
+                     [class.active]="isItalic" (click)="onItalic()" type="button">
               <i class="fa fa-italic"></i>
             </button>
             <button class="toolbar-btn" pTooltip="Underline (Ctrl+U)" tooltipPosition="bottom"
-                    [class.active]="isUnderline" (click)="textFormattingService.toggleUnderline()" type="button">
+                     [class.active]="isUnderline" (click)="onUnderline()" type="button">
               <i class="fa fa-underline"></i>
             </button>
           
@@ -61,8 +61,8 @@
                        <i class="fa fa-chevron-down ml-1"></i>
             </button>
               <div class="dropdown-menu" *ngIf="showFontSizeDropdown">
-                  <div *ngFor="let size of fontSizeOptions" class="dropdown-item"
-                      (click)="changeFontSize(size); closeFontSizeDropdown()">
+                   <div *ngFor="let size of fontSizeOptions" class="dropdown-item"
+                       (click)="onFontSizeChange(size); closeFontSizeDropdown()">
                     {{size.label}}
                   </div>
               </div>
@@ -90,25 +90,25 @@
       <div class="toolbar-center desktop-only" *ngIf="toolbarPreset === 'full'">
         <!-- Lists -->
         <div class="toolbar-group">
-            <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="textFormattingService.toggleUnorderedList()" type="button">
+            <button class="toolbar-btn" pTooltip="Bulleted List (Ctrl+Shift+L)" (click)="onUnorderedList()" type="button">
               <i class="fa fa-list-ul"></i>
             </button>
-            <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="textFormattingService.toggleOrderedList()" type="button">
+             <button class="toolbar-btn" pTooltip="Numbered List (Ctrl+Shift+O)" (click)="onOrderedList()" type="button">
               <i class="fa fa-list-ol"></i>
             </button>
         </div>
         
         <!-- Colors -->
         <div class="toolbar-group">
-           <p-colorPicker [(ngModel)]="currentTextColor" (onChange)="textFormattingService.setTextColor(currentTextColor)" 
-                         class="color-picker-btn" pTooltip="Text Color">
+            <p-colorPicker [(ngModel)]="currentTextColor" (onChange)="onTextColorChange(currentTextColor)" 
+                          class="color-picker-btn" pTooltip="Text Color">
              <div class="color-icon" [style.color]="currentTextColor">
                <i class="fa fa-font"></i>
              </div>
            </p-colorPicker>
            
-           <p-colorPicker [(ngModel)]="currentBackgroundColor" (onChange)="textFormattingService.setBackgroundColor(currentBackgroundColor)" 
-                         class="color-picker-btn" pTooltip="Background Color">
+            <p-colorPicker [(ngModel)]="currentBackgroundColor" (onChange)="onBackgroundColorChange(currentBackgroundColor)" 
+                          class="color-picker-btn" pTooltip="Background Color">
              <div class="color-icon" [style.background]="currentBackgroundColor">
                <i class="fa fa-fill-drip"></i>
              </div>
@@ -174,7 +174,8 @@
           <div class="overflow-menu-container">
             <button class="toolbar-btn overflow-btn" 
                     pTooltip="More Options"
-                    (click)="showOverflowMenu = !showOverflowMenu">
+                    (click)="showOverflowMenu = !showOverflowMenu"
+                    type="button">
               <i class="fa fa-ellipsis-h"></i>
             </button>
             
@@ -190,7 +191,7 @@
                   <span>Insert Code</span>
                 </button>
                 
-                <button class="overflow-menu-item" (click)="showEmojiPicker = true; showOverflowMenu = false">
+                 <button class="overflow-menu-item" (click)="showEmojiPicker = true; showOverflowMenu = false" type="button">
                   <i class="fa fa-smile"></i>
                   <span>Insert Emoji</span>
                 </button>
@@ -344,7 +345,7 @@
   <!-- All Dialogs -->
   
    <!-- Font Dialog -->
-   <p-dialog header="Font Settings" [(visible)]="showFontDialog" [modal]="true" [style]="{width: '500px'}" (onShow)="onDialogShow()" (onHide)="onDialogHide()">
+   <p-dialog header="Font Settings" [(visible)]="showFontDialog"  [draggable]="false" [modal]="true" [style]="{width: '500px'}" (onShow)="onDialogShow()" (onHide)="onDialogHide()">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -394,7 +395,7 @@
                   class="color-swatch"
                   [style.background]="color"
                   [class.active]="currentTextColor === color"
-                  (click)="currentTextColor = color; textFormattingService.setTextColor(color)"></div>
+                   (click)="onTextColorChange(color)"></div>
            </div>
         </div>
         
@@ -406,7 +407,7 @@
                   class="color-swatch"
                   [style.background]="color"
                   [class.active]="currentBackgroundColor === color"
-                  (click)="currentBackgroundColor = color; textFormattingService.setBackgroundColor(color)"></div>
+                   (click)="onBackgroundColorChange(color)"></div>
            </div>
         </div>
       </div>
@@ -421,7 +422,7 @@
   </p-dialog>
   
   <!-- Link Dialog -->
-  <p-dialog header="Insert Link" [(visible)]="showLink" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Insert Link" [(visible)]="showLink" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Display Text (optional)</label>
@@ -465,7 +466,7 @@
   </p-dialog>
   
   <!-- Image Dialog -->
-  <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Upload Image" [(visible)]="showImage" [modal]="true" [style]="{width: '500px'}"  [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Image URL</label>
@@ -485,8 +486,8 @@
       </div>
       <div class="dialog-actions"> 
         <!-- (click)="insertImageFromUrl()"  -->
-        <button pButton label="Insert URL" icon="fa fa-link" (click)="updateImage()" 
-                class="p-button-primary" [disabled]="!imageUrl"></button>
+         <button pButton label="Insert URL" icon="fa fa-link" (click)="insertImageFromUrl()" 
+                 class="p-button-primary" [disabled]="!imageUrl"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showImage=false" 
                 class="p-button-secondary"></button>
       </div>
@@ -494,7 +495,7 @@
   </p-dialog>
   
   <!-- Image Editor Dialog -->
-  <p-dialog header="Edit Image" [(visible)]="showImageEditor" [modal]="true" [style]="{width: '600px'}">
+  <p-dialog header="Edit Image" [(visible)]="showImageEditor" [modal]="true" [style]="{width: '600px'}" [draggable]="false">
     <div class="dialog-content" *ngIf="currentImage">
       <div class="form-row">
         <div class="form-group">
@@ -541,14 +542,14 @@
          <button pButton label="Cancel" icon="fa fa-times" (click)="showImageEditor=false" 
                  class="p-button-secondary" type="button"></button>
         <button pButton label="Remove" icon="fa fa-trash" 
-                class="p-button-danger ml-auto"></button>
+                class="p-button-danger ml-auto"  type="button"></button>
                 <!-- (click)="removeImage()"  -->
       </div>
     </div>
   </p-dialog>
   
   <!-- Table Dialog -->
-  <p-dialog header="Insert Table" [(visible)]="showTableConfig" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Insert Table" [(visible)]="showTableConfig" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -630,21 +631,21 @@
         </table>
       </div>
       <div class="dialog-actions">
-        <button pButton label="Insert Table" icon="fa fa-table" (click)="insertTable()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showTableConfig=false" class="p-button-secondary"></button>
+        <button pButton label="Insert Table" icon="fa fa-table" (click)="insertTable()" class="p-button-success" type="button"></button>
+        <button pButton label="Cancel" icon="fa fa-times" (click)="showTableConfig=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Table Editor Dialog -->
-  <p-dialog header="Edit Table" [(visible)]="showTableEditor" [modal]="true" [style]="{width: '600px'}">
+  <p-dialog header="Edit Table" [(visible)]="showTableEditor" [modal]="true" [style]="{width: '600px'}" [draggable]="false">
     <div class="dialog-content" *ngIf="currentTable">
       <!-- Similar to table config but for editing existing table -->
     </div>
   </p-dialog>
   
   <!-- Code Dialog -->
-  <p-dialog header="Insert Code" [(visible)]="showCodeDialog" [modal]="true" [style]="{width: '700px'}">
+  <p-dialog header="Insert Code" [(visible)]="showCodeDialog" [modal]="true" [style]="{width: '700px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -675,14 +676,14 @@
         <input pInputText [(ngModel)]="codeMaxHeight" placeholder="300px" class="form-input">
       </div>
       <div class="dialog-actions">
-        <button pButton label="Insert Code" icon="fa fa-code" (click)="insertCode()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showCodeDialog=false" class="p-button-secondary"></button>
+        <button pButton label="Insert Code" icon="fa fa-code" (click)="insertCode()" class="p-button-success" type="button"></button>
+        <button pButton label="Cancel" icon="fa fa-times" (click)="showCodeDialog=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Emoji Dialog -->
-  <p-dialog header="Insert Emoji" [(visible)]="showEmojiPicker" [modal]="true" [style]="{width: '550px', maxHeight: '600px'}">
+  <p-dialog header="Insert Emoji" [(visible)]="showEmojiPicker" [modal]="true" [style]="{width: '550px', maxHeight: '600px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="emoji-categories">
         <button *ngFor="let category of emojiCategories" 
@@ -705,7 +706,7 @@
   </p-dialog>
   
   <!-- Special Characters Dialog -->
-  <p-dialog header="Insert Special Character" [(visible)]="showSpecialChars" [modal]="true" [style]="{width: '550px'}">
+  <p-dialog header="Insert Special Character" [(visible)]="showSpecialChars" [modal]="true" [style]="{width: '550px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="special-chars-grid">
         <button *ngFor="let char of specialCharacters" 
@@ -719,7 +720,7 @@
   </p-dialog>
   
   <!-- Media Dialog -->
-  <p-dialog header="Insert Media" [(visible)]="showMediaDialog" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Insert Media" [(visible)]="showMediaDialog" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Media Type</label>
@@ -754,14 +755,14 @@
         </div>
       </div>
       <div class="dialog-actions">
-        <button pButton label="Insert Media" icon="fa fa-video" (click)="insertMedia()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showMediaDialog=false" class="p-button-secondary"></button>
+        <button pButton label="Insert Media" icon="fa fa-video" (click)="insertMedia()" class="p-button-success" type="button"></button>
+        <button pButton label="Cancel" icon="fa fa-times" (click)="showMediaDialog=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Templates Dialog -->
-  <p-dialog header="Templates" [(visible)]="showTemplateDialog" [modal]="true" [style]="{width: '800px', height: '600px'}">
+  <p-dialog header="Templates" [(visible)]="showTemplateDialog" [modal]="true" [style]="{width: '800px', height: '600px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -792,7 +793,7 @@
   </p-dialog>
   
   <!-- AI Assistant Dialog -->
-  <p-dialog header="AI Assistant" [(visible)]="showAIDialog" [modal]="true" [style]="{width: '600px'}" *ngIf="enableAIAssistant">
+  <p-dialog header="AI Assistant" [(visible)]="showAIDialog" [modal]="true" [style]="{width: '600px'}" [draggable]="false" *ngIf="enableAIAssistant">
     <div class="dialog-content">
       <div class="ai-assistant">
         <div class="ai-prompt">
@@ -816,21 +817,21 @@
         <div class="ai-actions">
           <button *ngFor="let action of aiActions" 
                   class="ai-action-btn"
-                  (click)="handleAIAction(action.action)">
+                  (click)="handleAIAction(action.action)"  type="button">
             <i [class]="action.icon"></i>
             <span>{{action.label}}</span>
           </button>
         </div>
       </div>
       <div class="dialog-actions">
-        <button pButton label="Apply" icon="fa fa-robot" (click)="aiImproveWriting()" class="p-button-success"></button>
-        <button pButton label="Cancel" icon="fa fa-times" (click)="showAIDialog=false" class="p-button-secondary"></button>
+        <button pButton label="Apply" icon="fa fa-robot" (click)="aiImproveWriting()" class="p-button-success" type="button"></button>
+        <button pButton label="Cancel" icon="fa fa-times" (click)="showAIDialog=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Export Dialog -->
-  <p-dialog header="Export Document" [(visible)]="showExportDialog" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Export Document" [(visible)]="showExportDialog" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Export Format</label>
@@ -855,15 +856,15 @@
         <button pButton [label]="'Export as ' + exportType.toUpperCase()" 
                 icon="fa fa-download" 
                 (click)="exportWithOptions()" 
-                class="p-button-success"></button>
+                class="p-button-success" type="button"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showExportDialog=false" 
-                class="p-button-secondary"></button>
+                class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Import Dialog -->
-  <p-dialog header="Import Document" [(visible)]="showImportDialog" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Import Document" [(visible)]="showImportDialog" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Import Format</label>
@@ -888,15 +889,15 @@
       </div>
       <div class="dialog-actions">
         <button pButton label="Import" icon="fa fa-upload" (click)="importWithOptions()" 
-                class="p-button-success" [disabled]="!importFile"></button>
+                class="p-button-success" type="button" [disabled]="!importFile"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showImportDialog=false" 
-                class="p-button-secondary"></button>
+                class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Print Dialog -->
-  <p-dialog header="Print Settings" [(visible)]="showPrintDialog" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Print Settings" [(visible)]="showPrintDialog" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-row">
         <div class="form-group">
@@ -924,16 +925,16 @@
       </div>
       <div class="dialog-actions">
         <button pButton label="Print Preview" icon="fa fa-eye" (click)="showPreviewDialog = true; showPrintDialog = false" 
-                class="p-button-primary"></button>
-        <button pButton label="Print" icon="fa fa-print" (click)="printWithOptions()" class="p-button-success"></button>
+                class="p-button-primary" type="button"></button>
+        <button pButton label="Print" icon="fa fa-print" (click)="printWithOptions()" class="p-button-success" type="button"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showPrintDialog=false" 
-                class="p-button-secondary"></button>
+                class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Settings Dialog -->
-  <p-dialog header="Editor Settings" [(visible)]="showSettingsDialog" [modal]="true" [style]="{width: '600px'}">
+  <p-dialog header="Editor Settings" [(visible)]="showSettingsDialog" [modal]="true" [style]="{width: '600px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Auto-save</label>
@@ -980,21 +981,21 @@
       </div>
       <div class="dialog-actions">
         <button pButton label="Save Settings" icon="fa fa-save" (click)="showSettingsDialog = false" 
-                class="p-button-success"></button>
+                class="p-button-success" type="button"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showSettingsDialog = false" 
-                class="p-button-secondary"></button>
+                class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Preview Dialog -->
   <p-dialog header="Preview" [(visible)]="showPreviewDialog" [modal]="true" 
-            [style]="{width: '90vw', height: '90vh'}" [maximizable]="true">
+            [style]="{width: '90vw', height: '90vh'}" [maximizable]="true" [draggable]="false">
     <div class="preview-content" [innerHTML]="content | safeHtml"></div>
   </p-dialog>
   
   <!-- History Dialog -->
-  <p-dialog header="History" [(visible)]="showHistoryDialog" [modal]="true" [style]="{width: '700px', height: '500px'}">
+  <p-dialog header="History" [(visible)]="showHistoryDialog" [modal]="true" [style]="{width: '700px', height: '500px'}" [draggable]="false">
     <div class="history-content">
       <div class="history-list">
         <div *ngFor="let item of history; let i = index" 
@@ -1013,7 +1014,7 @@
   </p-dialog>
   
   <!-- Find & Replace Dialog -->
-  <p-dialog header="Find & Replace" [(visible)]="showFindReplace" [modal]="true" [style]="{width: '500px'}">
+  <p-dialog header="Find & Replace" [(visible)]="showFindReplace" [modal]="true" [style]="{width: '500px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="form-group">
         <label>Find</label>
@@ -1036,17 +1037,17 @@
       </div>
       <div class="dialog-actions">
         <button pButton label="Find" icon="fa fa-search" (click)="findAndReplace()" 
-                class="p-button-primary" [disabled]="!findText"></button>
+                class="p-button-primary" [disabled]="!findText" type="button"></button>
         <button pButton label="Replace All" icon="fa fa-exchange-alt" (click)="findAndReplace()" 
-                class="p-button-success" [disabled]="!findText || !replaceText"></button>
+                class="p-button-success" [disabled]="!findText || !replaceText" type="button"></button>
         <button pButton label="Cancel" icon="fa fa-times" (click)="showFindReplace=false" 
-                class="p-button-secondary"></button>
+                class="p-button-secondary" type="button"></button>
       </div>
     </div>
   </p-dialog>
   
   <!-- Comments Panel -->
-  <p-drawer [(visible)]="showCommentsPanel" position="right" [style]="{width: '350px'}">
+  <p-drawer [(visible)]="showCommentsPanel" position="right" [style]="{width: '350px'}" [draggable]="false">
     <div class="collaboration-panel">
       <div class="users-list">
         <h4>Comments</h4>
@@ -1062,14 +1063,14 @@
       <div class="chat-input">
         <div class="input-group">
           <input pInputText [(ngModel)]="commentText" placeholder="Add a comment..." (keyup.enter)="addComment()">
-          <button pButton icon="fa fa-paper-plane" (click)="addComment()"></button>
+          <button pButton icon="fa fa-paper-plane" (click)="addComment()" type="button"></button>
         </div>
       </div>
     </div>
   </p-drawer>
   
   <!-- Collaboration Panel -->
-  <p-drawer [(visible)]="showCollaborationPanel" position="right" [style]="{width: '400px'}" *ngIf="enableCollaboration">
+  <p-drawer [(visible)]="showCollaborationPanel" position="right" [style]="{width: '400px'}" [draggable]="false" *ngIf="enableCollaboration">
     <div class="collaboration-panel">
       <div class="users-list">
         <h4>Collaborators ({{collaborationUsers.length}})</h4>
@@ -1093,14 +1094,14 @@
       <div class="chat-input">
         <div class="input-group">
           <input pInputText [(ngModel)]="collaborationMessage" placeholder="Type a message..." (keyup.enter)="sendCollaborationMessage()">
-          <button pButton icon="fa fa-paper-plane" (click)="sendCollaborationMessage()"></button>
+          <button pButton icon="fa fa-paper-plane" (click)="sendCollaborationMessage()" type="button"></button>
         </div>
       </div>
     </div>
   </p-drawer>
   
   <!-- Performance Dashboard -->
-  <p-dialog header="Performance Dashboard" [(visible)]="showPerformanceDashboard" [modal]="true" [style]="{width: '800px'}">
+  <p-dialog header="Performance Dashboard" [(visible)]="showPerformanceDashboard" [modal]="true" [style]="{width: '800px'}" [draggable]="false">
     <div class="dialog-content">
       <div class="performance-dashboard">
         <div class="metric-grid">
@@ -1135,7 +1136,7 @@
         
         <div class="dialog-actions mt-3">
           <button pButton label="Close" icon="fa fa-times" (click)="showPerformanceDashboard = false" 
-                  class="p-button-secondary"></button>
+                  class="p-button-secondary" type="button"></button>
         </div>
       </div>
     </div>
