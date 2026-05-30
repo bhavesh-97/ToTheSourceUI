@@ -73,7 +73,7 @@ export class TemplateMaster implements OnInit {
       { name: 'TemplateID', isMandatory: false, events: [] },
       { name: 'TemplateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
       { name: 'TemplateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
-      { name: 'html', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
+      { name: 'TemplateContent', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
       { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
     ];
   
@@ -120,22 +120,22 @@ export class TemplateMaster implements OnInit {
       this.templateForm.reset( {
         TemplateID: 0,
         TemplateName: '',
-        TemplateType: '',
+        TemplateCode: '',
         MCommonEntitiesMaster:{
             IsActive: true
         },
-        html: ''
+        TemplateContent: ''
       });
     } 
     else if (tpl) {
       this.templateForm.patchValue({
         TemplateID: tpl.TemplateID,
         TemplateName: tpl.TemplateName,
-        TemplateType: tpl.TemplateType,
+        TemplateCode: tpl.TemplateCode,
+        TemplateContent: tpl.TemplateContent,
         MCommonEntitiesMaster:{
-            IsActive: tpl.status
+            IsActive: tpl.MCommonEntitiesMaster?.IsActive
         },
-        html: tpl.html
       });
     }
     this.dialogVisible = true;
@@ -148,7 +148,7 @@ export class TemplateMaster implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
             try {
-                  this.TemplateMasterService.DeleteTemplate(temp).subscribe({
+                  this.TemplateMasterService.DeleteTemplate(temp.TemplateID).subscribe({
                           next: (res) => {
                                     if (!res.isError) {
                                       this.templateForm.reset();

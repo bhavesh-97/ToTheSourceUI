@@ -4,8 +4,7 @@ export type TemplateStatus = 'published' | 'draft' | 'warning' | 'success';
 export class Template {
   TemplateID: number = 0;
   TemplateName: string = "";
-  TemplateType: string = "";
-  html: string = "";
-  status: TemplateStatus = 'draft';
+  TemplateCode: string = "";
+  TemplateContent: string = "";
   MCommonEntitiesMaster?: MCommonEntitiesMaster;
 }

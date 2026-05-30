@@ -28,14 +28,18 @@ export class TemplateMasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
-      
+    GetTemplateById(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/GetTemplateDetails/${templateId}`,
+                                                      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+            );
+      }
     SaveTemplate(roleModel: Template, encryptPayload = false): Observable<JsonResponseModel> {
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/SaveTemplateDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
-    DeleteTemplate(roleModel: Template, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/DeleteTemplateDetails`,roleModel,                    
+    DeleteTemplate(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.post<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/DeleteTemplate`, { TemplateID: templateId },                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
