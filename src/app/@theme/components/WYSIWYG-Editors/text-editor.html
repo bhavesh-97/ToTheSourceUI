@@ -258,65 +258,39 @@
        </button>
     </div> -->
     
-<!-- Editor Area -->
-     <div class="editor-area" [class.split-view]="isSplitView">
-       <!-- Preview Panel (left side in split view) -->
-       <div class="preview-panel" 
-            [style.display]="isSplitView ? 'block' : 'none'"
-            [style.width]="'50%'"
-            [style.border-right]="'1px solid ' + border-color">
-         <div class="preview-content" 
-              [innerHTML]="content | safeHtml"
-              style="overflow-y: auto; height: 100%; padding: 20px; box-sizing: border-box;">
-         </div>
-       </div>
-       
-       <!-- Source Editor (right side in split view, full width in normal view) -->
-       <div class="source-panel" 
-            [style.display]="isSplitView ? 'block' : 'none'"
-            [style.width]="'50%'"
-            [style.box-sizing]="'border-box'">
-         <textarea #sourceEditor
-                   class="source-editor"
-                   [readonly]="isReadOnly"
-                   [placeholder]="placeholder"
-                   (input)="sync()"
-                   (blur)="onBlur()"
-                   (focus)="editorFocus.emit()"
-                   style="width: 100%; height: 100%; overflow-y: auto; resize: none; padding: 20px; box-sizing: border-box; font-family: 'Courier New', monospace; font-size: 14px; background: #1e1e1e; color: #d4d4d4; white-space: pre;">
-         </textarea>
-       </div>
-       
-       <!-- WYSIWYG Editor (normal view) -->
-       <div #editor 
-            contenteditable="true" 
-            class="editor-content" 
-            [style.display]="(!isSource && !isSplitView) ? 'block' : 'none'"
-            [class.readonly]="isReadOnly"
-            [attr.spellcheck]="spellCheck"
-            [attr.autocorrect]="autoCorrect ? 'on' : 'off'"
-            [attr.autocapitalize]="sentences"
-            [attr.placeholder]="placeholder"
-            [attr.aria-label]="placeholder"
-            (blur)="onBlur()"
-            (focus)="editorFocus.emit()"
-            (input)="sync()"
-            style="width: 100%; min-height: 200px; overflow-y: auto; padding: 20px; box-sizing: border-box;">
-       </div>
-       
-       <!-- Source Editor (normal view) -->
-       <textarea #sourceEditorNormal
+    <!-- Editor Area -->
+    <div class="editor-area" [class.split-view]="isSplitView">
+      <!-- WYSIWYG Editor -->
+      <div #editor 
+           contenteditable="true" 
+           class="editor-content" 
+           [style.display]="isSource && !isSplitView ? 'none' : 'block'"
+           [class.readonly]="isReadOnly"
+           [attr.spellcheck]="spellCheck"
+           [attr.autocorrect]="autoCorrect ? 'on' : 'off'"
+           [attr.autocapitalize]="sentences"
+           [attr.placeholder]="placeholder"
+           [attr.aria-label]="placeholder"
+           (blur)="onBlur()"
+           (focus)="editorFocus.emit()"
+           (input)="sync()"
+           style="overflow-y: auto;">
+      </div>
+      
+<!-- Source Editor -->
+       <textarea #sourceEditor
                  class="source-editor"
-                 [style.display]="(isSource && !isSplitView) ? 'block' : 'none'"
+                 [style.display]="!isSource && !isSplitView ? 'none' : 'block'"
                  [readonly]="isReadOnly"
                  [placeholder]="placeholder"
                  (input)="sync()"
                  (blur)="onBlur()"
                  (focus)="editorFocus.emit()"
-                 style="width: 100%; min-height: 200px; overflow-y: auto; resize: none; padding: 20px; box-sizing: border-box; font-family: 'Courier New', monospace; font-size: 14px; background: #1e1e1e; color: #d4d4d4; white-space: pre;">
+                 style="overflow-y: auto;">
        </textarea>
-     </div>
+    </div>
     
+
     <!-- Status Bar -->
     <div class="status-bar" *ngIf="showStatusBar">
       <div class="status-item clickable" (click)="wordCountInfo()" pTooltip="Click for detailed statistics">
