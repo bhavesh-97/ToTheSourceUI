@@ -1,12 +1,12 @@
 <div class="card">
   <p-table #dt 
            [value]="templetelist" 
-           dataKey="TemplateID" 
+           dataKey="templateID" 
            [rows]="10" 
            [rowsPerPageOptions]="[10, 25, 50]" 
            [loading]="loading" 
            [paginator]="true" 
-           [globalFilterFields]="['TemplateName']" 
+           [globalFilterFields]="['templateName']" 
            [showGridlines]="true"
            styleClass="p-datatable-sm">
 
@@ -42,13 +42,13 @@
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Template Name
-            <p-columnFilter type="text" field="TemplateName" display="menu"></p-columnFilter>
+            <p-columnFilter type="text" field="templateName" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Template Code
-            <p-columnFilter type="text" field="TemplateCode" display="menu"></p-columnFilter>
+            <p-columnFilter type="text" field="templateCode" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 10rem">
@@ -83,18 +83,18 @@
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ template.TemplateName }}</span>
+            <span class="font-medium">{{ template.templateName }}</span>
           </div>
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ template.TemplateCode }}</span>
+            <span class="font-medium">{{ template.templateCode }}</span>
           </div>
         </td>
         <td>
           <p-tag 
-            [value]="template.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
-            [severity]="template.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
+            [value]="template.mCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
+            [severity]="template.mCommonEntitiesMaster.isActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -131,10 +131,10 @@
 </div>
 <!-- Template Editor Dialog -->
 <p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'90%', maxWidth:'800px', height:'85vh'}"
-    header="{{ isNew ? 'Create New Template' : 'Edit: ' + templateForm.get('TemplateName')?.value }}" [baseZIndex]="10000">
+    header="{{ isNew ? 'Create New Template' : 'Edit: ' + templateForm.get('templateName')?.value }}" [baseZIndex]="10000">
     <div class="container d-flex justify-content-center">
       <form [formGroup]="templateForm" id="templateForm" (ngSubmit)="SaveTemplate()"> 
-         <input pInputText #templateIdInput formControlName="TemplateID"  hidden/>
+         <input pInputText #templateIdInput formControlName="templateID"  hidden/>
            
            <div class="mb-3">
                <label class="form-label fw-medium mb-0">
@@ -145,13 +145,13 @@
            <div class="mb-3">
              <input pInputText
                    #templateNameInput
-                   formControlName="TemplateName"
+                   formControlName="templateName"
                    class="form-control input100"
-                   [class.is-invalid]="templateForm.get('TemplateName')?.invalid && templateForm.get('TemplateName')?.touched"/>
-             <div *ngIf="templateForm.get('TemplateName')?.invalid && templateForm.get('TemplateName')?.touched" class="invalid-feedback">
-               <div *ngIf="templateForm.get('TemplateName')?.errors?.['required']">Template name is required</div>
-                 <div *ngIf="templateForm.get('TemplateName')?.errors?.['minlength']">
-                   Template name must be at least {{templateForm.get('TemplateName')?.errors?.['minlength']?.requiredLength}} characters
+                   [class.is-invalid]="templateForm.get('templateName')?.invalid && templateForm.get('templateName')?.touched"/>
+             <div *ngIf="templateForm.get('templateName')?.invalid && templateForm.get('templateName')?.touched" class="invalid-feedback">
+               <div *ngIf="templateForm.get('templateName')?.errors?.['required']">Template name is required</div>
+                 <div *ngIf="templateForm.get('templateName')?.errors?.['minlength']">
+                   Template name must be at least {{templateForm.get('templateName')?.errors?.['minlength']?.requiredLength}} characters
                  </div>
              </div>
            </div>
@@ -163,23 +163,23 @@
            <div class="mb-3">
              <input pInputText
                  #templateCodeInput
-                 formControlName="TemplateCode"
+                 formControlName="templateCode"
                  class="form-control input100"
-                 [class.is-invalid]="templateForm.get('TemplateCode')?.invalid && templateForm.get('TemplateCode')?.touched" />
+                 [class.is-invalid]="templateForm.get('templateCode')?.invalid && templateForm.get('templateCode')?.touched" />
    
-               <div *ngIf="templateForm.get('TemplateCode')?.invalid && templateForm.get('TemplateCode')?.touched" class="invalid-feedback">
-               <div *ngIf="templateForm.get('TemplateCode')?.errors?.['required']">Template code is required</div>
-                 <div *ngIf="templateForm.get('TemplateCode')?.errors?.['minlength']">
-                   Template code must be at least {{templateForm.get('TemplateCode')?.errors?.['minlength']?.requiredLength}} characters
+               <div *ngIf="templateForm.get('templateCode')?.invalid && templateForm.get('templateCode')?.touched" class="invalid-feedback">
+               <div *ngIf="templateForm.get('templateCode')?.errors?.['required']">Template code is required</div>
+                 <div *ngIf="templateForm.get('templateCode')?.errors?.['minlength']">
+                   Template code must be at least {{templateForm.get('templateCode')?.errors?.['minlength']?.requiredLength}} characters
                  </div>
              </div>
            </div>
-           <div class="mt-3 " formGroupName="MCommonEntitiesMaster">
+           <div class="mt-3 " formGroupName="mCommonEntitiesMaster">
                <div class="row mb-3 align-items-center">
                  <div class="col-8 d-flex align-items-center gap-3">
-                     <p-toggleswitch #isActiveInput formControlName="IsActive"></p-toggleswitch>
+                     <p-toggleswitch #isActiveInput formControlName="isActive"></p-toggleswitch>
                      <span>
-                           {{ templateForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}
+                           {{ templateForm.get('mCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}
                      </span>
                  </div>
              </div>
@@ -188,7 +188,7 @@
            <div class="mt-3 rounded-lg">
              <app-text-editor
                #htmlEditor
-               formControlName="TemplateContent"
+               formControlName="templateContent"
                [width]="'100%'"
                [height]="'100%'"
                [minHeight]="'400px'"

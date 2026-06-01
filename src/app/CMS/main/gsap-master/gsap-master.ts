@@ -267,7 +267,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
   
   async selectPage(page: any) {
-    debugger;
     this.selectedPage = page;
     const pageId = page.PageId || page.pageId;
     if (!pageId) {
@@ -283,7 +282,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         firstValueFrom( this.gsapConfigService.GetCallbacksByPageId(pageId))
       ]);
       
-      debugger;
       const defaults = defaultsRes?.result;
       const plugins = pluginsRes?.result;
       const rules = rulesRes?.result;
@@ -395,7 +393,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async saveConfig() {
-    debugger;
     if (!this.selectedPage) {
       this.NotificationService.showMessage('No page selected', 'Error', PopupMessageType.Error);
       return;
@@ -911,7 +908,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editRule(rule: GsapRule, index: number) {
-    debugger;
     this.editingRule = { ...rule };
     this.editingIndex = index;
     this.editingRuleFromJson = this.formatStylesForDisplay(rule.from);
@@ -1134,7 +1130,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveEdit() {
-    debugger;
     if (this.editMode === 'rule') {
       const formValidation = this.FormUtils.validateFormFields(this.ruleFormFields, this.ruleForm, this.inputElements.toArray(), this.renderer);
       if (formValidation.isError) {

@@ -70,11 +70,11 @@ export class TemplateMaster implements OnInit {
   templateForm!: FormGroup; 
   
   private formFields: FormFieldConfig[] = [
-      { name: 'TemplateID', isMandatory: false, events: [] },
-      { name: 'TemplateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
-      { name: 'TemplateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
-      { name: 'TemplateContent', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
-      { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+      { name: 'templateID', isMandatory: false, events: [] },
+      { name: 'templateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+      { name: 'templateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
+      { name: 'templateContent', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
+      { name: 'mCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
     ];
   
   constructor(){
@@ -93,10 +93,10 @@ export class TemplateMaster implements OnInit {
        this.TemplateMasterService.GetAllTemplateDetails().subscribe({
           next: (res) => {
             if (!res.isError) {
-              debugger;
-              var response = JSON.parse(res.result);
+              var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
               this.loading = false;
               this.templetelist = response;
+              // console.log("templetelist",this.templetelist);
               this.totalRecords = this.templetelist.length;
               // this.messageService.showMessage(res.strMessage, res.title, res.type);
             } else {
@@ -113,28 +113,28 @@ export class TemplateMaster implements OnInit {
           }
         });
   }
-    // Dialog methods
   openDialog(isNew: boolean, tpl?: Template) {
+    debugger;
     this.isNew = isNew;
     if (isNew) {
       this.templateForm.reset( {
-        TemplateID: 0,
-        TemplateName: '',
-        TemplateCode: '',
-        MCommonEntitiesMaster:{
-            IsActive: true
+        templateID: 0,
+        templateName: '',
+        templateCode: '',
+        mCommonEntitiesMaster:{
+            isActive: true
         },
-        TemplateContent: ''
+        templateContent: ''
       });
     } 
     else if (tpl) {
       this.templateForm.patchValue({
-        TemplateID: tpl.TemplateID,
-        TemplateName: tpl.TemplateName,
-        TemplateCode: tpl.TemplateCode,
-        TemplateContent: tpl.TemplateContent,
-        MCommonEntitiesMaster:{
-            IsActive: tpl.MCommonEntitiesMaster?.IsActive
+        templateID: tpl.templateID,
+        templateName: tpl.templateName,
+        templateCode: tpl.templateCode,
+        templateContent: tpl.templateContent,
+        mCommonEntitiesMaster:{
+            isActive: tpl.mCommonEntitiesMaster?.isActive
         },
       });
     }
@@ -143,12 +143,12 @@ export class TemplateMaster implements OnInit {
   deletetemplate(temp: Template) {
     this.confirmationService.confirm({
       key: 'roleDialog',
-      message: `Are you sure you want to delete <b>${temp.TemplateName}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${temp.templateName}</b>? This action cannot be undone.`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
             try {
-                  this.TemplateMasterService.DeleteTemplate(temp.TemplateID).subscribe({
+                  this.TemplateMasterService.DeleteTemplate(temp.templateID).subscribe({
                           next: (res) => {
                                     if (!res.isError) {
                                       this.templateForm.reset();
@@ -159,7 +159,7 @@ export class TemplateMaster implements OnInit {
                                       this.messageService.showMessage(res.strMessage, res.title, res.type);
                                   }
                               },
-                          error: () => {
+                          error: (e) => {
                                 this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
                               }
                         });
@@ -199,6 +199,10 @@ export class TemplateMaster implements OnInit {
       this.messageService.showMessage(outcome.strMessage, outcome.title, outcome.type);
       return;
     }  
+    // const tempModel = this.templateForm.getRawValue();
+
+    // console.log(JSON.stringify(tempModel, null, 2));
+
     const tempModel = this.FormUtils.getAllFormFieldData(this.formFields, this.templateForm, this.inputElements.toArray(), Template);
     this.saving = true;
     try {
@@ -216,7 +220,8 @@ export class TemplateMaster implements OnInit {
                   this.messageService.showMessage(res.strMessage, res.title, res.type);
               }
             },
-            error: () => {
+            error: (e) => {
+                 console.error('Error saving template:', e);
                 this.messageService.showMessage('Something went wrong while connecting to the server.','Error',PopupMessageType.Error);
               }
           });

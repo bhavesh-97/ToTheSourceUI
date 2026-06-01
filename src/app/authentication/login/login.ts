@@ -186,7 +186,6 @@ export class Login implements AfterViewInit {
     this.loginService.GetUserLogin(loginModel).subscribe({
       next: (res) => {
         if (!res.isError) {
-          debugger;
           // var response = JSON.parse(res.result);
           const response = res.result;
           this.loginForm.reset();

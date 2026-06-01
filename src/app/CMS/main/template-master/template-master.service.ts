@@ -29,7 +29,7 @@ export class TemplateMasterService {
             );
       }
     GetTemplateById(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/GetTemplateDetails/${templateId}`,
+        return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/GetTemplateById/${templateId}`,
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }

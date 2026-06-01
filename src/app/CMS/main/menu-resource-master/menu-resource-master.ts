@@ -82,7 +82,6 @@ export class MenuResourceMaster {
        this.MenuResourceMasterService.GetAllMenuResourceDetails().subscribe({
           next: (res) => {
             if (!res.isError) {
-              debugger;
               var response = JSON.parse(res.result);
               this.loading = false;
               this.MenuResource = response;
@@ -124,7 +123,7 @@ export class MenuResourceMaster {
       MenuURL:menuresource.MenuURL,
       Icon:menuresource.Icon,
        MCommonEntitiesMaster:{
-        IsActive: menuresource.MCommonEntitiesMaster.IsActive
+        IsActive: menuresource.MCommonEntitiesMaster.isActive
       }
     });    
     this.MenuResourceDialogHeader = 'Edit Menu';
@@ -164,7 +163,6 @@ export class MenuResourceMaster {
   }
 
   async saveMenuResource() {
-    debugger;
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.MenuResourceForm);
     const outcome = this.FormUtils.validateFormFields(this.formFields, this.MenuResourceForm, this.inputElements.toArray(), this.renderer);
@@ -178,7 +176,6 @@ export class MenuResourceMaster {
          this.MenuResourceMasterService.SaveMenuResource(menuresourceModel).subscribe({
             next: (res) => {
                 if (!res.isError) {
-                  debugger;
                   // var response = JSON.parse(res.result);
                   const response = res.result;
                   this.MenuResourceForm.reset();

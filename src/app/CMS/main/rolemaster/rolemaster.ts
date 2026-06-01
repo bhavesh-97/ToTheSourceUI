@@ -85,7 +85,6 @@ export class Rolemaster implements OnInit {
        this.RoleMasterService.GetAllRoleDetails().subscribe({
           next: (res) => {
             if (!res.isError) {
-              debugger;
               var response = JSON.parse(res.result);
               this.loading = false;
               this.roles = response;
@@ -149,8 +148,8 @@ export class Rolemaster implements OnInit {
       RoleID: 0,
       RoleName: '',
       RoleLevel: 0,
-      MCommonEntitiesMaster:{
-        IsActive: true
+      mCommonEntitiesMaster:{
+        isActive: true
       }
     });
     this.roleDialogHeader = 'Create New Role';
@@ -162,8 +161,8 @@ export class Rolemaster implements OnInit {
       RoleID: role.RoleID,
       RoleName: role.RoleName,
       RoleLevel:role.RoleLevel,
-       MCommonEntitiesMaster:{
-        IsActive: role.MCommonEntitiesMaster.IsActive
+       mCommonEntitiesMaster:{
+        isActive: role.MCommonEntitiesMaster.isActive
       }
     });    
     this.roleDialogHeader = 'Edit Role';
@@ -203,7 +202,6 @@ export class Rolemaster implements OnInit {
   }
 
   async saveRole() {
-    debugger;
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.roleForm);
     const outcome = this.FormUtils.validateFormFields(this.formFields, this.roleForm, this.inputElements.toArray(), this.renderer);
@@ -217,7 +215,6 @@ export class Rolemaster implements OnInit {
          this.RoleMasterService.SaveRole(roleModel).subscribe({
             next: (res) => {
                 if (!res.isError) {
-                  debugger;
                   // var response = JSON.parse(res.result);
                   const response = res.result;
                   this.roleForm.reset();

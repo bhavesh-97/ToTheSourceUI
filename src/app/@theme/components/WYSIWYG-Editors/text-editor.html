@@ -273,19 +273,21 @@
            [attr.aria-label]="placeholder"
            (blur)="onBlur()"
            (focus)="editorFocus.emit()"
-           (input)="sync()">
+           (input)="sync()"
+           style="overflow-y: auto;">
       </div>
       
-      <!-- Source Editor -->
-      <textarea #sourceEditor
-                class="source-editor"
-                [style.display]="!isSource && !isSplitView ? 'none' : 'block'"
-                [readonly]="isReadOnly"
-                [placeholder]="placeholder"
-                (input)="sync()"
-                (blur)="onBlur()"
-                (focus)="editorFocus.emit()">
-      </textarea>
+<!-- Source Editor -->
+       <textarea #sourceEditor
+                 class="source-editor"
+                 [style.display]="!isSource && !isSplitView ? 'none' : 'block'"
+                 [readonly]="isReadOnly"
+                 [placeholder]="placeholder"
+                 (input)="sync()"
+                 (blur)="onBlur()"
+                 (focus)="editorFocus.emit()"
+                 style="overflow-y: auto;">
+       </textarea>
     </div>
     
     <!-- Status Bar -->
@@ -988,11 +990,11 @@
     </div>
   </p-dialog>
   
-  <!-- Preview Dialog -->
-  <p-dialog header="Preview" [(visible)]="showPreviewDialog" [modal]="true" 
-            [style]="{width: '90vw', height: '90vh'}" [maximizable]="true" [draggable]="false">
-    <div class="preview-content" [innerHTML]="content | safeHtml"></div>
-  </p-dialog>
+<!-- Preview Dialog -->
+   <p-dialog header="Preview" [(visible)]="showPreviewDialog" [modal]="true" 
+             [style]="{width: '90vw', height: '90vh'}" [maximizable]="true" [draggable]="false">
+     <div class="preview-content" [innerHTML]="content | safeHtml" style="overflow-y: auto; height: 100%;"></div>
+   </p-dialog>
   
   <!-- History Dialog -->
   <p-dialog header="History" [(visible)]="showHistoryDialog" [modal]="true" [style]="{width: '700px', height: '500px'}" [draggable]="false">

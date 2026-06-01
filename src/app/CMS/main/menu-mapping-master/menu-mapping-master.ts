@@ -369,7 +369,7 @@ export class MenuMappingMaster implements OnInit {
   calculateStats() {
     this.totalMenus = this.countNodes(this.menuMappings);
     this.activeMenuCount = this.countNodesByCondition(this.menuMappings, 
-      node => node.data!.MCommonEntitiesMaster.IsActive
+      node => node.data!.MCommonEntitiesMaster.isActive
     );
     this.mainMenuCount = this.countNodesByCondition(this.menuMappings,
       node => node.data!.MenuTypeID === 1
@@ -431,10 +431,9 @@ export class MenuMappingMaster implements OnInit {
   }
 
   openNewChild(row: any) {
-    debugger
     const parentNode = this.resolveTreeNode(row);
     if (!parentNode) return;
-    if(!parentNode.data!.MCommonEntitiesMaster.IsActive){
+    if(!parentNode.data!.MCommonEntitiesMaster.isActive){
         this.messageService.showMessage(
           'Parent menu must be active to add sub-items.',
           'Error',
@@ -479,7 +478,7 @@ export class MenuMappingMaster implements OnInit {
       ParentID: menuData.ParentID,
       MenuRank: menuData.MenuRank,
       MCommonEntitiesMaster: {
-        IsActive: menuData.MCommonEntitiesMaster.IsActive
+        IsActive: menuData.MCommonEntitiesMaster.isActive
       }
     });
     this.dialogHeader = `Edit "${menuData.MenuName}"`;
@@ -551,7 +550,6 @@ export class MenuMappingMaster implements OnInit {
   }
 
   saveMapping() {
-    debugger;
     if (this.menuMappingForm.invalid) {
       this.markFormGroupTouched(this.menuMappingForm);
       return;
@@ -688,7 +686,7 @@ export class MenuMappingMaster implements OnInit {
 
   private filterTreeByStatus(nodes: TreeNode<MMenuMappingMaster>[], status: boolean): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
-      if (node.data!.MCommonEntitiesMaster.IsActive === status) {
+      if (node.data!.MCommonEntitiesMaster.isActive === status) {
         // Include node and all its children
         result.push(node);
       } else if (node.children && node.children.length > 0) {
@@ -813,7 +811,7 @@ export class MenuMappingMaster implements OnInit {
         `"${this.getMenuTypeLabel(node.data!.MenuTypeID)}"`,
         node.data!.MenuRank,
         `"${node.data!.ParentMenuName || 'Root'}"`,
-        `"${this.getStatusLabel(node.data!.MCommonEntitiesMaster.IsActive)}"`,
+        `"${this.getStatusLabel(node.data!.MCommonEntitiesMaster.isActive)}"`,
         level
       ];
       csvContent += row.join(',') + '\n';

@@ -5312,7 +5312,6 @@ public aiImproveWriting() {
   }
 
    insertImageFromUrl() {
-    debugger;
      if (!this.imageUrl) {
        this.messageService.add({
          severity: 'warn',
@@ -6539,7 +6538,6 @@ public aiImproveWriting() {
   // Exec command with enhanced functionality
   exec(cmd: string, value?: any, showDefaultUI = false) {
     try {
-      debugger
       if (cmd === 'insertElement' && value instanceof HTMLElement) {
         const selection = this.doc.getSelection();
         if (selection && selection.rangeCount > 0) {

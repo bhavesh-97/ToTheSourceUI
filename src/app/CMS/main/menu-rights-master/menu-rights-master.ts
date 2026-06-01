@@ -248,7 +248,6 @@ export class MenuRightsMaster implements OnInit {
   }
 
   onAdminSelected(event: any) {
-    debugger
     this.selectedAdminId = event.value;
     this.selectedAdmin = this.admins.find(a => a.UserID === this.selectedAdminId) || 0;
     this.clearActivePreset(); 
@@ -261,13 +260,11 @@ export class MenuRightsMaster implements OnInit {
       this.filteredMenuRightsTree = [];
       return;
     }
-    debugger;
     this.loading = true;
     this.menuRightsService.GetMenuMappingsByRoleandAdmin(roleId, adminId).subscribe({
       next: (res) => {
         this.loading = false;
         if (!res.isError) {
-          debugger;
           let rightsData: any[] = [];
           if (res.result) {
             rightsData = Array.isArray(res.result) ? res.result : JSON.parse(res.result);
@@ -625,7 +622,6 @@ export class MenuRightsMaster implements OnInit {
   // }
   // Updated save method using bulk API
   saveMenuRightsBulk() {
-    debugger;
     if (!this.selectedRoleId && !this.selectedAdminId) {
       this.messageService.showMessage('Please select a role or admin', 'Warning', PopupMessageType.Warning);
       return;
@@ -649,9 +645,9 @@ export class MenuRightsMaster implements OnInit {
             CanDelete: node.data.MRights?.CanDelete || false
           },
           MCommonEntitiesMaster: {
-            IsActive: true,
-            CreatedBy: this.getCurrentUserId(),
-            UpdatedBy: this.getCurrentUserId()
+            isActive: true,
+            createdBy: this.getCurrentUserId(),
+            updatedBy: this.getCurrentUserId()
           }
             };
         
@@ -679,7 +675,6 @@ export class MenuRightsMaster implements OnInit {
 
   this.saving = true;
   this.totalToSave = menuRightsList.length;
-   debugger;
   this.menuRightsService.SaveMenuRightsBulk(bulkRequest,true)  
   .pipe(
     finalize(() => {
@@ -687,7 +682,6 @@ export class MenuRightsMaster implements OnInit {
     })
   ).subscribe({
     next: (res) => {
-      debugger
       this.saving = false;
       
       if (!res.isError) {

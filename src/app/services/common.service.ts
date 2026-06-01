@@ -50,7 +50,6 @@ export class CommonService {
     }
 
     public GetClientLogoUrl() {
-      debugger
       var user = this.authenticationService.currentUserValue as MUser;
       //return this.http.get<any>(`${environment.CMSUrl}/Shared/GetClientLogo?userid=` + user.userId)
       return this.http.get<any>(`${environment.CMSUrl}/api/Common/GetClientLogo?clientid`)
@@ -71,7 +70,6 @@ export class CommonService {
   
     public ExporttoExcelWithImage(headerdata: any[], gridheader: any[], griddata: any) {
 
-        debugger
         headerdata[2].field=this.datePipe.transform(new Date(), this.GetStandardDateFormat());
         let workbook = new Workbook();
         let worksheet = workbook.addWorksheet(headerdata[1].field);

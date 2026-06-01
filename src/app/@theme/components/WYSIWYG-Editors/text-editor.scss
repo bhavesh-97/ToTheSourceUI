@@ -51,11 +51,15 @@ $transition: all 0.3s ease;
 
 // Editor Wrapper
 .pro-editor-wrapper {
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;       // prevent wrapper itself from expanding
+  box-sizing: border-box !important;
+  // display: flex;
+  // flex-direction: column;
   border: 1px solid $border-color;
   border-radius: $border-radius;
-  overflow: hidden;
+  // overflow: hidden;
   background: $light-bg;
   transition: $transition;
   box-shadow: $shadow;
@@ -108,12 +112,31 @@ $transition: all 0.3s ease;
   }
 }
 .pro-editor-container.fullscreen .pro-editor-wrapper {
-  width: 100vw;
-  height: 100vh;
+  // width: 100vw;
+  // height: 100vh;
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  z-index: 900;
+
+  .editor-area {
+    flex: 1 1 0 !important;
+  }
 }
+// .editor-area {
+//   flex: 1;
+//   // min-height: 0;
+//   min-height: 200px;
+//   position: relative;
+// }
 .editor-area {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 0 !important;        // grow to fill, shrink if needed, base 0
+  min-height: 0 !important;      // critical: without this, flex children won't shrink below content size
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 // Main Toolbar
 .main-toolbar {
@@ -122,9 +145,10 @@ $transition: all 0.3s ease;
   align-items: center;
   padding: 12px 16px;
   background: color-mix(in srgb, $border-color, white 10%);
-  
+   z-index: 1000;
+  position: relative;
   border-bottom: 1px solid $border-color;
-  min-height: 60px;
+  min-height: 105px;
   gap: 12px;
   flex-wrap: wrap;
   
@@ -245,7 +269,7 @@ $transition: all 0.3s ease;
        border-radius: $border-radius;
        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
        min-width: 200px;
-       z-index: 1000;
+       z-index: 5000;
        margin-top: 4px;
        padding: 8px 0;
        opacity: 0;
@@ -342,7 +366,7 @@ $transition: all 0.3s ease;
       border-radius: $border-radius;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       min-width: 200px;
-      z-index: 1000;
+      z-index: 5000;
       margin-top: 8px;
       
       .overflow-menu-content {
@@ -428,18 +452,25 @@ $transition: all 0.3s ease;
 
 .editor-content {
   width: 100%;
-  height: 100%;
+  // height: 100%;
   padding: 20px;
-  overflow-y: auto;
+  // overflow-y: auto;
   outline: none;
-  min-height: 200px;
+  // min-height: 200px;
   font-family: 'Arial', sans-serif;
   font-size: 16px;
   line-height: 1.6;
   background: $light-bg;
   color: $light-text;
   transition: $transition;
-  
+    flex: 1 1 0 !important;
+  min-height: 0 !important;      // same reason as above
+  overflow-y: auto !important;   // ← this is the main fix
+  overflow-x: hidden !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
   &:focus {
     box-shadow: inset 0 0 0 2px $primary-color;
   }
@@ -689,7 +720,7 @@ $transition: all 0.3s ease;
       border-radius: 4px;
       font-size: 12px;
       white-space: nowrap;
-      z-index: 1000;
+      z-index: 2000;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
   }
@@ -697,20 +728,28 @@ $transition: all 0.3s ease;
 
 // Source Editor
 .source-editor {
+   flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  resize: none !important; 
   width: 100%;
-  height: 100%;
+  // height: 100%;
   padding: 20px;
   border: none;
   outline: none;
-  resize: none;
+  // resize: none;
   font-family: 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.5;
   background: #1e1e1e;
   color: #d4d4d4;
   white-space: pre;
-  overflow-x: auto;
-  
+  // overflow-x: auto;
+  // overflow-y: auto;
+  // min-height: 500px;
   &:focus {
     box-shadow: inset 0 0 0 2px $primary-color;
   }
@@ -1228,8 +1267,10 @@ $transition: all 0.3s ease;
 
 // Preview Content
 .preview-content {
-  padding: 2rem;
-  height: 100%;
+  height: calc(100% - 40px); /* Account for dialog header */
+  padding: 20px;
+  // padding: 2rem;
+  // height: 100%;
   overflow-y: auto;
   background: $light-bg;
   color: $light-text;
@@ -1647,8 +1688,13 @@ $transition: all 0.3s ease;
   
   .editor-area.split-view {
     flex-direction: column;
-    
+    // flex-direction: row !important;
+
     .editor-content, .source-editor {
+      
+      flex: 1 1 0 !important;
+      min-height: 0 !important;
+      overflow-x: auto !important;
       width: 100%;
       height: 50%;
       border-right: none;
