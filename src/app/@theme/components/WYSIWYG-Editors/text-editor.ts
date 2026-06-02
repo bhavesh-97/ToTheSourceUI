@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, Inject, forwardRef,OnDestroy,Renderer2,HostListener,ChangeDetectorRef,Input,  Output,EventEmitter,OnChanges,SimpleChanges} from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, Inject, forwardRef,OnDestroy,Renderer2,HostListener,ChangeDetectorRef,Input,  Output,EventEmitter,OnChanges,SimpleChanges, inject} from '@angular/core';
 import { gsap } from 'gsap';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -20,7 +20,6 @@ import { SelectModule } from 'primeng/select';
 import { SliderModule } from 'primeng/slider';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { MessageService } from 'primeng/api';
 import { DOCUMENT } from '@angular/common';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ResizableModule, ResizeEvent } from 'angular-resizable-element';
@@ -68,1298 +67,2263 @@ import { NotificationService } from '../../../services/notification.service';
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => TextEditorComponent),
       multi: true
-    },
-    MessageService
+    }
   ], 
   templateUrl: './text-editor.html',
   styleUrls: ['./text-editor.scss']
 })
 export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlValueAccessor, OnChanges {
 
-   @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
-   @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
-   @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
-  @Output() clickOutside = new EventEmitter<void>();
-  // Enhanced Input Properties
-  @Input() width: string = '100%';
-  @Input() height: string = '500px';
-  @Input() minHeight: string = '200px';
-  @Input() maxHeight: string = '800px';
-  @Input() minWidth: string = '200px';
-  @Input() maxWidth: string = '800px';
-  @Input() placeholder: string = '';
-  @Input() showToolbar: boolean = true;
-  @Input() showStatusBar: boolean = true;
-  @Input() allowResize: boolean = true;
-  @Input() allowFullscreen: boolean = true;
-  @Input() autoSave: boolean = true;
-  @Input() autoSaveInterval: number = 30000;
-  @Input() maxUndoSteps: number = 100;
-  @Input() spellCheck: boolean = true;
-  @Input() autoCorrect: boolean = true;
-  @Input() allowedFileTypes: string[] = ['image/*', 'text/plain', 'application/pdf'];
-  @Input() maxFileSize: number = 10; // MB
-  @Input() defaultFontSize: string = '16px';
-  @Input() defaultFontFamily: string = 'Arial, sans-serif';
-  @Input() editorMode: 'wysiwyg' | 'source' | 'split' = 'wysiwyg';
-  @Input() toolbarPreset: 'full' | 'basic' | 'minimal' = 'full';
-  @Input() theme: 'light' | 'dark' | 'auto' = 'light';
-  @Input() language: string = 'en';
-  @Input() enableImageEditor: boolean = true;
-  @Input() enableTableEditor: boolean = true;
-  @Input() enableCodeSyntaxHighlighting: boolean = true;
-  @Input() enableWordCount: boolean = true;
-  @Input() enableCharacterCount: boolean = true;
-  @Input() enableReadTime: boolean = true;
-  @Input() enableAutoFormat: boolean = true;
-  @Input() enableMediaEmbed: boolean = true;
-  @Input() enableTemplates: boolean = true;
-  @Input() enableComments: boolean = false;
-  @Input() enableTrackChanges: boolean = false;
-  @Input() enableExport: boolean = true;
-  @Input() enableImport: boolean = true;
-    @Input() enablePrint: boolean = true;
-    @Input() enableHistory: boolean = true;
-    @Input() enableCollaboration: boolean = false;
-    @Input() enableAIAssistant: boolean = false;
+    //#region ViewChild References
+      @ViewChild('editor') editor!: ElementRef<HTMLDivElement>;
+      @ViewChild('sourceEditor') sourceEditor!: ElementRef<HTMLTextAreaElement>;
+      @ViewChild('editorContainer') editorContainer!: ElementRef<HTMLDivElement>;
+    //#endregion
+    //#region Configuration Inputs
+      @Input() width: string = '100%';
+      @Input() height: string = '500px';
+      @Input() minHeight: string = '200px';
+      @Input() maxHeight: string = '800px';
+      @Input() minWidth: string = '200px';
+      @Input() maxWidth: string = '800px';
+      @Input() placeholder: string = '';
+      @Input() showToolbar: boolean = true;
+      @Input() showStatusBar: boolean = true;
+      @Input() allowResize: boolean = true;
+      @Input() allowFullscreen: boolean = true;
+      @Input() autoSave: boolean = true;
+      @Input() autoSaveInterval: number = 30000;
+      @Input() maxUndoSteps: number = 100;
+      @Input() spellCheck: boolean = true;
+      @Input() autoCorrect: boolean = true;
+      @Input() allowedFileTypes: string[] = ['image/*', 'text/plain', 'application/pdf'];
+      @Input() maxFileSize: number = 10; // MB
+      @Input() defaultFontSize: string = '16px';
+      @Input() defaultFontFamily: string = 'Arial, sans-serif';
+      @Input() editorMode: 'wysiwyg' | 'source' | 'split' = 'wysiwyg';
+      @Input() toolbarPreset: 'full' | 'basic' | 'minimal' = 'full';
+      @Input() theme: 'light' | 'dark' | 'auto' = 'light';
+      @Input() language: string = 'en';
+      @Input() enableImageEditor: boolean = true;
+      @Input() enableTableEditor: boolean = true;
+      @Input() enableCodeSyntaxHighlighting: boolean = true;
+      @Input() enableWordCount: boolean = true;
+      @Input() enableCharacterCount: boolean = true;
+      @Input() enableReadTime: boolean = true;
+      @Input() enableAutoFormat: boolean = true;
+      @Input() enableMediaEmbed: boolean = true;
+      @Input() enableTemplates: boolean = true;
+      @Input() enableComments: boolean = false;
+      @Input() enableTrackChanges: boolean = false;
+      @Input() enableExport: boolean = true;
+      @Input() enableImport: boolean = true;
+      @Input() enablePrint: boolean = true;
+      @Input() enableHistory: boolean = true;
+      @Input() enableCollaboration: boolean = false;
+      @Input() enableAIAssistant: boolean = false;
+      @Input() align: 'left' | 'center' | 'right' = 'left';
+      @Input() top: string = 'auto';
+      @Input() bottom: string = 'auto';
+      @Input() left: string = 'auto';
+      @Input() right: string = 'auto';
+    //#endregion
+    //#region Configuration Outputs
+      @Output() clickOutside = new EventEmitter<void>();
+      @Output() contentChanged = new EventEmitter<string>();
+      @Output() wordCountChanged = new EventEmitter<number>();
+      @Output() charCountChanged = new EventEmitter<number>();
+      @Output() editorFocus = new EventEmitter<void>();
+      @Output() editorBlur = new EventEmitter<void>();
+      @Output() imageUploaded = new EventEmitter<File>();
+      @Output() fileUploaded = new EventEmitter<File>();
+      @Output() saveRequested = new EventEmitter<string>();
+      @Output() exportRequested = new EventEmitter<{type: string, content: string}>();
+      @Output() printRequested = new EventEmitter<void>();
+      @Output() fullscreenToggled = new EventEmitter<boolean>();
+      @Output() themeChanged = new EventEmitter<'light' | 'dark'>();
+      @Output() editorInitialized = new EventEmitter<void>();
+      @Output() errorOccurred = new EventEmitter<Error>();
+      @Output() selectionChanged = new EventEmitter<Selection>();
+      @Output() formattingChanged = new EventEmitter<FormattingState>();
+      @Output() historyChanged = new EventEmitter<EditorState[]>();
+    //#endregion
+    //#region State Variables
+      currentHistoryIndex: number = -1;
+      history: any[] = [];
+      isDark = false;
+      isSource = false;
+      isFullscreen = false;
+      isReadOnly = false;
+      isSplitView = false;
+      isLoading = false;
+      isDirty = false;
+      showLink = false;
+      showImage = false;
+      showImageEditor = false;
+      showTableConfig = false;
+      showTableEditor = false;
+      showCodeDialog = false;
+      showEmojiPicker = false;
+      showSpecialChars = false;
+      showFontDialog = false;
+      showInsertDialog = false;
+      showSettingsDialog = false;
+      showHistoryDialog = false;
+      showPreviewDialog = false;
+      showTemplateDialog = false;
+      showMediaDialog = false;
+      showAIDialog = false;
+      showExportDialog = false;
+      showImportDialog = false;
+      showPrintDialog = false;
+      showCommentsPanel = false;
+      showTrackChangesPanel = false;
+      showCollaborationPanel = false;
+      showOverflowMenu = false;
+      showContextMenu = false;
+      showFormatPainter = false;
+      showFindReplace = false;
+    //#endregion
+    //#region Formatting State
+      currentAlignment = 'left';
+      currentLineHeight = 1.5;
+      currentTextColor = '#1f2937';
+      currentBackgroundColor = '#ffffff';
+      currentHighlightColor = '#fbbf24';
+      currentBorderColor = '#e5e7eb';
+      currentListStyle = 'disc';
+      currentIndentLevel = 0;
+      currentBlockquoteLevel = 0;
+      currentCodeLanguage = 'html';
+      currentTableStyle = 'default';
+      currentImageStyle = 'default';
+      currentParagraphSpacing = 'normal';
+      currentLetterSpacing = 'normal';
+      currentWordSpacing = 'normal';
+      currentTextTransform = 'none';
+      currentTextDecoration = 'none';
+      currentFontWeight = 'normal';
+      currentFontStyle = 'normal';
+      currentTextShadow = 'none';
+      currentBoxShadow = 'none';
+      currentBorderRadius = '0';
+      currentOpacity = '1';
+      currentTransition = 'none';
+      currentAnimation = 'none';
+      currentTransform = 'none';
+      currentFilter = 'none';
+      currentBlendMode = 'normal';
+      currentCursor = 'default';
+      currentUserSelect = 'auto';
+      currentPointerEvents = 'auto';
+      currentVisibility = 'visible';
+      currentZIndex = 'auto';
+      currentPosition = 'static';
+      currentTop = 'auto';
+      currentLeft = 'auto';
+      currentRight = 'auto';
+      currentBottom = 'auto';
+      currentWidth = 'auto';
+      currentHeight = 'auto';
+      currentMinWidth = 'none';
+      currentMinHeight = 'none';
+      currentMaxWidth = 'none';
+      currentMaxHeight = 'none';
+      currentMargin = '0';
+      currentPadding = '0';
+      currentBorder = 'none';
+      currentOutline = 'none';
+      currentBackgroundImage = 'none';
+      currentBackgroundSize = 'auto';
+      currentBackgroundPosition = '0% 0%';
+      currentBackgroundRepeat = 'repeat';
+      currentBackgroundAttachment = 'scroll';
+      currentBackgroundBlendMode = 'normal';
+      currentBoxSizing = 'content-box';
+      currentDisplay = 'block';
+      currentFlexDirection = 'row';
+      currentFlexWrap = 'nowrap';
+      currentJustifyContent = 'flex-start';
+      currentAlignItems = 'stretch';
+      currentAlignContent = 'stretch';
+      currentFlexGrow = '0';
+      currentFlexShrink = '1';
+      currentFlexBasis = 'auto';
+      currentOrder = '0';
+      currentGridTemplateColumns = 'none';
+      currentGridTemplateRows = 'none';
+      currentGridTemplateAreas = 'none';
+      currentGridAutoFlow = 'row';
+      currentGridAutoColumns = 'auto';
+      currentGridAutoRows = 'auto';
+      currentGridColumnStart = 'auto';
+      currentGridColumnEnd = 'auto';
+      currentGridRowStart = 'auto';
+      currentGridRowEnd = 'auto';
+      currentGridArea = 'auto';
+      currentGap = 'normal';
+      currentRowGap = 'normal';
+      currentColumnGap = 'normal';
+    //#endregion
+    //#region Form Values
+      linkUrl = '';
+      linkText = '';
+      linkTitle = '';
+      linkTarget = '_blank';
+      linkRel = 'noopener noreferrer';
+      linkClass = '';
+      linkId = '';
+      linkStyle = ''; 
+      imageUrl = '';
+      imageAlt = '';
+      imageTitle = '';
+      imageWidth = '';
+      imageHeight = '';
+      imageAlignment = 'none';
+      imageBorder = '0';
+      imageMargin = '0';
+      imagePadding = '0';
+      imageBorderRadius = '0';
+      imageBoxShadow = 'none';
+      imageFilter = 'none';
+      imageOpacity = '1';
+      imageObjectFit = 'cover';
+      imageObjectPosition = 'center';
+  
+      tableRows = 3;
+      tableCols = 3;
+      tableHeader = true;
+      tableFooter = false;
+      tableBorder = true;
+      tableStriped = false;
+      tableHover = false;
+      tableBordered = true;
+      tableCondensed = false;
+      tableResponsive = true;
+      tableCellPadding = '8';
+      tableCellSpacing = '0';
+      tableWidth = '100%';
+      tableHeight = 'auto';
+      tableAlignment = 'none';
+      tableCaption = '';
+      tableSummary = '';
     
-    // Alignment and positioning properties
-    @Input() align: 'left' | 'center' | 'right' = 'left';
-    @Input() top: string = 'auto';
-    @Input() bottom: string = 'auto';
-    @Input() left: string = 'auto';
-    @Input() right: string = 'auto';
+      codeContent = '';
+      codeLanguage = 'html';
+      codeTheme = 'default';
+      codeLineNumbers = true;
+      codeHighlightLines: number[] = [];
+      codeWrap = true;
+      codeMaxHeight = '300px';
+    
+      mediaUrl = '';
+      mediaType: 'video' | 'audio' | 'iframe' = 'video';
+      mediaWidth = '560';
+      mediaHeight = '315';
+      mediaAutoplay = false;
+      mediaControls = true;
+      mediaLoop = false;
+      mediaMuted = false;
+      mediaPreload = 'metadata';
+      mediaPoster = '';
+      
+      templateCategory = 'all';
+      templateSearch = '';
   
-  // New Output Events
-  @Output() contentChanged = new EventEmitter<string>();
-  @Output() wordCountChanged = new EventEmitter<number>();
-  @Output() charCountChanged = new EventEmitter<number>();
-  @Output() editorFocus = new EventEmitter<void>();
-  @Output() editorBlur = new EventEmitter<void>();
-  @Output() imageUploaded = new EventEmitter<File>();
-  @Output() fileUploaded = new EventEmitter<File>();
-  @Output() saveRequested = new EventEmitter<string>();
-  @Output() exportRequested = new EventEmitter<{type: string, content: string}>();
-  @Output() printRequested = new EventEmitter<void>();
-  @Output() fullscreenToggled = new EventEmitter<boolean>();
-  @Output() themeChanged = new EventEmitter<'light' | 'dark'>();
-  @Output() editorInitialized = new EventEmitter<void>();
-  @Output() errorOccurred = new EventEmitter<Error>();
-  @Output() selectionChanged = new EventEmitter<Selection>();
-  @Output() formattingChanged = new EventEmitter<FormattingState>();
-  @Output() historyChanged = new EventEmitter<EditorState[]>();
-
-    // Enhanced State Variables
-  currentHistoryIndex: number = -1;
-  history: any[] = [];
-  isDark = false;
-  isSource = false;
-  isFullscreen = false;
-  isReadOnly = false;
-  isSplitView = false;
-  isLoading = false;
-  isDirty = false;
-  showLink = false;
-  showImage = false;
-  showImageEditor = false;
-  showTableConfig = false;
-  showTableEditor = false;
-  showCodeDialog = false;
-  showEmojiPicker = false;
-  showSpecialChars = false;
-  showFontDialog = false;
-  showInsertDialog = false;
-  showSettingsDialog = false;
-  showHistoryDialog = false;
-  showPreviewDialog = false;
-  showTemplateDialog = false;
-  showMediaDialog = false;
-  showAIDialog = false;
-  showExportDialog = false;
-  showImportDialog = false;
-  showPrintDialog = false;
-  showCommentsPanel = false;
-  showTrackChangesPanel = false;
-  showCollaborationPanel = false;
-  showOverflowMenu = false;
-  showContextMenu = false;
-  showFormatPainter = false;
-  showFindReplace = false;
+      aiPrompt = '';
+      aiTone: 'professional' | 'casual' | 'formal' | 'friendly' = 'professional';
+      aiLength: 'short' | 'medium' | 'long' = 'medium';
+      aiLanguage = 'en';
+    
+      exportType: 'html' | 'text' | 'pdf' | 'docx' | 'markdown' = 'html';
+      exportFileName = '';
+      exportIncludeStyles = true;
+      exportIncludeImages = true;
+      exportIncludeComments = false;
+      exportIncludeMetadata = true;
   
-  get editorState(): EditorState {
+      importType: 'html' | 'text' | 'docx' | 'markdown' = 'html';
+      importFile: File | null = null;
+      importClearExisting = false;
+      importPreserveFormatting = true;
+      
+      printOrientation: 'portrait' | 'landscape' = 'portrait';
+      printMargins = 'normal';
+      printHeader = true;
+      printFooter = true;
+      printPageNumbers = true;
+      printBackground = true;
+    
+      commentAuthor = '';
+      commentText = '';
+      commentDate = new Date();
+      commentResolved = false;
+  
+      trackChangeAuthor = '';
+      trackChangeType: 'insert' | 'delete' | 'format' = 'insert';
+      trackChangeDescription = '';
+      trackChangeAccepted = false;
+      trackChangeRejected = false;
+      
+      collaborationUser = '';
+      collaborationMessage = '';
+      collaborationUsers: string[] = [];
+      collaborationMessages: any[] = [];
+      
+      findText = '';
+      replaceText = '';
+      findCaseSensitive = false;
+      findWholeWord = false;
+      findRegex = false;
+    
+      contextMenuX = 0;
+      contextMenuY = 0;
+      contextMenuSelection: Selection | null = null;
+  
+      formatPainterActive = false;
+      formatPainterSource: any = null;
+      sentences: 'on' | 'off' | 'words' | 'sentences' = 'sentences';
+      showPerformance: boolean = true;
+      wordCount = 0;
+      charCount = 0;
+      charCountNoSpaces = 0;
+      paragraphCount = 0;
+      lineCount = 0;
+      readingTime = 0;
+      sentenceCount = 0;
+      pageCount = 0;
+      imageCount = 0;
+      tableCount = 0;
+      linkCount = 0;
+      headingCount = 0;
+      listCount = 0;
+      blockquoteCount = 0;
+      codeBlockCount = 0;
+      mediaCount = 0;
+ 
+      isBold = false;
+      isItalic = false;
+      isUnderline = false;
+      isStrikethrough = false;
+      isSuperscript = false;
+      isSubscript = false;
+      isCode = false;
+      isBlockquote = false;
+      isList = false;
+      isOrderedList = false;
+      isUnorderedList = false;
+      isHeading = false;
+      isParagraph = false;
+      isLink = false;
+      isImage = false;
+      isTable = false;
+      isMedia = false;
+      isDiv = false;
+      isSpan = false;
+      isPre = false;
+      isCodeBlock = false;
+      isHorizontalRule = false;
+      isForm = false;
+      isButton = false;
+      isInput = false;
+      isSelect = false;
+      isTextarea = false;
+      isLabel = false;
+      isFieldset = false;
+      isLegend = false;
+      isFormatted = false;
+  
+    //#endregion
+    //#region Auto-save
+      public autoSaveTimer: any;
+      lastSaved: Date | null = null;
+      saveInterval = 30000;
+      saveTriggerCount = 0;
+    //#endregion
+    //#region Enhanced Configuration
+      config: EditorConfig = {
+        enableSpellCheck: true,
+        enableAutoCorrect: true,
+        enableAutoSave: true,
+        enableKeyboardShortcuts: true,
+        defaultViewMode: 'wysiwyg',
+        allowedContentTypes: ['image/*', 'text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        maxImageSize: 10 * 1024 * 1024, // 10MB
+        enableDragAndDrop: true,
+        preserveFormatOnPaste: true
+      };
+   //#endregion
+    //#region Enhanced Presets
+      toolbarPresets: Record<string, ToolbarPreset> = {
+        full: {
+          name: 'Full',
+          tools: ['format', 'font', 'size', 'style', 'bold', 'italic', 'underline', 'strike', 'superscript', 'subscript', 'color', 'background', 'alignment', 'list', 'indent', 'link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre', 'clear', 'undo', 'redo', 'source', 'preview', 'fullscreen', 'help', 'more']
+        },
+        basic: {
+          name: 'Basic',
+          tools: ['format', 'bold', 'italic', 'underline', 'alignment', 'list', 'link', 'image', 'undo', 'redo']
+        },
+        minimal: {
+          name: 'Minimal',
+          tools: ['bold', 'italic', 'underline', 'link', 'undo', 'redo']
+        }
+      };
+  //#endregion
+    //#region Editor Presets
+          editorPresets: EditorPreset[] = [
+            {
+              name: 'Blog Editor',
+              toolbar: this.toolbarPresets['full'],
+              config: {
+                ...this.config,
+                defaultViewMode: 'wysiwyg',
+                allowedContentTypes: ['image/*']
+              }
+            },
+            {
+              name: 'Code Editor',
+              toolbar: {
+                name: 'Code',
+                tools: ['source', 'code', 'pre', 'undo', 'redo', 'fullscreen']
+              },
+              config: {
+                ...this.config,
+                defaultViewMode: 'source',
+                enableSpellCheck: false
+              }
+            },
+            {
+              name: 'Email Editor',
+              toolbar: this.toolbarPresets['basic'],
+              config: {
+                ...this.config,
+                preserveFormatOnPaste: false
+              }
+            }
+          ];
+          
+          toolbarTools = [
+            // Formatting
+            { id: 'format', label: 'Format', icon: 'fa fa-paragraph', group: 'formatting' },
+            { id: 'font', label: 'Font', icon: 'fa fa-font', group: 'formatting' },
+            { id: 'size', label: 'Size', icon: 'fa fa-text-height', group: 'formatting' },
+            { id: 'style', label: 'Style', icon: 'fa fa-palette', group: 'formatting' },
+            
+            // Text Styles
+            { id: 'bold', label: 'Bold', icon: 'fa fa-bold', shortcut: 'Ctrl+B', group: 'text' },
+            { id: 'italic', label: 'Italic', icon: 'fa fa-italic', shortcut: 'Ctrl+I', group: 'text' },
+            { id: 'underline', label: 'Underline', icon: 'fa fa-underline', shortcut: 'Ctrl+U', group: 'text' },
+            { id: 'strike', label: 'Strikethrough', icon: 'fa fa-strikethrough', group: 'text' },
+            { id: 'superscript', label: 'Superscript', icon: 'fa fa-superscript', group: 'text' },
+            { id: 'subscript', label: 'Subscript', icon: 'fa fa-subscript', group: 'text' },
+            
+            // Colors
+            { id: 'color', label: 'Text Color', icon: 'fa fa-font', group: 'colors' },
+            { id: 'background', label: 'Background Color', icon: 'fa fa-fill-drip', group: 'colors' },
+            { id: 'highlight', label: 'Highlight', icon: 'fa fa-highlighter', group: 'colors' },
+            
+            // Alignment
+            { id: 'alignment', label: 'Alignment', icon: 'fa fa-align-left', group: 'alignment' },
+            { id: 'justifyLeft', label: 'Align Left', icon: 'fa fa-align-left', group: 'alignment' },
+            { id: 'justifyCenter', label: 'Align Center', icon: 'fa fa-align-center', group: 'alignment' },
+            { id: 'justifyRight', label: 'Align Right', icon: 'fa fa-align-right', group: 'alignment' },
+            { id: 'justifyFull', label: 'Justify', icon: 'fa fa-align-justify', group: 'alignment' },
+            
+            // Lists
+            { id: 'list', label: 'List', icon: 'fa fa-list', group: 'lists' },
+            { id: 'orderedList', label: 'Ordered List', icon: 'fa fa-list-ol', group: 'lists' },
+            { id: 'unorderedList', label: 'Unordered List', icon: 'fa fa-list-ul', group: 'lists' },
+            { id: 'indent', label: 'Indent', icon: 'fa fa-indent', group: 'lists' },
+            { id: 'outdent', label: 'Outdent', icon: 'fa fa-outdent', group: 'lists' },
+            
+            // Insert
+            { id: 'link', label: 'Link', icon: 'fa fa-link', shortcut: 'Ctrl+K', group: 'insert' },
+            { id: 'image', label: 'Image', icon: 'fa fa-image', group: 'insert' },
+            { id: 'table', label: 'Table', icon: 'fa fa-table', group: 'insert' },
+            { id: 'media', label: 'Media', icon: 'fa fa-video', group: 'insert' },
+            { id: 'code', label: 'Code', icon: 'fa fa-code', group: 'insert' },
+            { id: 'emoji', label: 'Emoji', icon: 'fa fa-smile', group: 'insert' },
+            { id: 'special', label: 'Special Char', icon: 'fa fa-percentage', group: 'insert' },
+            { id: 'hr', label: 'Horizontal Line', icon: 'fa fa-minus', group: 'insert' },
+            { id: 'blockquote', label: 'Blockquote', icon: 'fa fa-quote-right', group: 'insert' },
+            { id: 'pre', label: 'Preformatted', icon: 'fa fa-terminal', group: 'insert' },
+            
+            // Tools
+            { id: 'clear', label: 'Clear Formatting', icon: 'fa fa-eraser', group: 'tools' },
+            { id: 'undo', label: 'Undo', icon: 'fa fa-undo', shortcut: 'Ctrl+Z', group: 'tools' },
+            { id: 'redo', label: 'Redo', icon: 'fa fa-redo', shortcut: 'Ctrl+Y', group: 'tools' },
+            { id: 'find', label: 'Find & Replace', icon: 'fa fa-search', shortcut: 'Ctrl+F', group: 'tools' },
+            { id: 'spellcheck', label: 'Spell Check', icon: 'fa fa-spell-check', group: 'tools' },
+            { id: 'wordcount', label: 'Word Count', icon: 'fa fa-chart-bar', group: 'tools' },
+            
+            // View
+            { id: 'source', label: 'Source Code', icon: 'fa fa-code', shortcut: 'Ctrl+Shift+S', group: 'view' },
+            { id: 'preview', label: 'Preview', icon: 'fa fa-eye', shortcut: 'Ctrl+Shift+P', group: 'view' },
+            { id: 'fullscreen', label: 'Fullscreen', icon: 'fa fa-expand', shortcut: 'F11', group: 'view' },
+            { id: 'zoom', label: 'Zoom', icon: 'fa fa-search-plus', group: 'view' },
+            
+            // Advanced
+            { id: 'templates', label: 'Templates', icon: 'fa fa-layer-group', group: 'advanced' },
+            { id: 'styles', label: 'Styles', icon: 'fa fa-css3', group: 'advanced' },
+            { id: 'scripts', label: 'Scripts', icon: 'fa fa-js', group: 'advanced' },
+            { id: 'metadata', label: 'Metadata', icon: 'fa fa-info-circle', group: 'advanced' },
+            { id: 'export', label: 'Export', icon: 'fa fa-download', group: 'advanced' },
+            { id: 'import', label: 'Import', icon: 'fa fa-upload', group: 'advanced' },
+            { id: 'print', label: 'Print', icon: 'fa fa-print', shortcut: 'Ctrl+P', group: 'advanced' },
+            { id: 'help', label: 'Help', icon: 'fa fa-question-circle', group: 'advanced' },
+            { id: 'more', label: 'More', icon: 'fa fa-ellipsis-h', group: 'advanced' }
+          ];
+          
+          toolbarGroups = [
+            { id: 'formatting', label: 'Formatting', tools: ['format', 'font', 'size', 'style'] ,visible: true},
+            { id: 'text', label: 'Text', tools: ['bold', 'italic', 'underline', 'strike', 'superscript', 'subscript'] ,visible: true},
+            { id: 'colors', label: 'Colors', tools: ['color', 'background', 'highlight'], visible: true },
+            { id: 'alignment', label: 'Alignment', tools: ['alignment', 'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'], visible: true },
+            { id: 'lists', label: 'Lists', tools: ['list', 'orderedList', 'unorderedList', 'indent', 'outdent'] ,visible: true},
+            { id: 'insert', label: 'Insert', tools: ['link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre'] ,visible: true},
+            { id: 'tools', label: 'Tools', tools: ['clear', 'undo', 'redo', 'find', 'spellcheck', 'wordcount'], visible: true },
+            { id: 'view', label: 'View', tools: ['source', 'preview', 'fullscreen', 'zoom'], visible: true },
+            { id: 'advanced', label: 'Advanced', tools: ['templates', 'styles', 'scripts', 'metadata', 'export', 'import', 'print', 'help', 'more'], visible: true }
+          ];
+          
+          fontOptions = [
+            { label: 'Arial', value: 'Arial', family: 'Arial, sans-serif', category: 'sans-serif' },
+            { label: 'Times New Roman', value: 'Times New Roman', family: 'Times New Roman, serif', category: 'serif' },
+            { label: 'Georgia', value: 'Georgia', family: 'Georgia, serif', category: 'serif' },
+            { label: 'Verdana', value: 'Verdana', family: 'Verdana, sans-serif', category: 'sans-serif' },
+            { label: 'Courier New', value: 'Courier New', family: 'Courier New, monospace', category: 'monospace' },
+            { label: 'Comic Sans MS', value: 'Comic Sans MS', family: 'Comic Sans MS, cursive', category: 'cursive' },
+            { label: 'Trebuchet MS', value: 'Trebuchet MS', family: 'Trebuchet MS, sans-serif', category: 'sans-serif' },
+            { label: 'Impact', value: 'Impact', family: 'Impact, fantasy', category: 'fantasy' },
+            { label: 'Tahoma', value: 'Tahoma', family: 'Tahoma, sans-serif', category: 'sans-serif' },
+            { label: 'Palatino', value: 'Palatino', family: 'Palatino, serif', category: 'serif' },
+            { label: 'Garamond', value: 'Garamond', family: 'Garamond, serif', category: 'serif' },
+            { label: 'Bookman', value: 'Bookman', family: 'Bookman, serif', category: 'serif' },
+            { label: 'Century Gothic', value: 'Century Gothic', family: 'Century Gothic, sans-serif', category: 'sans-serif' },
+            { label: 'Lucida Sans', value: 'Lucida Sans', family: 'Lucida Sans, sans-serif', category: 'sans-serif' },
+            { label: 'Copperplate', value: 'Copperplate', family: 'Copperplate, fantasy', category: 'fantasy' }
+          ];
+          
+          fontSizeOptions = [
+            { label: '8px', value: '8px', size: 8 },
+            { label: '9px', value: '9px', size: 9 },
+            { label: '10px', value: '10px', size: 10 },
+            { label: '11px', value: '11px', size: 11 },
+            { label: '12px', value: '12px', size: 12 },
+            { label: '14px', value: '14px', size: 14 },
+            { label: '16px', value: '16px', size: 16 },
+            { label: '18px', value: '18px', size: 18 },
+            { label: '20px', value: '20px', size: 20 },
+            { label: '24px', value: '24px', size: 24 },
+            { label: '28px', value: '28px', size: 28 },
+            { label: '32px', value: '32px', size: 32 },
+            { label: '36px', value: '36px', size: 36 },
+            { label: '48px', value: '48px', size: 48 },
+            { label: '64px', value: '64px', size: 64 },
+            { label: '72px', value: '72px', size: 72 },
+            { label: '96px', value: '96px', size: 96 }
+          ];
+          
+          headingOptions = [
+            { label: 'Normal Text', value: 'p', level: 0, size: '16px', weight: 'normal' },
+            { label: 'Heading 1', value: 'h1', level: 1, size: '32px', weight: 'bold' },
+            { label: 'Heading 2', value: 'h2', level: 2, size: '28px', weight: 'bold' },
+            { label: 'Heading 3', value: 'h3', level: 3, size: '24px', weight: 'bold' },
+            { label: 'Heading 4', value: 'h4', level: 4, size: '20px', weight: 'bold' },
+            { label: 'Heading 5', value: 'h5', level: 5, size: '18px', weight: 'bold' },
+            { label: 'Heading 6', value: 'h6', level: 6, size: '16px', weight: 'bold' },
+            { label: 'Title', value: 'title', level: 0, size: '40px', weight: 'bold' },
+            { label: 'Subtitle', value: 'subtitle', level: 0, size: '24px', weight: 'normal' },
+            { label: 'Caption', value: 'caption', level: 0, size: '14px', weight: 'normal' },
+            { label: 'Small', value: 'small', level: 0, size: '12px', weight: 'normal' }
+          ];
+          
+          currentFont = this.fontOptions[0];
+          currentFontSize = this.fontSizeOptions.find(opt => opt.value === this.defaultFontSize) || this.fontSizeOptions[6];
+          currentHeading = this.headingOptions[0];
+          
+          alignmentOptions = [
+            { label: 'Left', value: 'left', icon: 'fa-align-left' },
+            { label: 'Center', value: 'center', icon: 'fa-align-center' },
+            { label: 'Right', value: 'right', icon: 'fa-align-right' },
+            { label: 'Justify', value: 'justify', icon: 'fa-align-justify' }
+          ];
+          
+          listStyleOptions = [
+            { label: 'Disc', value: 'disc', icon: 'fa-circle' },
+            { label: 'Circle', value: 'circle', icon: 'fa-circle-o' },
+            { label: 'Square', value: 'square', icon: 'fa-square' },
+            { label: 'Decimal', value: 'decimal', icon: 'fa-list-ol' },
+            { label: 'Lower Alpha', value: 'lower-alpha', icon: 'fa-sort-alpha-asc' },
+            { label: 'Upper Alpha', value: 'upper-alpha', icon: 'fa-sort-alpha-desc' },
+            { label: 'Lower Roman', value: 'lower-roman', icon: 'fa-list-ol' },
+            { label: 'Upper Roman', value: 'upper-roman', icon: 'fa-list-ol' },
+            { label: 'None', value: 'none', icon: 'fa-ban' }
+          ];
+          
+          textDecorationOptions = [
+            { label: 'None', value: 'none', icon: 'fa-ban' },
+            { label: 'Underline', value: 'underline', icon: 'fa-underline' },
+            { label: 'Overline', value: 'overline', icon: 'fa-overline' },
+            { label: 'Line Through', value: 'line-through', icon: 'fa-strikethrough' },
+            { label: 'Underline Overline', value: 'underline overline', icon: 'fa-text-width' },
+            { label: 'Underline Line Through', value: 'underline line-through', icon: 'fa-text-width' },
+            { label: 'Overline Line Through', value: 'overline line-through', icon: 'fa-text-width' },
+            { label: 'Underline Overline Line Through', value: 'underline overline line-through', icon: 'fa-text-width' }
+          ];
+          
+          textTransformOptions = [
+            { label: 'None', value: 'none', icon: 'fa-ban' },
+            { label: 'Uppercase', value: 'uppercase', icon: 'fa-text-height' },
+            { label: 'Lowercase', value: 'lowercase', icon: 'fa-text-height' },
+            { label: 'Capitalize', value: 'capitalize', icon: 'fa-text-height' },
+            { label: 'Full Width', value: 'full-width', icon: 'fa-arrows-h' },
+            { label: 'Full Size Kana', value: 'full-size-kana', icon: 'fa-language' }
+          ];
+          
+          fontWeightOptions = [
+            { label: 'Normal', value: 'normal', weight: 400 },
+            { label: 'Bold', value: 'bold', weight: 700 },
+            { label: 'Bolder', value: 'bolder', weight: 800 },
+            { label: 'Lighter', value: 'lighter', weight: 300 },
+            { label: '100', value: '100', weight: 100 },
+            { label: '200', value: '200', weight: 200 },
+            { label: '300', value: '300', weight: 300 },
+            { label: '400', value: '400', weight: 400 },
+            { label: '500', value: '500', weight: 500 },
+            { label: '600', value: '600', weight: 600 },
+            { label: '700', value: '700', weight: 700 },
+            { label: '800', value: '800', weight: 800 },
+            { label: '900', value: '900', weight: 900 }
+          ];
+          
+          fontStyleOptions = [
+            { label: 'Normal', value: 'normal', icon: 'fa-font' },
+            { label: 'Italic', value: 'italic', icon: 'fa-italic' },
+            { label: 'Oblique', value: 'oblique', icon: 'fa-slant' }
+          ];
+          
+          lineHeightOptions = [
+            { label: '1.0', value: 1.0 },
+            { label: '1.2', value: 1.2 },
+            { label: '1.5', value: 1.5 },
+            { label: '1.8', value: 1.8 },
+            { label: '2.0', value: 2.0 },
+            { label: '2.5', value: 2.5 },
+            { label: '3.0', value: 3.0 }
+          ];
+          
+          letterSpacingOptions = [
+            { label: 'Normal', value: 'normal' },
+            { label: 'Tight', value: '-0.05em' },
+            { label: 'Loose', value: '0.1em' },
+            { label: 'Wide', value: '0.25em' },
+            { label: 'Wider', value: '0.5em' },
+            { label: 'Widest', value: '1em' }
+          ];
+          
+          wordSpacingOptions = [
+            { label: 'Normal', value: 'normal' },
+            { label: 'Tight', value: '-0.1em' },
+            { label: 'Loose', value: '0.2em' },
+            { label: 'Wide', value: '0.5em' },
+            { label: 'Wider', value: '1em' },
+            { label: 'Widest', value: '2em' }
+          ];
+          
+          textShadowOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Light', value: '1px 1px 2px rgba(0,0,0,0.1)' },
+            { label: 'Medium', value: '2px 2px 4px rgba(0,0,0,0.2)' },
+            { label: 'Heavy', value: '3px 3px 6px rgba(0,0,0,0.3)' },
+            { label: 'Glow', value: '0 0 10px rgba(59,130,246,0.5)' }
+          ];
+          
+          boxShadowOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Small', value: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)' },
+            { label: 'Medium', value: '0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)' },
+            { label: 'Large', value: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1)' },
+            { label: 'X-Large', value: '0 20px 40px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.15)' },
+            { label: 'Inner', value: 'inset 0 2px 4px rgba(0,0,0,0.1)' },
+            { label: 'Outline', value: '0 0 0 3px rgba(59,130,246,0.5)' }
+          ];
+          
+          borderStyleOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Solid', value: 'solid' },
+            { label: 'Dashed', value: 'dashed' },
+            { label: 'Dotted', value: 'dotted' },
+            { label: 'Double', value: 'double' },
+            { label: 'Groove', value: 'groove' },
+            { label: 'Ridge', value: 'ridge' },
+            { label: 'Inset', value: 'inset' },
+            { label: 'Outset', value: 'outset' }
+          ];
+          
+          borderWidthOptions = [
+            { label: '0', value: '0' },
+            { label: '1px', value: '1px' },
+            { label: '2px', value: '2px' },
+            { label: '3px', value: '3px' },
+            { label: '4px', value: '4px' },
+            { label: '5px', value: '5px' },
+            { label: '6px', value: '6px' },
+            { label: '8px', value: '8px' },
+            { label: '10px', value: '10px' }
+          ];
+          
+          borderRadiusOptions = [
+            { label: '0', value: '0' },
+            { label: '2px', value: '2px' },
+            { label: '4px', value: '4px' },
+            { label: '6px', value: '6px' },
+            { label: '8px', value: '8px' },
+            { label: '12px', value: '12px' },
+            { label: '16px', value: '16px' },
+            { label: '24px', value: '24px' },
+            { label: '32px', value: '32px' },
+            { label: '48px', value: '48px' },
+            { label: '50%', value: '50%' }
+          ];
+          
+          opacityOptions = [
+            { label: '0%', value: '0' },
+            { label: '25%', value: '0.25' },
+            { label: '50%', value: '0.5' },
+            { label: '75%', value: '0.75' },
+            { label: '100%', value: '1' }
+          ];
+          
+          transitionOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Fast', value: 'all 0.2s ease' },
+            { label: 'Medium', value: 'all 0.3s ease' },
+            { label: 'Slow', value: 'all 0.5s ease' },
+            { label: 'Bounce', value: 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
+            { label: 'Elastic', value: 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)' }
+          ];
+          
+          animationOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Fade In', value: 'fadeIn 0.5s ease' },
+            { label: 'Slide In', value: 'slideIn 0.5s ease' },
+            { label: 'Zoom In', value: 'zoomIn 0.5s ease' },
+            { label: 'Bounce', value: 'bounce 0.5s ease' },
+            { label: 'Pulse', value: 'pulse 2s infinite' },
+            { label: 'Rotate', value: 'rotate 2s linear infinite' },
+            { label: 'Shake', value: 'shake 0.5s ease' }
+          ];
+          
+          transformOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Rotate 90°', value: 'rotate(90deg)' },
+            { label: 'Rotate 180°', value: 'rotate(180deg)' },
+            { label: 'Rotate 270°', value: 'rotate(270deg)' },
+            { label: 'Scale 1.1', value: 'scale(1.1)' },
+            { label: 'Scale 1.2', value: 'scale(1.2)' },
+            { label: 'Scale 0.9', value: 'scale(0.9)' },
+            { label: 'Scale 0.8', value: 'scale(0.8)' },
+            { label: 'Skew X', value: 'skewX(10deg)' },
+            { label: 'Skew Y', value: 'skewY(10deg)' },
+            { label: 'Translate X', value: 'translateX(10px)' },
+            { label: 'Translate Y', value: 'translateY(10px)' }
+          ];
+          
+          filterOptions = [
+            { label: 'None', value: 'none' },
+            { label: 'Blur', value: 'blur(5px)' },
+            { label: 'Brightness', value: 'brightness(1.2)' },
+            { label: 'Contrast', value: 'contrast(1.2)' },
+            { label: 'Grayscale', value: 'grayscale(100%)' },
+            { label: 'Hue Rotate', value: 'hue-rotate(90deg)' },
+            { label: 'Invert', value: 'invert(100%)' },
+            { label: 'Opacity', value: 'opacity(0.5)' },
+            { label: 'Saturate', value: 'saturate(1.5)' },
+            { label: 'Sepia', value: 'sepia(100%)' },
+            { label: 'Drop Shadow', value: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }
+          ];
+          
+          blendModeOptions = [
+            { label: 'Normal', value: 'normal' },
+            { label: 'Multiply', value: 'multiply' },
+            { label: 'Screen', value: 'screen' },
+            { label: 'Overlay', value: 'overlay' },
+            { label: 'Darken', value: 'darken' },
+            { label: 'Lighten', value: 'lighten' },
+            { label: 'Color Dodge', value: 'color-dodge' },
+            { label: 'Color Burn', value: 'color-burn' },
+            { label: 'Hard Light', value: 'hard-light' },
+            { label: 'Soft Light', value: 'soft-light' },
+            { label: 'Difference', value: 'difference' },
+            { label: 'Exclusion', value: 'exclusion' },
+            { label: 'Hue', value: 'hue' },
+            { label: 'Saturation', value: 'saturation' },
+            { label: 'Color', value: 'color' },
+            { label: 'Luminosity', value: 'luminosity' }
+          ];
+          
+          cursorOptions = [
+            { label: 'Default', value: 'default' },
+            { label: 'Pointer', value: 'pointer' },
+            { label: 'Text', value: 'text' },
+            { label: 'Move', value: 'move' },
+            { label: 'Grab', value: 'grab' },
+            { label: 'Zoom In', value: 'zoom-in' },
+            { label: 'Zoom Out', value: 'zoom-out' },
+            { label: 'Not Allowed', value: 'not-allowed' },
+            { label: 'Wait', value: 'wait' },
+            { label: 'Help', value: 'help' },
+            { label: 'Crosshair', value: 'crosshair' },
+            { label: 'Cell', value: 'cell' },
+            { label: 'Copy', value: 'copy' },
+            { label: 'Alias', value: 'alias' },
+            { label: 'Context Menu', value: 'context-menu' }
+          ];
+          
+          userSelectOptions = [
+            { label: 'Auto', value: 'auto' },
+            { label: 'None', value: 'none' },
+            { label: 'Text', value: 'text' },
+            { label: 'All', value: 'all' },
+            { label: 'Contain', value: 'contain' }
+          ];
+          
+          pointerEventsOptions = [
+            { label: 'Auto', value: 'auto' },
+            { label: 'None', value: 'none' },
+            { label: 'Visible Painted', value: 'visiblePainted' },
+            { label: 'Visible Fill', value: 'visibleFill' },
+            { label: 'Visible Stroke', value: 'visibleStroke' },
+            { label: 'Visible', value: 'visible' },
+            { label: 'Painted', value: 'painted' },
+            { label: 'Fill', value: 'fill' },
+            { label: 'Stroke', value: 'stroke' },
+            { label: 'All', value: 'all' }
+          ];
+          
+          visibilityOptions = [
+            { label: 'Visible', value: 'visible' },
+            { label: 'Hidden', value: 'hidden' },
+            { label: 'Collapse', value: 'collapse' }
+          ];
+          
+          positionOptions = [
+            { label: 'Static', value: 'static' },
+            { label: 'Relative', value: 'relative' },
+            { label: 'Absolute', value: 'absolute' },
+            { label: 'Fixed', value: 'fixed' },
+            { label: 'Sticky', value: 'sticky' }
+          ];
+          
+          displayOptions = [
+            { label: 'Block', value: 'block' },
+            { label: 'Inline', value: 'inline' },
+            { label: 'Inline Block', value: 'inline-block' },
+            { label: 'Flex', value: 'flex' },
+            { label: 'Inline Flex', value: 'inline-flex' },
+            { label: 'Grid', value: 'grid' },
+            { label: 'Inline Grid', value: 'inline-grid' },
+            { label: 'Table', value: 'table' },
+            { label: 'Table Row', value: 'table-row' },
+            { label: 'Table Cell', value: 'table-cell' },
+            { label: 'None', value: 'none' }
+          ];
+          
+          flexDirectionOptions = [
+            { label: 'Row', value: 'row' },
+            { label: 'Row Reverse', value: 'row-reverse' },
+            { label: 'Column', value: 'column' },
+            { label: 'Column Reverse', value: 'column-reverse' }
+          ];
+          
+          flexWrapOptions = [
+            { label: 'Nowrap', value: 'nowrap' },
+            { label: 'Wrap', value: 'wrap' },
+            { label: 'Wrap Reverse', value: 'wrap-reverse' }
+          ];
+          
+          justifyContentOptions = [
+            { label: 'Flex Start', value: 'flex-start' },
+            { label: 'Flex End', value: 'flex-end' },
+            { label: 'Center', value: 'center' },
+            { label: 'Space Between', value: 'space-between' },
+            { label: 'Space Around', value: 'space-around' },
+            { label: 'Space Evenly', value: 'space-evenly' }
+          ];
+          
+          alignItemsOptions = [
+            { label: 'Stretch', value: 'stretch' },
+            { label: 'Flex Start', value: 'flex-start' },
+            { label: 'Flex End', value: 'flex-end' },
+            { label: 'Center', value: 'center' },
+            { label: 'Baseline', value: 'baseline' }
+          ];
+          
+          alignContentOptions = [
+            { label: 'Stretch', value: 'stretch' },
+            { label: 'Flex Start', value: 'flex-start' },
+            { label: 'Flex End', value: 'flex-end' },
+            { label: 'Center', value: 'center' },
+            { label: 'Space Between', value: 'space-between' },
+            { label: 'Space Around', value: 'space-around' }
+          ];
+          
+          flexGrowOptions = [
+            { label: '0', value: '0' },
+            { label: '1', value: '1' },
+            { label: '2', value: '2' },
+            { label: '3', value: '3' },
+            { label: '4', value: '4' },
+            { label: '5', value: '5' }
+          ];
+          
+          flexShrinkOptions = [
+            { label: '0', value: '0' },
+            { label: '1', value: '1' },
+            { label: '2', value: '2' },
+            { label: '3', value: '3' },
+            { label: '4', value: '4' },
+            { label: '5', value: '5' }
+          ];
+          
+          flexBasisOptions = [
+            { label: 'Auto', value: 'auto' },
+            { label: '0', value: '0' },
+            { label: '25%', value: '25%' },
+            { label: '50%', value: '50%' },
+            { label: '75%', value: '75%' },
+            { label: '100%', value: '100%' },
+            { label: '200px', value: '200px' },
+            { label: '400px', value: '400px' },
+            { label: '600px', value: '600px' },
+            { label: '800px', value: '800px' }
+          ];
+          
+          orderOptions = [
+            { label: '0', value: '0' },
+            { label: '1', value: '1' },
+            { label: '2', value: '2' },
+            { label: '3', value: '3' },
+            { label: '4', value: '4' },
+            { label: '5', value: '5' },
+            { label: '-1', value: '-1' },
+            { label: '-2', value: '-2' },
+            { label: '-3', value: '-3' },
+            { label: '-4', value: '-4' },
+            { label: '-5', value: '-5' }
+          ];
+          
+          gridAutoFlowOptions = [
+            { label: 'Row', value: 'row' },
+            { label: 'Column', value: 'column' },
+            { label: 'Row Dense', value: 'row dense' },
+            { label: 'Column Dense', value: 'column dense' }
+          ];
+          
+          gapOptions = [
+            { label: 'Normal', value: 'normal' },
+            { label: '0', value: '0' },
+            { label: '4px', value: '4px' },
+            { label: '8px', value: '8px' },
+            { label: '12px', value: '12px' },
+            { label: '16px', value: '16px' },
+            { label: '20px', value: '20px' },
+            { label: '24px', value: '24px' },
+            { label: '32px', value: '32px' },
+            { label: '48px', value: '48px' },
+            { label: '64px', value: '64px' }
+          ];
+          
+          backgroundSizeOptions = [
+            { label: 'Auto', value: 'auto' },
+            { label: 'Cover', value: 'cover' },
+            { label: 'Contain', value: 'contain' },
+            { label: '50%', value: '50%' },
+            { label: '100%', value: '100%' },
+            { label: '200%', value: '200%' }
+          ];
+          
+          backgroundPositionOptions = [
+            { label: '0% 0%', value: '0% 0%' },
+            { label: '50% 50%', value: '50% 50%' },
+            { label: '100% 100%', value: '100% 100%' },
+            { label: 'Top Left', value: 'top left' },
+            { label: 'Top Center', value: 'top center' },
+            { label: 'Top Right', value: 'top right' },
+            { label: 'Center Left', value: 'center left' },
+            { label: 'Center Center', value: 'center center' },
+            { label: 'Center Right', value: 'center right' },
+            { label: 'Bottom Left', value: 'bottom left' },
+            { label: 'Bottom Center', value: 'bottom center' },
+            { label: 'Bottom Right', value: 'bottom right' }
+          ];
+          
+          backgroundRepeatOptions = [
+            { label: 'Repeat', value: 'repeat' },
+            { label: 'Repeat X', value: 'repeat-x' },
+            { label: 'Repeat Y', value: 'repeat-y' },
+            { label: 'No Repeat', value: 'no-repeat' },
+            { label: 'Space', value: 'space' },
+            { label: 'Round', value: 'round' }
+          ];
+          
+          backgroundAttachmentOptions = [
+            { label: 'Scroll', value: 'scroll' },
+            { label: 'Fixed', value: 'fixed' },
+            { label: 'Local', value: 'local' }
+          ];
+          
+          backgroundBlendModeOptions = this.blendModeOptions;
+          
+          boxSizingOptions = [
+            { label: 'Content Box', value: 'content-box' },
+            { label: 'Border Box', value: 'border-box' }
+          ];
+          
+          // Enhanced Color Palettes
+          colorPalettes = {
+            text: [
+              '#000000', '#1f2937', '#374151', '#4b5563', '#6b7280',
+              '#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6', '#ffffff',
+              '#dc2626', '#ea580c', '#d97706', '#059669', '#0d9488',
+              '#0891b2', '#2563eb', '#4f46e5', '#7c3aed', '#a855f7',
+              '#db2777', '#e11d48'
+            ],
+            background: [
+              '#ffffff', '#f9fafb', '#f3f4f6', '#e5e7eb', '#d1d5db',
+              '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
+              '#fef2f2', '#fffbeb', '#f0fdf4', '#ecfdf5', '#f0f9ff',
+              '#eff6ff', '#eef2ff', '#f5f3ff', '#faf5ff', '#fdf4ff',
+              '#fdf2f8', '#fff1f2'
+            ],
+            highlight: [
+              '#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b',
+              '#d97706', '#b45309', '#92400e', '#78350f', '#451a03',
+              '#fce7f3', '#fbcfe8', '#f9a8d4', '#f472b6', '#ec4899',
+              '#db2777', '#be185d', '#9d174d', '#831843', '#500724',
+              '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6',
+              '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a', '#172554'
+            ]
+          };
+  
+        themes = [
+          { name: 'Light', value: 'light', primary: '#3b82f6', background: '#ffffff', text: '#1f2937' },
+          { name: 'Dark', value: 'dark', primary: '#60a5fa', background: '#1f2937', text: '#f9fafb' },
+          { name: 'Blue', value: 'blue', primary: '#2563eb', background: '#eff6ff', text: '#1e3a8a' },
+          { name: 'Green', value: 'green', primary: '#10b981', background: '#ecfdf5', text: '#064e3b' },
+          { name: 'Purple', value: 'purple', primary: '#8b5cf6', background: '#f5f3ff', text: '#4c1d95' },
+          { name: 'Red', value: 'red', primary: '#ef4444', background: '#fef2f2', text: '#7f1d1d' },
+          { name: 'Yellow', value: 'yellow', primary: '#f59e0b', background: '#fffbeb', text: '#78350f' },
+          { name: 'Gray', value: 'gray', primary: '#6b7280', background: '#f9fafb', text: '#374151' }
+        ];
+        
+        // Enhanced Templates
+        templates = [
+          {
+            name: 'Blank',
+            category: 'basic',
+            html: '<p><br></p>'
+          },
+          {
+            name: 'Article',
+            category: 'content',
+            html: `
+              <h1>Article Title</h1>
+              <p class="lead">This is a lead paragraph that introduces the article.</p>
+              <p>This is the main content of the article. You can add more paragraphs, images, and other elements here.</p>
+              <blockquote>
+                <p>This is a blockquote that highlights an important point.</p>
+              </blockquote>
+              <p>Continue with more content...</p>
+              <ul>
+                <li>First item in a list</li>
+                <li>Second item in a list</li>
+                <li>Third item in a list</li>
+              </ul>
+            `
+          },
+          {
+            name: 'Newsletter',
+            category: 'email',
+            html: `
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+                <h1 style="color: #2563eb; text-align: center;">Newsletter Title</h1>
+                <p style="font-size: 16px; line-height: 1.6;">Dear Subscriber,</p>
+                <p style="font-size: 16px; line-height: 1.6;">Here's our latest update...</p>
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h2 style="color: #1f2937;">Featured Content</h2>
+                  <p>Check out our latest features and updates.</p>
+                </div>
+                <p style="font-size: 16px; line-height: 1.6;">Best regards,<br>The Team</p>
+              </div>
+            `
+          },
+          {
+            name: 'Blog Post',
+            category: 'content',
+            html: `
+              <article>
+                <header>
+                  <h1>Blog Post Title</h1>
+                  <div style="color: #6b7280; font-size: 14px;">
+                    <span>By Author Name</span> • 
+                    <span>Published on ${new Date().toLocaleDateString()}</span> • 
+                    <span>5 min read</span>
+                  </div>
+                </header>
+                <div style="margin-top: 30px;">
+                  <p>Start writing your blog post here...</p>
+                  <h2>Section Title</h2>
+                  <p>Add more content in sections.</p>
+                  <figure style="margin: 30px 0;">
+                    <img src="https://via.placeholder.com/800x400" alt="Placeholder" style="width: 100%; border-radius: 8px;">
+                    <figcaption style="text-align: center; color: #6b7280; font-style: italic; margin-top: 10px;">
+                      Image caption goes here
+                    </figcaption>
+                  </figure>
+                </div>
+              </article>
+            `
+          },
+          {
+            name: 'Resume',
+            category: 'professional',
+            html: `
+              <div style="font-family: 'Times New Roman', serif; max-width: 800px; margin: 0 auto; padding: 40px;">
+                <h1 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">John Doe</h1>
+                <div style="text-align: center; color: #666; margin-bottom: 30px;">
+                  <span>Email: john@example.com</span> • 
+                  <span>Phone: (123) 456-7890</span> • 
+                  <span>LinkedIn: linkedin.com/in/johndoe</span>
+                </div>
+                
+                <h2>Professional Summary</h2>
+                <p>Experienced professional with expertise in...</p>
+                
+                <h2>Work Experience</h2>
+                <div style="margin-bottom: 20px;">
+                  <h3>Job Title</h3>
+                  <div style="color: #666;">Company Name • 2020 - Present</div>
+                  <ul>
+                    <li>Responsibility or achievement</li>
+                    <li>Responsibility or achievement</li>
+                  </ul>
+                </div>
+                
+                <h2>Education</h2>
+                <div style="margin-bottom: 20px;">
+                  <h3>Degree Name</h3>
+                  <div style="color: #666;">University Name • 2016 - 2020</div>
+                </div>
+              </div>
+            `
+          }
+        ];
+        
+        templateCategories = [
+          { name: 'All', value: 'all' },
+          { name: 'Basic', value: 'basic' },
+          { name: 'Content', value: 'content' },
+          { name: 'Email', value: 'email' },
+          { name: 'Professional', value: 'professional' },
+          { name: 'Creative', value: 'creative' }
+        ];
+        
+        // Enhanced Languages for Syntax Highlighting
+        codeLanguages = [
+          { name: 'HTML', value: 'html', mode: 'htmlmixed' },
+          { name: 'CSS', value: 'css', mode: 'css' },
+          { name: 'JavaScript', value: 'javascript', mode: 'javascript' },
+          { name: 'TypeScript', value: 'typescript', mode: 'typescript' },
+          { name: 'Python', value: 'python', mode: 'python' },
+          { name: 'Java', value: 'java', mode: 'text/x-java' },
+          { name: 'C++', value: 'cpp', mode: 'text/x-c++src' },
+          { name: 'C#', value: 'csharp', mode: 'text/x-csharp' },
+          { name: 'PHP', value: 'php', mode: 'php' },
+          { name: 'Ruby', value: 'ruby', mode: 'ruby' },
+          { name: 'Swift', value: 'swift', mode: 'swift' },
+          { name: 'Kotlin', value: 'kotlin', mode: 'text/x-kotlin' },
+          { name: 'Go', value: 'go', mode: 'go' },
+          { name: 'Rust', value: 'rust', mode: 'rust' },
+          { name: 'SQL', value: 'sql', mode: 'sql' },
+          { name: 'JSON', value: 'json', mode: 'application/json' },
+          { name: 'XML', value: 'xml', mode: 'xml' },
+          { name: 'Markdown', value: 'markdown', mode: 'markdown' },
+          { name: 'YAML', value: 'yaml', mode: 'yaml' },
+          { name: 'Shell', value: 'shell', mode: 'shell' },
+          { name: 'Plain Text', value: 'plain', mode: 'text/plain' }
+        ];
+        
+        codeThemes = [
+          { name: 'Default', value: 'default', dark: false },
+          { name: 'Dark', value: 'dark', dark: true },
+          { name: 'Solarized Light', value: 'solarized-light', dark: false },
+          { name: 'Solarized Dark', value: 'solarized-dark', dark: true },
+          { name: 'Monokai', value: 'monokai', dark: true },
+          { name: 'Dracula', value: 'dracula', dark: true },
+          { name: 'Material', value: 'material', dark: true },
+          { name: 'Nord', value: 'nord', dark: true }
+        ];
+        
+        // Enhanced Media Types
+        mediaTypes = [
+          { name: 'YouTube Video', value: 'youtube', icon: 'fa-youtube' },
+          { name: 'Vimeo Video', value: 'vimeo', icon: 'fa-vimeo' },
+          { name: 'Audio', value: 'audio', icon: 'fa-music' },
+          { name: 'Video File', value: 'video', icon: 'fa-video' },
+          { name: 'IFrame', value: 'iframe', icon: 'fa-window-maximize' },
+          { name: 'Embed', value: 'embed', icon: 'fa-code' }
+        ];
+        
+        // Enhanced Export Formats
+        exportFormats = [
+          { name: 'HTML', value: 'html', icon: 'fa-code', extension: '.html' },
+          { name: 'Plain Text', value: 'text', icon: 'fa-file-text', extension: '.txt' },
+          { name: 'PDF', value: 'pdf', icon: 'fa-file-pdf', extension: '.pdf' },
+          { name: 'Word Document', value: 'docx', icon: 'fa-file-word', extension: '.docx' },
+          { name: 'Markdown', value: 'markdown', icon: 'fa-markdown', extension: '.md' },
+          { name: 'Rich Text Format', value: 'rtf', icon: 'fa-file-alt', extension: '.rtf' },
+          { name: 'EPUB', value: 'epub', icon: 'fa-book', extension: '.epub' }
+        ];
+        
+        // Enhanced Import Formats
+        importFormats = [
+          { name: 'HTML', value: 'html', icon: 'fa-code', accept: '.html,.htm' },
+          { name: 'Plain Text', value: 'text', icon: 'fa-file-text', accept: '.txt' },
+          { name: 'Word Document', value: 'docx', icon: 'fa-file-word', accept: '.docx,.doc' },
+          { name: 'Markdown', value: 'markdown', icon: 'fa-markdown', accept: '.md,.markdown' },
+          { name: 'Rich Text Format', value: 'rtf', icon: 'fa-file-alt', accept: '.rtf' },
+          { name: 'PDF', value: 'pdf', icon: 'fa-file-pdf', accept: '.pdf' }
+        ];
+        
+        // Enhanced Print Options
+        printOptions = {
+          orientation: [
+            { label: 'Portrait', value: 'portrait' },
+            { label: 'Landscape', value: 'landscape' }
+          ],
+          margins: [
+            { label: 'Normal', value: 'normal', size: '1in' },
+            { label: 'Narrow', value: 'narrow', size: '0.5in' },
+            { label: 'Wide', value: 'wide', size: '2in' },
+            { label: 'Custom', value: 'custom', size: '' }
+          ],
+          paperSize: [
+            { label: 'Letter', value: 'letter', width: '8.5in', height: '11in' },
+            { label: 'Legal', value: 'legal', width: '8.5in', height: '14in' },
+            { label: 'A4', value: 'a4', width: '210mm', height: '297mm' },
+            { label: 'A3', value: 'a3', width: '297mm', height: '420mm' }
+          ]
+        };
+        
+        // Enhanced AI Tones
+        aiTones = [
+          { label: 'Professional', value: 'professional', icon: 'fa-suitcase' },
+          { label: 'Casual', value: 'casual', icon: 'fa-coffee' },
+          { label: 'Formal', value: 'formal', icon: 'fa-graduation-cap' },
+          { label: 'Friendly', value: 'friendly', icon: 'fa-smile' },
+          { label: 'Persuasive', value: 'persuasive', icon: 'fa-bullhorn' },
+          { label: 'Informative', value: 'informative', icon: 'fa-info-circle' },
+          { label: 'Creative', value: 'creative', icon: 'fa-palette' },
+          { label: 'Technical', value: 'technical', icon: 'fa-cogs' }
+        ];
+        
+        aiLengths = [
+          { label: 'Short', value: 'short', words: 50 },
+          { label: 'Medium', value: 'medium', words: 150 },
+          { label: 'Long', value: 'long', words: 300 },
+          { label: 'Very Long', value: 'very-long', words: 500 }
+        ];
+        
+        aiLanguages = [
+          { label: 'English', value: 'en' },
+          { label: 'Spanish', value: 'es' },
+          { label: 'French', value: 'fr' },
+          { label: 'German', value: 'de' },
+          { label: 'Chinese', value: 'zh' },
+          { label: 'Japanese', value: 'ja' },
+          { label: 'Korean', value: 'ko' },
+          { label: 'Russian', value: 'ru' },
+          { label: 'Arabic', value: 'ar' }
+        ];
+        selectedCategory: string = 'smileys';
+          
+        // Enhanced Emoji Categories
+        emojiCategories = [
+          { name: 'Smileys & People', value: 'smileys', icon: 'fa-smile' },
+          { name: 'Animals & Nature', value: 'animals', icon: 'fa-dog' },
+          { name: 'Food & Drink', value: 'food', icon: 'fa-utensils' },
+          { name: 'Travel & Places', value: 'travel', icon: 'fa-plane' },
+          { name: 'Activities', value: 'activities', icon: 'fa-futbol' },
+          { name: 'Objects', value: 'objects', icon: 'fa-lightbulb' },
+          { name: 'Symbols', value: 'symbols', icon: 'fa-heart' },
+          { name: 'Flags', value: 'flags', icon: 'fa-flag' }
+        ];
+        
+        // Enhanced Special Characters
+        specialCharacters = [
+          // Currency
+          '€', '$', '£', '¥', '¢', '₹', '₽', '₿',
+          // Mathematical
+          '±', '≠', '≈', '≤', '≥', '∞', '°', 'µ', 'π', '∑', '√', '∆', '∂', '∫', '∏', '≈', '≠', '≡', '≅', '∼',
+          // Arrows
+          '→', '←', '↑', '↓', '↔', '⇔', '⇒', '⇐', '↗', '↖', '↘', '↙',
+          // Logical
+          '∀', '∃', '∅', '∈', '∉', '∋', '∩', '∪', '⊂', '⊃', '⊄', '⊆',
+          // Legal
+          '©', '®', '™', '§', '¶',
+          // Typographic
+          '•', '·', '…', '–', '—', '“', '”', '‘', '’', '«', '»',
+          // Fractions
+          '½', '¼', '¾', '⅓', '⅔', '⅕', '⅖', '⅗', '⅘',
+          // Superscript/Subscript
+          '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹', '⁰',
+          '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', '₀'
+        ];
+        
+        // Enhanced File Types
+        fileTypes = [
+          { name: 'Images', extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'], icon: 'fa-image' },
+          { name: 'Documents', extensions: ['.pdf', '.doc', '.docx', '.txt', '.rtf'], icon: 'fa-file' },
+          { name: 'Spreadsheets', extensions: ['.xls', '.xlsx', '.csv'], icon: 'fa-table' },
+          { name: 'Presentations', extensions: ['.ppt', '.pptx'], icon: 'fa-presentation' },
+          { name: 'Archives', extensions: ['.zip', '.rar', '.7z'], icon: 'fa-file-archive' }
+        ];
+        
+        // Enhanced Keyboard Shortcuts
+        keyboardShortcuts = [
+          { key: 'Ctrl+B', action: 'Bold' },
+          { key: 'Ctrl+I', action: 'Italic' },
+          { key: 'Ctrl+U', action: 'Underline' },
+          { key: 'Ctrl+K', action: 'Insert Link' },
+          { key: 'Ctrl+Shift+K', action: 'Remove Link' },
+          { key: 'Ctrl+L', action: 'Align Left' },
+          { key: 'Ctrl+E', action: 'Align Center' },
+          { key: 'Ctrl+R', action: 'Align Right' },
+          { key: 'Ctrl+J', action: 'Justify' },
+          { key: 'Ctrl+Shift+L', action: 'Bulleted List' },
+          { key: 'Ctrl+Shift+O', action: 'Numbered List' },
+          { key: 'Ctrl+Z', action: 'Undo' },
+          { key: 'Ctrl+Y', action: 'Redo' },
+          { key: 'Ctrl+S', action: 'Save' },
+          { key: 'Ctrl+P', action: 'Print' },
+          { key: 'Ctrl+F', action: 'Find' },
+          { key: 'Ctrl+H', action: 'Replace' },
+          { key: 'Ctrl+Shift+S', action: 'Source Mode' },
+          { key: 'Ctrl+Shift+P', action: 'Preview' },
+          { key: 'F11', action: 'Fullscreen' },
+          { key: 'Tab', action: 'Indent' },
+          { key: 'Shift+Tab', action: 'Outdent' },
+          { key: 'Ctrl+Space', action: 'Clear Formatting' },
+          { key: 'Ctrl+Shift+C', action: 'Copy Formatting' },
+          { key: 'Ctrl+Shift+V', action: 'Paste Formatting' },
+          { key: 'Ctrl+Enter', action: 'Insert Line Break' },
+          { key: 'Ctrl+Shift+Enter', action: 'Insert Page Break' }
+        ];
+        
+        // Enhanced Toolbar Layouts
+        toolbarLayouts = {
+          full: ['format', 'font', 'size', 'style', 'bold', 'italic', 'underline', 'strike', 'superscript', 'subscript', 'color', 'background', 'highlight', 'alignment', 'list', 'indent', 'link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre', 'clear', 'undo', 'redo', 'find', 'spellcheck', 'wordcount', 'source', 'preview', 'fullscreen', 'zoom', 'templates', 'styles', 'scripts', 'metadata', 'export', 'import', 'print', 'help', 'more'],
+          standard: ['format', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'table', 'undo', 'redo', 'source', 'fullscreen'],
+          minimal: ['bold', 'italic', 'underline', 'link', 'undo', 'redo'],
+          email: ['format', 'font', 'size', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'undo', 'redo', 'source', 'preview'],
+          blog: ['format', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'table', 'code', 'blockquote', 'undo', 'redo', 'source', 'preview', 'wordcount'],
+          code: ['source', 'code', 'pre', 'undo', 'redo', 'fullscreen', 'wordcount']
+        };
+        
+        // Enhanced Zoom Levels
+        zoomLevels = [
+          { label: '50%', value: 0.5 },
+          { label: '75%', value: 0.75 },
+          { label: '100%', value: 1 },
+          { label: '125%', value: 1.25 },
+          { label: '150%', value: 1.5 },
+          { label: '200%', value: 2 },
+          { label: '300%', value: 3 },
+          { label: 'Fit to Width', value: 'fit-width' },
+          { label: 'Fit to Page', value: 'fit-page' }
+        ];
+        
+        // Enhanced Status Bar Items
+        statusBarItems = [
+          { id: 'words', label: 'Words', icon: 'fa-file-word', visible: true },
+          { id: 'chars', label: 'Characters', icon: 'fa-font', visible: true },
+          { id: 'charsNoSpaces', label: 'Chars (no spaces)', icon: 'fa-font', visible: false },
+          { id: 'paragraphs', label: 'Paragraphs', icon: 'fa-paragraph', visible: true },
+          { id: 'lines', label: 'Lines', icon: 'fa-bars', visible: false },
+          { id: 'readingTime', label: 'Reading Time', icon: 'fa-clock', visible: true },
+          { id: 'pages', label: 'Pages', icon: 'fa-file', visible: false },
+          { id: 'images', label: 'Images', icon: 'fa-image', visible: false },
+          { id: 'links', label: 'Links', icon: 'fa-link', visible: false },
+          { id: 'tables', label: 'Tables', icon: 'fa-table', visible: false },
+          { id: 'lastSaved', label: 'Last Saved', icon: 'fa-save', visible: true },
+          { id: 'mode', label: 'Mode', icon: 'fa-code', visible: true }
+        ];
+        
+        // Enhanced Context Menu Items
+        contextMenuItems = [
+          { label: 'Cut', icon: 'fa-cut', action: 'cut', shortcut: 'Ctrl+X' },
+          { label: 'Copy', icon: 'fa-copy', action: 'copy', shortcut: 'Ctrl+C' },
+          { label: 'Paste', icon: 'fa-paste', action: 'paste', shortcut: 'Ctrl+V' },
+          { label: 'Paste as Text', icon: 'fa-paste', action: 'pasteAsText', shortcut: 'Ctrl+Shift+V' },
+          { separator: true },
+          { label: 'Bold', icon: 'fa-bold', action: 'bold', shortcut: 'Ctrl+B' },
+          { label: 'Italic', icon: 'fa-italic', action: 'italic', shortcut: 'Ctrl+I' },
+          { label: 'Underline', icon: 'fa-underline', action: 'underline', shortcut: 'Ctrl+U' },
+          { separator: true },
+          { label: 'Insert Link', icon: 'fa-link', action: 'insertLink', shortcut: 'Ctrl+K' },
+          { label: 'Remove Link', icon: 'fa-unlink', action: 'removeLink', shortcut: 'Ctrl+Shift+K' },
+          { separator: true },
+          { label: 'Insert Image', icon: 'fa-image', action: 'insertImage' },
+          { label: 'Insert Table', icon: 'fa-table', action: 'insertTable' },
+          { separator: true },
+          { label: 'Clear Formatting', icon: 'fa-eraser', action: 'clearFormatting', shortcut: 'Ctrl+Space' },
+          { label: 'Copy Formatting', icon: 'fa-clone', action: 'copyFormatting', shortcut: 'Ctrl+Shift+C' },
+          { label: 'Paste Formatting', icon: 'fa-clipboard', action: 'pasteFormatting', shortcut: 'Ctrl+Shift+V' },
+          { separator: true },
+          { label: 'Select All', icon: 'fa-mouse-pointer', action: 'selectAll', shortcut: 'Ctrl+A' }
+        ];
+        
+        // Enhanced AI Actions
+        aiActions = [
+          { label: 'Improve Writing', icon: 'fa-magic', action: 'improveWriting' },
+          { label: 'Make Shorter', icon: 'fa-compress', action: 'makeShorter' },
+          { label: 'Make Longer', icon: 'fa-expand', action: 'makeLonger' },
+          { label: 'Change Tone', icon: 'fa-comment-alt', action: 'changeTone' },
+          { label: 'Fix Grammar', icon: 'fa-spell-check', action: 'fixGrammar' },
+          { label: 'Summarize', icon: 'fa-file-contract', action: 'summarize' },
+          { label: 'Translate', icon: 'fa-language', action: 'translate' },
+          { label: 'Generate Ideas', icon: 'fa-lightbulb', action: 'generateIdeas' },
+          { label: 'Create Outline', icon: 'fa-list-ol', action: 'createOutline' },
+          { label: 'Write Introduction', icon: 'fa-pen-fancy', action: 'writeIntroduction' },
+          { label: 'Write Conclusion', icon: 'fa-flag-checkered', action: 'writeConclusion' }
+        ];
+        
+        // Enhanced Collaboration Features
+        collaborationFeatures = [
+          { label: 'Real-time Editing', icon: 'fa-users', enabled: false },
+          { label: 'Comments', icon: 'fa-comment', enabled: true },
+          { label: 'Track Changes', icon: 'fa-history', enabled: true },
+          { label: 'Version History', icon: 'fa-code-branch', enabled: true },
+          { label: 'User Presence', icon: 'fa-user-circle', enabled: false },
+          { label: 'Chat', icon: 'fa-comments', enabled: false }
+        ];
+        
+        // Enhanced Accessibility Features
+        accessibilityFeatures = [
+          { label: 'High Contrast Mode', icon: 'fa-adjust', enabled: false },
+          { label: 'Screen Reader Support', icon: 'fa-assistive-listening-systems', enabled: true },
+          { label: 'Keyboard Navigation', icon: 'fa-keyboard', enabled: true },
+          { label: 'Focus Indicators', icon: 'fa-mouse-pointer', enabled: true },
+          { label: 'Text Resizing', icon: 'fa-text-height', enabled: true },
+          { label: 'Color Blind Mode', icon: 'fa-palette', enabled: false }
+        ];
+        
+        // Enhanced Performance Features
+        performanceFeatures = [
+          { label: 'Lazy Loading', icon: 'fa-tachometer-alt', enabled: true },
+          { label: 'Image Optimization', icon: 'fa-compress', enabled: true },
+          { label: 'Code Minification', icon: 'fa-code', enabled: true },
+          { label: 'Caching', icon: 'fa-database', enabled: true },
+          { label: 'Debounced Input', icon: 'fa-clock', enabled: true },
+          { label: 'Virtual Scrolling', icon: 'fa-scroll', enabled: false }
+        ];
+        
+        // Enhanced Security Features
+        securityFeatures = [
+          { label: 'XSS Protection', icon: 'fa-shield-alt', enabled: true },
+          { label: 'Content Sanitization', icon: 'fa-filter', enabled: true },
+          { label: 'File Type Validation', icon: 'fa-file-check', enabled: true },
+          { label: 'Size Limits', icon: 'fa-weight-hanging', enabled: true },
+          { label: 'HTTPS Only', icon: 'fa-lock', enabled: true },
+          { label: 'CSP Headers', icon: 'fa-header', enabled: false }
+        ];
+        
+        // Enhanced Internationalization Features
+        i18nFeatures = [
+          { label: 'Multi-language UI', icon: 'fa-globe', enabled: true },
+          { label: 'RTL Support', icon: 'fa-text-width', enabled: true },
+          { label: 'Localized Formats', icon: 'fa-calendar-alt', enabled: true },
+          { label: 'Translation Ready', icon: 'fa-language', enabled: true },
+          { label: 'Unicode Support', icon: 'fa-font', enabled: true },
+          { label: 'Emoji Support', icon: 'fa-smile', enabled: true }
+        ];
+        
+        // Enhanced Analytics Features
+        analyticsFeatures = [
+          { label: 'Usage Tracking', icon: 'fa-chart-line', enabled: true },
+          { label: 'Error Reporting', icon: 'fa-exclamation-triangle', enabled: true },
+          { label: 'Performance Metrics', icon: 'fa-tachometer-alt', enabled: true },
+          { label: 'User Behavior', icon: 'fa-user-chart', enabled: false },
+          { label: 'A/B Testing', icon: 'fa-flask', enabled: false },
+          { label: 'Heatmaps', icon: 'fa-fire', enabled: false }
+        ];
+        
+        // Enhanced Backup Features
+        backupFeatures = [
+          { label: 'Auto-save', icon: 'fa-save', enabled: true },
+          { label: 'Version History', icon: 'fa-history', enabled: true },
+          { label: 'Cloud Backup', icon: 'fa-cloud', enabled: false },
+          { label: 'Local Storage', icon: 'fa-hdd', enabled: true },
+          { label: 'Export', icon: 'fa-download', enabled: true },
+          { label: 'Import', icon: 'fa-upload', enabled: true }
+        ];
+        
+        // Enhanced Integration Features
+        integrationFeatures = [
+          { label: 'CMS Integration', icon: 'fa-cogs', enabled: true },
+          { label: 'API Access', icon: 'fa-plug', enabled: true },
+          { label: 'Webhooks', icon: 'fa-link', enabled: false },
+          { label: 'OAuth', icon: 'fa-key', enabled: false },
+          { label: 'SSO', icon: 'fa-user-shield', enabled: false },
+          { label: 'Custom Plugins', icon: 'fa-puzzle-piece', enabled: true }
+        ];
+        
+        // Enhanced Mobile Features
+        mobileFeatures = [
+          { label: 'Responsive Design', icon: 'fa-mobile-alt', enabled: true },
+          { label: 'Touch Gestures', icon: 'fa-hand-pointer', enabled: true },
+          { label: 'Offline Support', icon: 'fa-wifi-slash', enabled: false },
+          { label: 'Push Notifications', icon: 'fa-bell', enabled: false },
+          { label: 'Camera Access', icon: 'fa-camera', enabled: false },
+          { label: 'Geolocation', icon: 'fa-map-marker-alt', enabled: false }
+        ];
+        
+        // Enhanced SEO Features
+        seoFeatures = [
+          { label: 'Meta Tags', icon: 'fa-tags', enabled: true },
+          { label: 'Structured Data', icon: 'fa-code', enabled: true },
+          { label: 'Sitemap Generation', icon: 'fa-sitemap', enabled: false },
+          { label: 'SEO Analysis', icon: 'fa-chart-bar', enabled: false },
+          { label: 'Canonical URLs', icon: 'fa-link', enabled: true },
+          { label: 'Social Media Tags', icon: 'fa-share-alt', enabled: true }
+        ];
+        
+        // Enhanced Content Features
+        contentFeatures = [
+          { label: 'Rich Text Editing', icon: 'fa-edit', enabled: true },
+          { label: 'Media Library', icon: 'fa-images', enabled: true },
+          { label: 'Template Library', icon: 'fa-layer-group', enabled: true },
+          { label: 'Content Blocks', icon: 'fa-cubes', enabled: true },
+          { label: 'Reusable Components', icon: 'fa-clone', enabled: true },
+          { label: 'Content Scheduling', icon: 'fa-calendar', enabled: false }
+        ];
+        
+        // Enhanced Development Features
+        developmentFeatures = [
+          { label: 'Custom CSS', icon: 'fa-css3', enabled: true },
+          { label: 'Custom JavaScript', icon: 'fa-js', enabled: true },
+          { label: 'API Documentation', icon: 'fa-book', enabled: true },
+          { label: 'Developer Tools', icon: 'fa-tools', enabled: true },
+          { label: 'Debug Mode', icon: 'fa-bug', enabled: true },
+          { label: 'Performance Profiling', icon: 'fa-tachometer-alt', enabled: false }
+        ];
+        
+        // Enhanced User Management Features
+        userManagementFeatures = [
+          { label: 'Roles & Permissions', icon: 'fa-user-tag', enabled: true },
+          { label: 'User Profiles', icon: 'fa-user-circle', enabled: false },
+          { label: 'Activity Logs', icon: 'fa-clipboard-list', enabled: true },
+          { label: 'Audit Trail', icon: 'fa-history', enabled: true },
+          { label: 'Session Management', icon: 'fa-user-clock', enabled: false },
+          { label: 'Two-factor Auth', icon: 'fa-user-lock', enabled: false }
+        ];
+        
+        // Enhanced Notification Features
+        notificationFeatures = [
+          { label: 'Email Notifications', icon: 'fa-envelope', enabled: false },
+          { label: 'In-app Notifications', icon: 'fa-bell', enabled: true },
+          { label: 'Browser Notifications', icon: 'fa-desktop', enabled: false },
+          { label: 'Mobile Notifications', icon: 'fa-mobile-alt', enabled: false },
+          { label: 'Sound Alerts', icon: 'fa-volume-up', enabled: false },
+          { label: 'Visual Alerts', icon: 'fa-eye', enabled: true }
+        ];
+        
+        // Enhanced Search Features
+        searchFeatures = [
+          { label: 'Full-text Search', icon: 'fa-search', enabled: true },
+          { label: 'Advanced Filters', icon: 'fa-filter', enabled: true },
+          { label: 'Search History', icon: 'fa-history', enabled: true },
+          { label: 'Search Suggestions', icon: 'fa-lightbulb', enabled: true },
+          { label: 'Fuzzy Search', icon: 'fa-search-plus', enabled: false },
+          { label: 'Synonyms', icon: 'fa-language', enabled: false }
+        ];
+        
+        // Enhanced Export/Import Features
+        exportImportFeatures = [
+          { label: 'Multiple Formats', icon: 'fa-file-export', enabled: true },
+          { label: 'Batch Export', icon: 'fa-download', enabled: false },
+          { label: 'Batch Import', icon: 'fa-upload', enabled: false },
+          { label: 'Cloud Import', icon: 'fa-cloud-download-alt', enabled: false },
+          { label: 'Cloud Export', icon: 'fa-cloud-upload-alt', enabled: false },
+          { label: 'API Export', icon: 'fa-code', enabled: true }
+        ];
+        
+        // Enhanced Printing Features
+        printingFeatures = [
+          { label: 'Print Preview', icon: 'fa-eye', enabled: true },
+          { label: 'Page Breaks', icon: 'fa-file-alt', enabled: true },
+          { label: 'Headers & Footers', icon: 'fa-header', enabled: true },
+          { label: 'Page Numbers', icon: 'fa-list-ol', enabled: true },
+          { label: 'Watermarks', icon: 'fa-tint', enabled: false },
+          { label: 'Print Styles', icon: 'fa-print', enabled: true }
+        ];
+        
+        // Enhanced Help Features
+        helpFeatures = [
+          { label: 'User Guide', icon: 'fa-book', enabled: true },
+          { label: 'Tooltips', icon: 'fa-comment-alt', enabled: true },
+          { label: 'Keyboard Shortcuts', icon: 'fa-keyboard', enabled: true },
+          { label: 'Video Tutorials', icon: 'fa-video', enabled: false },
+          { label: 'FAQs', icon: 'fa-question-circle', enabled: false },
+          { label: 'Live Chat', icon: 'fa-comments', enabled: false }
+        ];
+   //#endregion     
+    //#region Enhanced State Management
+      public _content = '';
+      public onChange = (value: string) => {};
+      public onTouched = () => {};
+      public destroy$ = new Subject<void>();
+      public originalStyles: any = {};
+      public zoomLevel = 1.0;
+      public isMobileView = false;
+      public resizeObserver: ResizeObserver | null = null;
+      public mutationObserver: MutationObserver | null = null;
+      public selectionObserver: any = null;
+      public autoFormatTimer: any = null;
+      public spellCheckTimer: any = null;
+      public collaborationTimer: any = null;
+      public backupTimer: any = null;
+      public analyticsTimer: any = null;
+      public performanceTimer: any = null;
+      public securityScannerTimer: any = null;
+      public seoAnalyzerTimer: any = null;
+      public notificationTimer: any = null;
+      public searchIndexTimer: any = null;
+      public exportTimer: any = null;
+      public importTimer: any = null;
+      public printTimer: any = null;
+      public helpTimer: any = null;
+      public developmentTimer: any = null;
+      public userManagementTimer: any = null;
+      public mobileTimer: any = null;
+      public i18nTimer: any = null;
+      public accessibilityTimer: any = null;
+      public contentTimer: any = null;
+      public backupStorage: Storage = localStorage;
+      public collaborationStorage: Storage = sessionStorage;
+      public analyticsStorage: Storage = localStorage;
+      public performanceStorage: Storage = localStorage;
+      public securityStorage: Storage = localStorage;
+      public seoStorage: Storage = localStorage;
+      public notificationStorage: Storage = localStorage;
+      public searchStorage: Storage = localStorage;
+      public exportStorage: Storage = localStorage;
+      public importStorage: Storage = localStorage;
+      public printStorage: Storage = localStorage;
+      public helpStorage: Storage = localStorage;
+      public developmentStorage: Storage = localStorage;
+      public userManagementStorage: Storage = localStorage;
+      public mobileStorage: Storage = localStorage;
+      public i18nStorage: Storage = localStorage;
+      public accessibilityStorage: Storage = localStorage;
+      public contentStorage: Storage = localStorage;
+      public featureFlags: Map<string, boolean> = new Map();
+      public performanceMetrics: Map<string, number> = new Map();
+      public securityMetrics: Map<string, number> = new Map();
+      public seoMetrics: Map<string, number> = new Map();
+      public analyticsMetrics: Map<string, number> = new Map();
+      public collaborationMetrics: Map<string, number> = new Map();
+      public backupMetrics: Map<string, number> = new Map();
+      public integrationMetrics: Map<string, number> = new Map();
+      public mobileMetrics: Map<string, number> = new Map();
+      public userManagementMetrics: Map<string, number> = new Map();
+      public notificationMetrics: Map<string, number> = new Map();
+      public searchMetrics: Map<string, number> = new Map();
+      public exportMetrics: Map<string, number> = new Map();
+      public importMetrics: Map<string, number> = new Map();
+      public printMetrics: Map<string, number> = new Map();
+      public helpMetrics: Map<string, number> = new Map();
+      public developmentMetrics: Map<string, number> = new Map();
+      public i18nMetrics: Map<string, number> = new Map();
+      public accessibilityMetrics: Map<string, number> = new Map();
+      public contentMetrics: Map<string, number> = new Map();
+      public performanceEntries: PerformanceEntry[] = [];
+      public securityEntries: SecurityEntry[] = [];
+      public seoEntries: SEOEntry[] = [];
+      public analyticsEntries: AnalyticsEntry[] = [];
+      public collaborationEntries: CollaborationEntry[] = [];
+      public backupEntries: BackupEntry[] = [];
+      public integrationEntries: IntegrationEntry[] = [];
+      public mobileEntries: MobileEntry[] = [];
+      public userManagementEntries: UserManagementEntry[] = [];
+      public notificationEntries: NotificationEntry[] = [];
+      public searchEntries: SearchEntry[] = [];
+      public exportEntries: ExportEntry[] = [];
+      public importEntries: ImportEntry[] = [];
+      public printEntries: PrintEntry[] = [];
+      public helpEntries: HelpEntry[] = [];
+      public developmentEntries: DevelopmentEntry[] = [];
+      public i18nEntries: I18nEntry[] = [];
+      public accessibilityEntries: AccessibilityEntry[] = [];
+      public contentEntries: ContentEntry[] = [];
+      public performanceThresholds: Map<string, number> = new Map();
+      public securityThresholds: Map<string, number> = new Map();
+      public seoThresholds: Map<string, number> = new Map();
+      public analyticsThresholds: Map<string, number> = new Map();
+      public collaborationThresholds: Map<string, number> = new Map();
+      public backupThresholds: Map<string, number> = new Map();
+      public integrationThresholds: Map<string, number> = new Map();
+      public mobileThresholds: Map<string, number> = new Map();
+      public userManagementThresholds: Map<string, number> = new Map();
+      public notificationThresholds: Map<string, number> = new Map();
+      public searchThresholds: Map<string, number> = new Map();
+      public exportThresholds: Map<string, number> = new Map();
+      public importThresholds: Map<string, number> = new Map();
+      public printThresholds: Map<string, number> = new Map();
+      public helpThresholds: Map<string, number> = new Map();
+      public developmentThresholds: Map<string, number> = new Map();
+      public i18nThresholds: Map<string, number> = new Map();
+      public accessibilityThresholds: Map<string, number> = new Map();
+      public contentThresholds: Map<string, number> = new Map();
+      public performanceAlerts: PerformanceAlert[] = [];
+      public securityAlerts: SecurityAlert[] = [];
+      public seoAlerts: SEOAlert[] = [];
+      public analyticsAlerts: AnalyticsAlert[] = [];
+      public collaborationAlerts: CollaborationAlert[] = [];
+      public backupAlerts: BackupAlert[] = [];
+      public integrationAlerts: IntegrationAlert[] = [];
+      public mobileAlerts: MobileAlert[] = [];
+      public userManagementAlerts: UserManagementAlert[] = [];
+      public notificationAlerts: NotificationAlert[] = [];
+      public searchAlerts: SearchAlert[] = [];
+      public exportAlerts: ExportAlert[] = [];
+      public importAlerts: ImportAlert[] = [];
+      public printAlerts: PrintAlert[] = [];
+      public helpAlerts: HelpAlert[] = [];
+      public developmentAlerts: DevelopmentAlert[] = [];
+      public i18nAlerts: I18nAlert[] = [];
+      public accessibilityAlerts: AccessibilityAlert[] = [];
+      public contentAlerts: ContentAlert[] = [];
+      public performanceReports: PerformanceReport[] = [];
+      public securityReports: SecurityReport[] = [];
+      public seoReports: SEOReport[] = [];
+      public analyticsReports: AnalyticsReport[] = [];
+      public collaborationReports: CollaborationReport[] = [];
+      public backupReports: BackupReport[] = [];
+      public integrationReports: IntegrationReport[] = [];
+      public mobileReports: MobileReport[] = [];
+      public userManagementReports: UserManagementReport[] = [];
+      public notificationReports: NotificationReport[] = [];
+      public searchReports: SearchReport[] = [];
+      public exportReports: ExportReport[] = [];
+      public importReports: ImportReport[] = [];
+      public printReports: PrintReport[] = [];
+      public helpReports: HelpReport[] = [];
+      public developmentReports: DevelopmentReport[] = [];
+      public i18nReports: I18nReport[] = [];
+      public accessibilityReports: AccessibilityReport[] = [];
+      public contentReports: ContentReport[] = [];
+      public performanceDashboards: PerformanceDashboard[] = [];
+      public securityDashboards: SecurityDashboard[] = [];
+      public seoDashboards: SEODashboard[] = [];
+      public analyticsDashboards: AnalyticsDashboard[] = [];
+      public collaborationDashboards: CollaborationDashboard[] = [];
+      public backupDashboards: BackupDashboard[] = [];
+      public integrationDashboards: IntegrationDashboard[] = [];
+      public mobileDashboards: MobileDashboard[] = [];
+      public userManagementDashboards: UserManagementDashboard[] = [];
+      public notificationDashboards: NotificationDashboard[] = [];
+      public searchDashboards: SearchDashboard[] = [];
+      public exportDashboards: ExportDashboard[] = [];
+      public importDashboards: ImportDashboard[] = [];
+      public printDashboards: PrintDashboard[] = [];
+      public helpDashboards: HelpDashboard[] = [];
+      public developmentDashboards: DevelopmentDashboard[] = [];
+      public i18nDashboards: I18nDashboard[] = [];
+      public accessibilityDashboards: AccessibilityDashboard[] = [];
+      public contentDashboards: ContentDashboard[] = [];
+      public performanceMonitors: PerformanceMonitor[] = [];
+      public securityMonitors: SecurityMonitor[] = [];
+      public seoMonitors: SEOMonitor[] = [];
+      public analyticsMonitors: AnalyticsMonitor[] = [];
+      public collaborationMonitors: CollaborationMonitor[] = [];
+      public backupMonitors: BackupMonitor[] = [];
+      public integrationMonitors: IntegrationMonitor[] = [];
+      public mobileMonitors: MobileMonitor[] = [];
+      public userManagementMonitors: UserManagementMonitor[] = [];
+      public notificationMonitors: NotificationMonitor[] = [];
+      public searchMonitors: SearchMonitor[] = [];
+      public exportMonitors: ExportMonitor[] = [];
+      public importMonitors: ImportMonitor[] = [];
+      public printMonitors: PrintMonitor[] = [];
+      public helpMonitors: HelpMonitor[] = [];
+      public developmentMonitors: DevelopmentMonitor[] = [];
+      public i18nMonitors: I18nMonitor[] = [];
+      public accessibilityMonitors: AccessibilityMonitor[] = [];
+      public contentMonitors: ContentMonitor[] = [];
+      public performanceControllers: PerformanceController[] = [];
+      public securityControllers: SecurityController[] = [];
+      public seoControllers: SEOController[] = [];
+      public analyticsControllers: AnalyticsController[] = [];
+      public collaborationControllers: CollaborationController[] = [];
+      public backupControllers: BackupController[] = [];
+      public integrationControllers: IntegrationController[] = [];
+      public mobileControllers: MobileController[] = [];
+      public userManagementControllers: UserManagementController[] = [];
+      public notificationControllers: NotificationController[] = [];
+      public searchControllers: SearchController[] = [];
+      public exportControllers: ExportController[] = [];
+      public importControllers: ImportController[] = [];
+      public printControllers: PrintController[] = [];
+      public helpControllers: HelpController[] = [];
+      public developmentControllers: DevelopmentController[] = [];
+      public i18nControllers: I18nController[] = [];
+      public accessibilityControllers: AccessibilityController[] = [];
+      public contentControllers: ContentController[] = [];
+      public performanceServices: PerformanceService[] = [];
+      public securityServices: SecurityService[] = [];
+      public seoServices: SEOService[] = [];
+      public analyticsServices: AnalyticsService[] = [];
+      public collaborationServices: CollaborationService[] = [];
+      public backupServices: BackupService[] = [];
+      public integrationServices: IntegrationService[] = [];
+      public mobileServices: MobileService[] = [];
+      public userManagementServices: UserManagementService[] = [];
+      public notificationServices: NotificationService[] = [];
+      public searchServices: SearchService[] = [];
+      public exportServices: ExportService[] = [];
+      public importServices: ImportService[] = [];
+      public printServices: PrintService[] = [];
+      public helpServices: HelpService[] = [];
+      public developmentServices: DevelopmentService[] = [];
+      public i18nServices: I18nService[] = [];
+      public accessibilityServices: AccessibilityService[] = [];
+      public contentServices: ContentService[] = [];
+      public performanceProviders: PerformanceProvider[] = [];
+      public securityProviders: SecurityProvider[] = [];
+      public seoProviders: SEOProvider[] = [];
+      public analyticsProviders: AnalyticsProvider[] = [];
+      public collaborationProviders: CollaborationProvider[] = [];
+      public backupProviders: BackupProvider[] = [];
+      public integrationProviders: IntegrationProvider[] = [];
+      public mobileProviders: MobileProvider[] = [];
+      public userManagementProviders: UserManagementProvider[] = [];
+      public notificationProviders: NotificationProvider[] = [];
+      public searchProviders: SearchProvider[] = [];
+      public exportProviders: ExportProvider[] = [];
+      public importProviders: ImportProvider[] = [];
+      public printProviders: PrintProvider[] = [];
+      public helpProviders: HelpProvider[] = [];
+      public developmentProviders: DevelopmentProvider[] = [];
+      public i18nProviders: I18nProvider[] = [];
+      public accessibilityProviders: AccessibilityProvider[] = [];
+      public contentProviders: ContentProvider[] = [];
+      public performanceModules: PerformanceModule[] = [];
+      public securityModules: SecurityModule[] = [];
+      public seoModules: SEOModule[] = [];
+      public analyticsModules: AnalyticsModule[] = [];
+      public collaborationModules: CollaborationModule[] = [];
+      public backupModules: BackupModule[] = [];
+      public integrationModules: IntegrationModule[] = [];
+      public mobileModules: MobileModule[] = [];
+      public userManagementModules: UserManagementModule[] = [];
+      public notificationModules: NotificationModule[] = [];
+      public searchModules: SearchModule[] = [];
+      public exportModules: ExportModule[] = [];
+      public importModules: ImportModule[] = [];
+      public printModules: PrintModule[] = [];
+      public helpModules: HelpModule[] = [];
+      public developmentModules: DevelopmentModule[] = [];
+      public i18nModules: I18nModule[] = [];
+      public accessibilityModules: AccessibilityModule[] = [];
+      public contentModules: ContentModule[] = [];
+      public performanceComponents: PerformanceComponent[] = [];
+      public securityComponents: SecurityComponent[] = [];
+      public seoComponents: SEOComponent[] = [];
+      public analyticsComponents: AnalyticsComponent[] = [];
+      public collaborationComponents: CollaborationComponent[] = [];
+      public backupComponents: BackupComponent[] = [];
+      public integrationComponents: IntegrationComponent[] = [];
+      public mobileComponents: MobileComponent[] = [];
+      public userManagementComponents: UserManagementComponent[] = [];
+      public notificationComponents: NotificationComponent[] = [];
+      public searchComponents: SearchComponent[] = [];
+      public exportComponents: ExportComponent[] = [];
+      public importComponents: ImportComponent[] = [];
+      public printComponents: PrintComponent[] = [];
+      public helpComponents: HelpComponent[] = [];
+      public developmentComponents: DevelopmentComponent[] = [];
+      public i18nComponents: I18nComponent[] = [];
+      public accessibilityComponents: AccessibilityComponent[] = [];
+      public contentComponents: ContentComponent[] = [];
+      public performanceDirectives: PerformanceDirective[] = [];
+      public securityDirectives: SecurityDirective[] = [];
+      public seoDirectives: SEODirective[] = [];
+      public analyticsDirectives: AnalyticsDirective[] = [];
+      public collaborationDirectives: CollaborationDirective[] = [];
+      public backupDirectives: BackupDirective[] = [];
+      public integrationDirectives: IntegrationDirective[] = [];
+      public mobileDirectives: MobileDirective[] = [];
+      public userManagementDirectives: UserManagementDirective[] = [];
+      public notificationDirectives: NotificationDirective[] = [];
+      public searchDirectives: SearchDirective[] = [];
+      public exportDirectives: ExportDirective[] = [];
+      public importDirectives: ImportDirective[] = [];
+      public printDirectives: PrintDirective[] = [];
+      public helpDirectives: HelpDirective[] = [];
+      public developmentDirectives: DevelopmentDirective[] = [];
+      public i18nDirectives: I18nDirective[] = [];
+      public accessibilityDirectives: AccessibilityDirective[] = [];
+      public contentDirectives: ContentDirective[] = [];
+      public performancePipes: PerformancePipe[] = [];
+      public securityPipes: SecurityPipe[] = [];
+      public seoPipes: SEOPipe[] = [];
+      public analyticsPipes: AnalyticsPipe[] = [];
+      public collaborationPipes: CollaborationPipe[] = [];
+      public backupPipes: BackupPipe[] = [];
+      public integrationPipes: IntegrationPipe[] = [];
+      public mobilePipes: MobilePipe[] = [];
+      public userManagementPipes: UserManagementPipe[] = [];
+      public notificationPipes: NotificationPipe[] = [];
+      public searchPipes: SearchPipe[] = [];
+      public exportPipes: ExportPipe[] = [];
+      public importPipes: ImportPipe[] = [];
+      public printPipes: PrintPipe[] = [];
+      public helpPipes: HelpPipe[] = [];
+      public developmentPipes: DevelopmentPipe[] = [];
+      public i18nPipes: I18nPipe[] = [];
+      public accessibilityPipes: AccessibilityPipe[] = [];
+      public contentPipes: ContentPipe[] = [];
+      public performanceGuards: PerformanceGuard[] = [];
+      public securityGuards: SecurityGuard[] = [];
+      public seoGuards: SEOGuard[] = [];
+      public analyticsGuards: AnalyticsGuard[] = [];
+      public collaborationGuards: CollaborationGuard[] = [];
+      public backupGuards: BackupGuard[] = [];
+      public integrationGuards: IntegrationGuard[] = [];
+      public mobileGuards: MobileGuard[] = [];
+      public userManagementGuards: UserManagementGuard[] = [];
+      public notificationGuards: NotificationGuard[] = [];
+      public searchGuards: SearchGuard[] = [];
+      public exportGuards: ExportGuard[] = [];
+      public importGuards: ImportGuard[] = [];
+      public printGuards: PrintGuard[] = [];
+      public helpGuards: HelpGuard[] = [];
+      public developmentGuards: DevelopmentGuard[] = [];
+      public i18nGuards: I18nGuard[] = [];
+      public accessibilityGuards: AccessibilityGuard[] = [];
+      public contentGuards: ContentGuard[] = [];
+      public performanceResolvers: PerformanceResolver[] = [];
+      public securityResolvers: SecurityResolver[] = [];
+      public seoResolvers: SEOResolver[] = [];
+      public analyticsResolvers: AnalyticsResolver[] = [];
+      public collaborationResolvers: CollaborationResolver[] = [];
+      public backupResolvers: BackupResolver[] = [];
+      public integrationResolvers: IntegrationResolver[] = [];
+      public mobileResolvers: MobileResolver[] = [];
+      public userManagementResolvers: UserManagementResolver[] = [];
+      public notificationResolvers: NotificationResolver[] = [];
+      public searchResolvers: SearchResolver[] = [];
+      public exportResolvers: ExportResolver[] = [];
+      public importResolvers: ImportResolver[] = [];
+      public printResolvers: PrintResolver[] = [];
+      public helpResolvers: HelpResolver[] = [];
+      public developmentResolvers: DevelopmentResolver[] = [];
+      public i18nResolvers: I18nResolver[] = [];
+      public accessibilityResolvers: AccessibilityResolver[] = [];
+      public contentResolvers: ContentResolver[] = [];
+      public performanceInterceptors: PerformanceInterceptor[] = [];
+      public securityInterceptors: SecurityInterceptor[] = [];
+      public seoInterceptors: SEOInterceptor[] = [];
+      public analyticsInterceptors: AnalyticsInterceptor[] = [];
+      public collaborationInterceptors: CollaborationInterceptor[] = [];
+      public backupInterceptors: BackupInterceptor[] = [];
+      public integrationInterceptors: IntegrationInterceptor[] = [];
+      public mobileInterceptors: MobileInterceptor[] = [];
+      public userManagementInterceptors: UserManagementInterceptor[] = [];
+      public notificationInterceptors: NotificationInterceptor[] = [];
+      public searchInterceptors: SearchInterceptor[] = [];
+      public exportInterceptors: ExportInterceptor[] = [];
+      public importInterceptors: ImportInterceptor[] = [];
+      public printInterceptors: PrintInterceptor[] = [];
+      public helpInterceptors: HelpInterceptor[] = [];
+      public developmentInterceptors: DevelopmentInterceptor[] = [];
+      public i18nInterceptors: I18nInterceptor[] = [];
+      public accessibilityInterceptors: AccessibilityInterceptor[] = [];
+      public contentInterceptors: ContentInterceptor[] = [];
+      public performanceFilters: PerformanceEntry[] = [];
+      public securityFilters: SecurityEntry[] = [];
+      public seoFilters: SEOEntry[] = [];
+      public analyticsFilters: AnalyticsEntry[] = [];
+      public collaborationFilters: CollaborationEntry[] = [];
+      public backupFilters: BackupEntry[] = [];
+      public integrationFilters: IntegrationEntry[] = [];
+      public mobileFilters: MobileEntry[] = [];
+      public userManagementFilters: UserManagementEntry[] = [];
+      public notificationFilters: NotificationEntry[] = [];
+      public searchFilters: SearchEntry[] = [];
+      public exportFilters: ExportEntry[] = [];
+      public importFilters: ImportEntry[] = [];
+      public printFilters: PrintEntry[] = [];
+      public helpFilters: HelpEntry[] = [];
+      public developmentFilters: DevelopmentEntry[] = [];
+      public i18nFilters: I18nEntry[] = [];
+      public accessibilityFilters: AccessibilityEntry[] = [];
+      public contentFilters: ContentEntry[] = [];
+      public performanceMiddlewares: PerformanceMeasure[] = [];
+      public securityMiddlewares: SecurityEntry[] = [];
+      public seoMiddlewares: SEOEntry[] = [];
+      public analyticsMiddlewares: AnalyticsEntry[] = [];
+      public collaborationMiddlewares: CollaborationEntry[] = [];
+      public backupMiddlewares: BackupEntry[] = [];
+      public integrationMiddlewares: IntegrationEntry[] = [];
+      public mobileMiddlewares: MobileEntry[] = [];
+      public userManagementMiddlewares: UserManagementEntry[] = [];
+      public notificationMiddlewares: NotificationEntry[] = [];
+      public searchMiddlewares: SearchEntry[] = [];
+      public exportMiddlewares: ExportEntry[] = [];
+      public importMiddlewares: ImportEntry[] = [];
+      public printMiddlewares: PrintEntry[] = [];
+      public helpMiddlewares: HelpEntry[] = [];
+      public developmentMiddlewares: DevelopmentEntry[] = [];
+      public i18nMiddlewares: I18nEntry[] = [];
+      public accessibilityMiddlewares: AccessibilityEntry[] = [];
+      public contentMiddlewares: ContentEntry[] = [];
+      public performanceStrategies: PerformanceEntry[] = [];
+      public securityStrategies: SecurityEntry[] = [];
+      public seoStrategies: SEOEntry[] = [];
+      public analyticsStrategies: AnalyticsEntry[] = [];
+      public collaborationStrategies: CollaborationEntry[] = [];
+      public backupStrategies: BackupEntry[] = [];
+      public integrationStrategies: IntegrationEntry[] = [];
+      public mobileStrategies: MobileEntry[] = [];
+      public userManagementStrategies: UserManagementEntry[] = [];
+      public notificationStrategies: NotificationEntry[] = [];
+      public searchStrategies: SearchEntry[] = [];
+      public exportStrategies: ExportEntry[] = [];
+      public importStrategies: ImportEntry[] = [];
+      public printStrategies: PrintEntry[] = [];
+      public helpStrategies: HelpEntry[] = [];
+      public developmentStrategies: DevelopmentEntry[] = [];
+      public i18nStrategies: I18nEntry[] = [];
+      public accessibilityStrategies: AccessibilityEntry[] = [];
+      public contentStrategies: ContentEntry[] = [];
+      public performanceObservables: PerformanceObservable[] = [];
+      public securityObservables: SecurityObservable[] = [];
+      public seoObservables: SEOObservable[] = [];
+      public analyticsObservables: AnalyticsObservable[] = [];
+      public collaborationObservables: CollaborationObservable[] = [];
+      public backupObservables: BackupObservable[] = [];
+      public integrationObservables: IntegrationObservable[] = [];
+      public mobileObservables: MobileObservable[] = [];
+      public userManagementObservables: UserManagementObservable[] = [];
+      public notificationObservables: NotificationObservable[] = [];
+      public searchObservables: SearchObservable[] = [];
+      public exportObservables: ExportObservable[] = [];
+      public importObservables: ImportObservable[] = [];
+      public printObservables: PrintObservable[] = [];
+      public helpObservables: HelpObservable[] = [];
+      public developmentObservables: DevelopmentObservable[] = [];
+      public i18nObservables: I18nObservable[] = [];
+      public accessibilityObservables: AccessibilityObservable[] = [];
+      public contentObservables: ContentObservable[] = [];
+      public performanceSubjects: PerformanceSubject[] = [];
+      public securitySubjects: SecuritySubject[] = [];
+      public seoSubjects: SEOSubject[] = [];
+      public analyticsSubjects: AnalyticsSubject[] = [];
+      public collaborationSubjects: CollaborationSubject[] = [];
+      public backupSubjects: BackupSubject[] = [];
+      public integrationSubjects: IntegrationSubject[] = [];
+      public mobileSubjects: MobileSubject[] = [];
+      public userManagementSubjects: UserManagementSubject[] = [];
+      public notificationSubjects: NotificationSubject[] = [];
+      public searchSubjects: SearchSubject[] = [];
+      public exportSubjects: ExportSubject[] = [];
+      public importSubjects: ImportSubject[] = [];
+      public printSubjects: PrintSubject[] = [];
+      public helpSubjects: HelpSubject[] = [];
+      public developmentSubjects: DevelopmentSubject[] = [];
+      public i18nSubjects: I18nSubject[] = [];
+      public accessibilitySubjects: AccessibilitySubject[] = [];
+      public contentSubjects: ContentSubject[] = [];
+      public performanceBehaviors: PerformanceEntry[] = [];
+      public securityBehaviors: SecurityEntry[] = [];
+      public seoBehaviors: SEOEntry[] = [];
+      public analyticsBehaviors: AnalyticsEntry[] = [];
+      public collaborationBehaviors: CollaborationEntry[] = [];
+      public backupBehaviors: BackupEntry[] = [];
+      public integrationBehaviors: IntegrationEntry[] = [];
+      public mobileBehaviors: MobileEntry[] = [];
+      public userManagementBehaviors: UserManagementEntry[] = [];
+      public notificationBehaviors: NotificationEntry[] = [];
+      public searchBehaviors: SearchEntry[] = [];
+      public exportBehaviors: ExportEntry[] = [];
+      public importBehaviors: ImportEntry[] = [];
+      public printBehaviors: PrintEntry[] = [];
+      public helpBehaviors: HelpEntry[] = [];
+      public developmentBehaviors: DevelopmentEntry[] = [];
+      public i18nBehaviors: I18nEntry[] = [];
+      public accessibilityBehaviors: AccessibilityEntry[] = [];
+      public contentBehaviors: ContentEntry[] = [];
+      public performanceReplays: PerformanceEntry[] = [];
+      public securityReplays: SecurityEntry[] = [];
+      public seoReplays: SEOEntry[] = [];
+      public analyticsReplays: AnalyticsEntry[] = [];
+      public collaborationReplays: CollaborationEntry[] = [];
+      public backupReplays: BackupEntry[] = [];
+      public integrationReplays: IntegrationEntry[] = [];
+      public mobileReplays: MobileEntry[] = [];
+      public userManagementReplays: UserManagementEntry[] = [];
+      public notificationReplays: NotificationEntry[] = [];
+      public searchReplays: SearchEntry[] = [];
+      public exportReplays: ExportEntry[] = [];
+      public importReplays: ImportEntry[] = [];
+      public printReplays: PrintEntry[] = [];
+      public helpReplays: HelpEntry[] = [];
+      public developmentReplays: DevelopmentEntry[] = [];
+      public i18nReplays: I18nEntry[] = [];
+      public accessibilityReplays: AccessibilityEntry[] = [];
+      public contentReplays: ContentEntry[] = [];
+      public performanceAsyncs: PerformanceEntry[] = [];
+      public securityAsyncs: SecurityEntry[] = [];
+      public seoAsyncs: SEOEntry[] = [];
+      public analyticsAsyncs: AnalyticsEntry[] = [];
+      public collaborationAsyncs: CollaborationEntry[] = [];
+      public backupAsyncs: BackupEntry[] = [];
+      public integrationAsyncs: IntegrationEntry[] = [];
+      public mobileAsyncs: MobileEntry[] = [];
+      public userManagementAsyncs: UserManagementEntry[] = [];
+      public notificationAsyncs: NotificationEntry[] = [];
+      public searchAsyncs: SearchEntry[] = [];
+      public exportAsyncs: ExportEntry[] = [];
+      public importAsyncs: ImportEntry[] = [];
+      public printAsyncs: PrintEntry[] = [];
+      public helpAsyncs: HelpEntry[] = [];
+      public developmentAsyncs: DevelopmentEntry[] = [];
+      public i18nAsyncs: I18nEntry[] = [];
+      public accessibilityAsyncs: AccessibilityEntry[] = [];
+      public contentAsyncs: ContentEntry[] = [];
+      public performancePromises: PerformancePromise[] = [];
+      public securityPromises: SecurityPromise[] = [];
+      public seoPromises: SEOPromise[] = [];
+      public analyticsPromises: AnalyticsPromise[] = [];
+      public collaborationPromises: CollaborationPromise[] = [];
+      public backupPromises: BackupPromise[] = [];
+      public integrationPromises: IntegrationPromise[] = [];
+      public mobilePromises: MobilePromise[] = [];
+      public userManagementPromises: UserManagementPromise[] = [];
+      public notificationPromises: NotificationPromise[] = [];
+      public searchPromises: SearchPromise[] = [];
+      public exportPromises: ExportPromise[] = [];
+      public importPromises: ImportPromise[] = [];
+      public printPromises: PrintPromise[] = [];
+      public helpPromises: HelpPromise[] = [];
+      public developmentPromises: DevelopmentPromise[] = [];
+      public i18nPromises: I18nPromise[] = [];
+      public accessibilityPromises: AccessibilityPromise[] = [];
+      public contentPromises: ContentPromise[] = [];
+      public performanceIterators: PerformanceInterceptor[] = [];
+      public securityIterators: SecurityInterceptor[] = [];
+      public seoIterators: SEOInterceptor[] = [];
+      public analyticsIterators: AnalyticsInterceptor[] = [];
+      public collaborationIterators: CollaborationInterceptor[] = [];
+      public backupIterators: BackupInterceptor[] = [];
+      public integrationIterators: IntegrationInterceptor[] = [];
+      public mobileIterators: MobileInterceptor[] = [];
+      public userManagementIterators: UserManagementInterceptor[] = [];
+      public notificationIterators: NotificationInterceptor[] = [];
+      public searchIterators: SearchInterceptor[] = [];
+      public exportIterators: ExportInterceptor[] = [];
+      public importIterators: ImportInterceptor[] = [];
+      public printIterators: PrintInterceptor[] = [];
+      public helpIterators: HelpInterceptor[] = [];
+      public developmentIterators: DevelopmentInterceptor[] = [];
+      public i18nIterators: I18nInterceptor[] = [];
+      public accessibilityIterators: AccessibilityInterceptor[] = [];
+      public contentIterators: ContentInterceptor[] = [];
+      public performanceGenerators: PerformanceEntry[] = [];
+      public securityGenerators: SecurityEntry[] = [];
+      public seoGenerators: Generator[] = [];
+      public analyticsGenerators: AnalyticsEntry[] = [];
+      public collaborationGenerators: CollaborationEntry[] = [];
+      public backupGenerators: BackupEntry[] = [];
+      public integrationGenerators: IntegrationEntry[] = [];
+      public mobileGenerators: MobileEntry[] = [];
+      public userManagementGenerators: UserManagementEntry[] = [];
+      public notificationGenerators: NotificationEntry[] = [];
+      public searchGenerators: SearchEntry[] = [];
+      public exportGenerators: ExportEntry[] = [];
+      public importGenerators: ImportEntry[] = [];
+      public printGenerators: PrintEntry[] = [];
+      public helpGenerators: HelpEntry[] = [];
+      public developmentGenerators: DevelopmentEntry[] = [];
+      public i18nGenerators: I18nEntry[] = [];
+      public accessibilityGenerators: AccessibilityEntry[] = [];
+      public contentGenerators: ContentEntry[] = [];
+      public performanceObservers: PerformanceObserver[] = [];
+      public securityObservers: SecurityObservable[] = [];
+      public seoObservers: Observer[] = [];
+      public analyticsObservers: AnalyticsObservable[] = [];
+      public collaborationObservers: CollaborationObservable[] = [];
+      public backupObservers: BackupObservable[] = [];
+      public integrationObservers: IntegrationObservable[] = [];
+      public mobileObservers: MobileObservable[] = [];
+      public userManagementObservers: UserManagementObservable[] = [];
+      public notificationObservers: NotificationObservable[] = [];
+      public searchObservers: SearchObservable[] = [];
+      public exportObservers: ExportObservable[] = [];
+      public importObservers: ImportObservable[] = [];
+      public printObservers: PrintObservable[] = [];
+      public helpObservers: HelpObservable[] = [];
+      public developmentObservers: DevelopmentObservable[] = [];
+      public i18nObservers: I18nObservable[] = [];
+      public accessibilityObservers: AccessibilityObservable[] = [];
+      public contentObservers: ContentObservable[] = [];
+      currentImage: HTMLImageElement = new Image();
+      currentTable!: HTMLTableElement;
+      linkNoFollow: boolean = false;
+      showPerformanceDashboard: boolean = false;
+      linkNewTab: any;
+      tableConfig!: { rows: any; cols: any; header: any; footer: any; border: any; striped: any; hover: any; bordered: any; condensed: any; responsive: any; cellPadding: any; cellSpacing: any; width: any; height: any; alignment: any; caption: any; summary: any; };
+    //#endregion
+    //#region Services and Dependencies
+      @Inject(DOCUMENT) public doc =inject(Document);
+      private messageService = inject(NotificationService);
+      private renderer = inject(Renderer2);
+      private cdRef = inject(ChangeDetectorRef);
+      private sanitizer = inject(DomSanitizer);
+      private textEditorService = inject(TextEditorService);
+      private textFormattingService = inject(TextFormattingService);
+      private textHistoryService = inject(TextHistoryService);
+      private textAutosaveService = inject(TextAutosaveService);
+    //#endregion
+      constructor() {
+                this.initializeFeatureFlags();
+                this.initializePerformanceMetrics();
+                this.initializeSecurityMetrics();
+                this.initializeSEOMetrics();
+                this.initializeAnalyticsMetrics();
+                this.initializeCollaborationMetrics();
+                this.initializeBackupMetrics();
+                this.initializeIntegrationMetrics();
+                this.initializeMobileMetrics();
+                this.initializeUserManagementMetrics();
+                this.initializeNotificationMetrics();
+                this.initializeSearchMetrics();
+                this.initializeExportMetrics();
+                this.initializeImportMetrics();
+                this.initializePrintMetrics();
+                this.initializeHelpMetrics();
+                this.initializeDevelopmentMetrics();
+                this.initializeI18nMetrics();
+                this.initializeAccessibilityMetrics();
+                this.initializeContentMetrics();
+              }
+   get editorState(): EditorState {
     return this.textEditorService.getState();
   }
-
-  // Enhanced Formatting State
-  currentAlignment = 'left';
-  currentLineHeight = 1.5;
-  currentTextColor = '#1f2937';
-  currentBackgroundColor = '#ffffff';
-  currentHighlightColor = '#fbbf24';
-  currentBorderColor = '#e5e7eb';
-  currentListStyle = 'disc';
-  currentIndentLevel = 0;
-  currentBlockquoteLevel = 0;
-  currentCodeLanguage = 'html';
-  currentTableStyle = 'default';
-  currentImageStyle = 'default';
-  currentParagraphSpacing = 'normal';
-  currentLetterSpacing = 'normal';
-  currentWordSpacing = 'normal';
-  currentTextTransform = 'none';
-  currentTextDecoration = 'none';
-  currentFontWeight = 'normal';
-  currentFontStyle = 'normal';
-  currentTextShadow = 'none';
-  currentBoxShadow = 'none';
-  currentBorderRadius = '0';
-  currentOpacity = '1';
-  currentTransition = 'none';
-  currentAnimation = 'none';
-  currentTransform = 'none';
-  currentFilter = 'none';
-  currentBlendMode = 'normal';
-  currentCursor = 'default';
-  currentUserSelect = 'auto';
-  currentPointerEvents = 'auto';
-  currentVisibility = 'visible';
-  currentZIndex = 'auto';
-  currentPosition = 'static';
-  currentTop = 'auto';
-  currentLeft = 'auto';
-  currentRight = 'auto';
-  currentBottom = 'auto';
-  currentWidth = 'auto';
-  currentHeight = 'auto';
-  currentMinWidth = 'none';
-  currentMinHeight = 'none';
-  currentMaxWidth = 'none';
-  currentMaxHeight = 'none';
-  currentMargin = '0';
-  currentPadding = '0';
-  currentBorder = 'none';
-  currentOutline = 'none';
-  currentBackgroundImage = 'none';
-  currentBackgroundSize = 'auto';
-  currentBackgroundPosition = '0% 0%';
-  currentBackgroundRepeat = 'repeat';
-  currentBackgroundAttachment = 'scroll';
-  currentBackgroundBlendMode = 'normal';
-  currentBoxSizing = 'content-box';
-  currentDisplay = 'block';
-  currentFlexDirection = 'row';
-  currentFlexWrap = 'nowrap';
-  currentJustifyContent = 'flex-start';
-  currentAlignItems = 'stretch';
-  currentAlignContent = 'stretch';
-  currentFlexGrow = '0';
-  currentFlexShrink = '1';
-  currentFlexBasis = 'auto';
-  currentOrder = '0';
-  currentGridTemplateColumns = 'none';
-  currentGridTemplateRows = 'none';
-  currentGridTemplateAreas = 'none';
-  currentGridAutoFlow = 'row';
-  currentGridAutoColumns = 'auto';
-  currentGridAutoRows = 'auto';
-  currentGridColumnStart = 'auto';
-  currentGridColumnEnd = 'auto';
-  currentGridRowStart = 'auto';
-  currentGridRowEnd = 'auto';
-  currentGridArea = 'auto';
-  currentGap = 'normal';
-  currentRowGap = 'normal';
-  currentColumnGap = 'normal';
-  
-  // Enhanced Form Values
-  linkUrl = '';
-  linkText = '';
-  linkTitle = '';
-  linkTarget = '_blank';
-  linkRel = 'noopener noreferrer';
-  linkClass = '';
-  linkId = '';
-  linkStyle = '';
-  
-  imageUrl = '';
-  imageAlt = '';
-  imageTitle = '';
-  imageWidth = '';
-  imageHeight = '';
-  imageAlignment = 'none';
-  imageBorder = '0';
-  imageMargin = '0';
-  imagePadding = '0';
-  imageBorderRadius = '0';
-  imageBoxShadow = 'none';
-  imageFilter = 'none';
-  imageOpacity = '1';
-  imageObjectFit = 'cover';
-  imageObjectPosition = 'center';
-  
-  tableRows = 3;
-  tableCols = 3;
-  tableHeader = true;
-  tableFooter = false;
-  tableBorder = true;
-  tableStriped = false;
-  tableHover = false;
-  tableBordered = true;
-  tableCondensed = false;
-  tableResponsive = true;
-  tableCellPadding = '8';
-  tableCellSpacing = '0';
-  tableWidth = '100%';
-  tableHeight = 'auto';
-  tableAlignment = 'none';
-  tableCaption = '';
-  tableSummary = '';
-  
-  codeContent = '';
-  codeLanguage = 'html';
-  codeTheme = 'default';
-  codeLineNumbers = true;
-  codeHighlightLines: number[] = [];
-  codeWrap = true;
-  codeMaxHeight = '300px';
-  
-  mediaUrl = '';
-  mediaType: 'video' | 'audio' | 'iframe' = 'video';
-  mediaWidth = '560';
-  mediaHeight = '315';
-  mediaAutoplay = false;
-  mediaControls = true;
-  mediaLoop = false;
-  mediaMuted = false;
-  mediaPreload = 'metadata';
-  mediaPoster = '';
-  
-  templateCategory = 'all';
-  templateSearch = '';
-  
-  aiPrompt = '';
-  aiTone: 'professional' | 'casual' | 'formal' | 'friendly' = 'professional';
-  aiLength: 'short' | 'medium' | 'long' = 'medium';
-  aiLanguage = 'en';
-  
-  exportType: 'html' | 'text' | 'pdf' | 'docx' | 'markdown' = 'html';
-  exportFileName = '';
-  exportIncludeStyles = true;
-  exportIncludeImages = true;
-  exportIncludeComments = false;
-  exportIncludeMetadata = true;
-  
-  importType: 'html' | 'text' | 'docx' | 'markdown' = 'html';
-  importFile: File | null = null;
-  importClearExisting = false;
-  importPreserveFormatting = true;
-  
-  printOrientation: 'portrait' | 'landscape' = 'portrait';
-  printMargins = 'normal';
-  printHeader = true;
-  printFooter = true;
-  printPageNumbers = true;
-  printBackground = true;
-  
-  commentAuthor = '';
-  commentText = '';
-  commentDate = new Date();
-  commentResolved = false;
-  
-  trackChangeAuthor = '';
-  trackChangeType: 'insert' | 'delete' | 'format' = 'insert';
-  trackChangeDescription = '';
-  trackChangeAccepted = false;
-  trackChangeRejected = false;
-  
-  collaborationUser = '';
-  collaborationMessage = '';
-  collaborationUsers: string[] = [];
-  collaborationMessages: any[] = [];
-  
-  findText = '';
-  replaceText = '';
-  findCaseSensitive = false;
-  findWholeWord = false;
-  findRegex = false;
-  
-  contextMenuX = 0;
-  contextMenuY = 0;
-  contextMenuSelection: Selection | null = null;
-  
-  formatPainterActive = false;
-  formatPainterSource: any = null;
-  sentences: 'on' | 'off' | 'words' | 'sentences' = 'sentences';
-  showPerformance: boolean = true;
-  // Enhanced Statistics
-  wordCount = 0;
-  charCount = 0;
-  charCountNoSpaces = 0;
-  paragraphCount = 0;
-  lineCount = 0;
-  readingTime = 0;
-  sentenceCount = 0;
-  pageCount = 0;
-  imageCount = 0;
-  tableCount = 0;
-  linkCount = 0;
-  headingCount = 0;
-  listCount = 0;
-  blockquoteCount = 0;
-  codeBlockCount = 0;
-  mediaCount = 0;
-  
-  // Enhanced Formatting Detection
-  isBold = false;
-  isItalic = false;
-  isUnderline = false;
-  isStrikethrough = false;
-  isSuperscript = false;
-  isSubscript = false;
-  isCode = false;
-  isBlockquote = false;
-  isList = false;
-  isOrderedList = false;
-  isUnorderedList = false;
-  isHeading = false;
-  isParagraph = false;
-  isLink = false;
-  isImage = false;
-  isTable = false;
-  isMedia = false;
-  isDiv = false;
-  isSpan = false;
-  isPre = false;
-  isCodeBlock = false;
-  isHorizontalRule = false;
-  isForm = false;
-  isButton = false;
-  isInput = false;
-  isSelect = false;
-  isTextarea = false;
-  isLabel = false;
-  isFieldset = false;
-  isLegend = false;
-  isFormatted = false;
-  
-
-  
-  // Enhanced Auto-save
-  public autoSaveTimer: any;
-  lastSaved: Date | null = null;
-  saveInterval = 30000;
-  saveTriggerCount = 0;
-
-  // Enhanced Configuration
-  config: EditorConfig = {
-    enableSpellCheck: true,
-    enableAutoCorrect: true,
-    enableAutoSave: true,
-    enableKeyboardShortcuts: true,
-    defaultViewMode: 'wysiwyg',
-    allowedContentTypes: ['image/*', 'text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    maxImageSize: 10 * 1024 * 1024, // 10MB
-    enableDragAndDrop: true,
-    preserveFormatOnPaste: true
-  };
-  
-  // Enhanced Presets
-  toolbarPresets: Record<string, ToolbarPreset> = {
-    full: {
-      name: 'Full',
-      tools: ['format', 'font', 'size', 'style', 'bold', 'italic', 'underline', 'strike', 'superscript', 'subscript', 'color', 'background', 'alignment', 'list', 'indent', 'link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre', 'clear', 'undo', 'redo', 'source', 'preview', 'fullscreen', 'help', 'more']
-    },
-    basic: {
-      name: 'Basic',
-      tools: ['format', 'bold', 'italic', 'underline', 'alignment', 'list', 'link', 'image', 'undo', 'redo']
-    },
-    minimal: {
-      name: 'Minimal',
-      tools: ['bold', 'italic', 'underline', 'link', 'undo', 'redo']
-    }
-  };
-  
-  editorPresets: EditorPreset[] = [
-    {
-      name: 'Blog Editor',
-      toolbar: this.toolbarPresets['full'],
-      config: {
-        ...this.config,
-        defaultViewMode: 'wysiwyg',
-        allowedContentTypes: ['image/*']
-      }
-    },
-    {
-      name: 'Code Editor',
-      toolbar: {
-        name: 'Code',
-        tools: ['source', 'code', 'pre', 'undo', 'redo', 'fullscreen']
-      },
-      config: {
-        ...this.config,
-        defaultViewMode: 'source',
-        enableSpellCheck: false
-      }
-    },
-    {
-      name: 'Email Editor',
-      toolbar: this.toolbarPresets['basic'],
-      config: {
-        ...this.config,
-        preserveFormatOnPaste: false
-      }
-    }
-  ];
-  
-  // Enhanced Options Arrays
-  toolbarTools = [
-    // Formatting
-    { id: 'format', label: 'Format', icon: 'fa fa-paragraph', group: 'formatting' },
-    { id: 'font', label: 'Font', icon: 'fa fa-font', group: 'formatting' },
-    { id: 'size', label: 'Size', icon: 'fa fa-text-height', group: 'formatting' },
-    { id: 'style', label: 'Style', icon: 'fa fa-palette', group: 'formatting' },
-    
-    // Text Styles
-    { id: 'bold', label: 'Bold', icon: 'fa fa-bold', shortcut: 'Ctrl+B', group: 'text' },
-    { id: 'italic', label: 'Italic', icon: 'fa fa-italic', shortcut: 'Ctrl+I', group: 'text' },
-    { id: 'underline', label: 'Underline', icon: 'fa fa-underline', shortcut: 'Ctrl+U', group: 'text' },
-    { id: 'strike', label: 'Strikethrough', icon: 'fa fa-strikethrough', group: 'text' },
-    { id: 'superscript', label: 'Superscript', icon: 'fa fa-superscript', group: 'text' },
-    { id: 'subscript', label: 'Subscript', icon: 'fa fa-subscript', group: 'text' },
-    
-    // Colors
-    { id: 'color', label: 'Text Color', icon: 'fa fa-font', group: 'colors' },
-    { id: 'background', label: 'Background Color', icon: 'fa fa-fill-drip', group: 'colors' },
-    { id: 'highlight', label: 'Highlight', icon: 'fa fa-highlighter', group: 'colors' },
-    
-    // Alignment
-    { id: 'alignment', label: 'Alignment', icon: 'fa fa-align-left', group: 'alignment' },
-    { id: 'justifyLeft', label: 'Align Left', icon: 'fa fa-align-left', group: 'alignment' },
-    { id: 'justifyCenter', label: 'Align Center', icon: 'fa fa-align-center', group: 'alignment' },
-    { id: 'justifyRight', label: 'Align Right', icon: 'fa fa-align-right', group: 'alignment' },
-    { id: 'justifyFull', label: 'Justify', icon: 'fa fa-align-justify', group: 'alignment' },
-    
-    // Lists
-    { id: 'list', label: 'List', icon: 'fa fa-list', group: 'lists' },
-    { id: 'orderedList', label: 'Ordered List', icon: 'fa fa-list-ol', group: 'lists' },
-    { id: 'unorderedList', label: 'Unordered List', icon: 'fa fa-list-ul', group: 'lists' },
-    { id: 'indent', label: 'Indent', icon: 'fa fa-indent', group: 'lists' },
-    { id: 'outdent', label: 'Outdent', icon: 'fa fa-outdent', group: 'lists' },
-    
-    // Insert
-    { id: 'link', label: 'Link', icon: 'fa fa-link', shortcut: 'Ctrl+K', group: 'insert' },
-    { id: 'image', label: 'Image', icon: 'fa fa-image', group: 'insert' },
-    { id: 'table', label: 'Table', icon: 'fa fa-table', group: 'insert' },
-    { id: 'media', label: 'Media', icon: 'fa fa-video', group: 'insert' },
-    { id: 'code', label: 'Code', icon: 'fa fa-code', group: 'insert' },
-    { id: 'emoji', label: 'Emoji', icon: 'fa fa-smile', group: 'insert' },
-    { id: 'special', label: 'Special Char', icon: 'fa fa-percentage', group: 'insert' },
-    { id: 'hr', label: 'Horizontal Line', icon: 'fa fa-minus', group: 'insert' },
-    { id: 'blockquote', label: 'Blockquote', icon: 'fa fa-quote-right', group: 'insert' },
-    { id: 'pre', label: 'Preformatted', icon: 'fa fa-terminal', group: 'insert' },
-    
-    // Tools
-    { id: 'clear', label: 'Clear Formatting', icon: 'fa fa-eraser', group: 'tools' },
-    { id: 'undo', label: 'Undo', icon: 'fa fa-undo', shortcut: 'Ctrl+Z', group: 'tools' },
-    { id: 'redo', label: 'Redo', icon: 'fa fa-redo', shortcut: 'Ctrl+Y', group: 'tools' },
-    { id: 'find', label: 'Find & Replace', icon: 'fa fa-search', shortcut: 'Ctrl+F', group: 'tools' },
-    { id: 'spellcheck', label: 'Spell Check', icon: 'fa fa-spell-check', group: 'tools' },
-    { id: 'wordcount', label: 'Word Count', icon: 'fa fa-chart-bar', group: 'tools' },
-    
-    // View
-    { id: 'source', label: 'Source Code', icon: 'fa fa-code', shortcut: 'Ctrl+Shift+S', group: 'view' },
-    { id: 'preview', label: 'Preview', icon: 'fa fa-eye', shortcut: 'Ctrl+Shift+P', group: 'view' },
-    { id: 'fullscreen', label: 'Fullscreen', icon: 'fa fa-expand', shortcut: 'F11', group: 'view' },
-    { id: 'zoom', label: 'Zoom', icon: 'fa fa-search-plus', group: 'view' },
-    
-    // Advanced
-    { id: 'templates', label: 'Templates', icon: 'fa fa-layer-group', group: 'advanced' },
-    { id: 'styles', label: 'Styles', icon: 'fa fa-css3', group: 'advanced' },
-    { id: 'scripts', label: 'Scripts', icon: 'fa fa-js', group: 'advanced' },
-    { id: 'metadata', label: 'Metadata', icon: 'fa fa-info-circle', group: 'advanced' },
-    { id: 'export', label: 'Export', icon: 'fa fa-download', group: 'advanced' },
-    { id: 'import', label: 'Import', icon: 'fa fa-upload', group: 'advanced' },
-    { id: 'print', label: 'Print', icon: 'fa fa-print', shortcut: 'Ctrl+P', group: 'advanced' },
-    { id: 'help', label: 'Help', icon: 'fa fa-question-circle', group: 'advanced' },
-    { id: 'more', label: 'More', icon: 'fa fa-ellipsis-h', group: 'advanced' }
-  ];
-  
-  toolbarGroups = [
-    { id: 'formatting', label: 'Formatting', tools: ['format', 'font', 'size', 'style'] ,visible: true},
-    { id: 'text', label: 'Text', tools: ['bold', 'italic', 'underline', 'strike', 'superscript', 'subscript'] ,visible: true},
-    { id: 'colors', label: 'Colors', tools: ['color', 'background', 'highlight'], visible: true },
-    { id: 'alignment', label: 'Alignment', tools: ['alignment', 'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'], visible: true },
-    { id: 'lists', label: 'Lists', tools: ['list', 'orderedList', 'unorderedList', 'indent', 'outdent'] ,visible: true},
-    { id: 'insert', label: 'Insert', tools: ['link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre'] ,visible: true},
-    { id: 'tools', label: 'Tools', tools: ['clear', 'undo', 'redo', 'find', 'spellcheck', 'wordcount'], visible: true },
-    { id: 'view', label: 'View', tools: ['source', 'preview', 'fullscreen', 'zoom'], visible: true },
-    { id: 'advanced', label: 'Advanced', tools: ['templates', 'styles', 'scripts', 'metadata', 'export', 'import', 'print', 'help', 'more'], visible: true }
-  ];
-  
-  fontOptions = [
-    { label: 'Arial', value: 'Arial', family: 'Arial, sans-serif', category: 'sans-serif' },
-    { label: 'Times New Roman', value: 'Times New Roman', family: 'Times New Roman, serif', category: 'serif' },
-    { label: 'Georgia', value: 'Georgia', family: 'Georgia, serif', category: 'serif' },
-    { label: 'Verdana', value: 'Verdana', family: 'Verdana, sans-serif', category: 'sans-serif' },
-    { label: 'Courier New', value: 'Courier New', family: 'Courier New, monospace', category: 'monospace' },
-    { label: 'Comic Sans MS', value: 'Comic Sans MS', family: 'Comic Sans MS, cursive', category: 'cursive' },
-    { label: 'Trebuchet MS', value: 'Trebuchet MS', family: 'Trebuchet MS, sans-serif', category: 'sans-serif' },
-    { label: 'Impact', value: 'Impact', family: 'Impact, fantasy', category: 'fantasy' },
-    { label: 'Tahoma', value: 'Tahoma', family: 'Tahoma, sans-serif', category: 'sans-serif' },
-    { label: 'Palatino', value: 'Palatino', family: 'Palatino, serif', category: 'serif' },
-    { label: 'Garamond', value: 'Garamond', family: 'Garamond, serif', category: 'serif' },
-    { label: 'Bookman', value: 'Bookman', family: 'Bookman, serif', category: 'serif' },
-    { label: 'Century Gothic', value: 'Century Gothic', family: 'Century Gothic, sans-serif', category: 'sans-serif' },
-    { label: 'Lucida Sans', value: 'Lucida Sans', family: 'Lucida Sans, sans-serif', category: 'sans-serif' },
-    { label: 'Copperplate', value: 'Copperplate', family: 'Copperplate, fantasy', category: 'fantasy' }
-  ];
-  
-  fontSizeOptions = [
-    { label: '8px', value: '8px', size: 8 },
-    { label: '9px', value: '9px', size: 9 },
-    { label: '10px', value: '10px', size: 10 },
-    { label: '11px', value: '11px', size: 11 },
-    { label: '12px', value: '12px', size: 12 },
-    { label: '14px', value: '14px', size: 14 },
-    { label: '16px', value: '16px', size: 16 },
-    { label: '18px', value: '18px', size: 18 },
-    { label: '20px', value: '20px', size: 20 },
-    { label: '24px', value: '24px', size: 24 },
-    { label: '28px', value: '28px', size: 28 },
-    { label: '32px', value: '32px', size: 32 },
-    { label: '36px', value: '36px', size: 36 },
-    { label: '48px', value: '48px', size: 48 },
-    { label: '64px', value: '64px', size: 64 },
-    { label: '72px', value: '72px', size: 72 },
-    { label: '96px', value: '96px', size: 96 }
-  ];
-  
-  headingOptions = [
-    { label: 'Normal Text', value: 'p', level: 0, size: '16px', weight: 'normal' },
-    { label: 'Heading 1', value: 'h1', level: 1, size: '32px', weight: 'bold' },
-    { label: 'Heading 2', value: 'h2', level: 2, size: '28px', weight: 'bold' },
-    { label: 'Heading 3', value: 'h3', level: 3, size: '24px', weight: 'bold' },
-    { label: 'Heading 4', value: 'h4', level: 4, size: '20px', weight: 'bold' },
-    { label: 'Heading 5', value: 'h5', level: 5, size: '18px', weight: 'bold' },
-    { label: 'Heading 6', value: 'h6', level: 6, size: '16px', weight: 'bold' },
-    { label: 'Title', value: 'title', level: 0, size: '40px', weight: 'bold' },
-    { label: 'Subtitle', value: 'subtitle', level: 0, size: '24px', weight: 'normal' },
-    { label: 'Caption', value: 'caption', level: 0, size: '14px', weight: 'normal' },
-    { label: 'Small', value: 'small', level: 0, size: '12px', weight: 'normal' }
-  ];
-  
-  currentFont = this.fontOptions[0];
-  currentFontSize = this.fontSizeOptions.find(opt => opt.value === this.defaultFontSize) || this.fontSizeOptions[6];
-  currentHeading = this.headingOptions[0];
-  
-  alignmentOptions = [
-    { label: 'Left', value: 'left', icon: 'fa-align-left' },
-    { label: 'Center', value: 'center', icon: 'fa-align-center' },
-    { label: 'Right', value: 'right', icon: 'fa-align-right' },
-    { label: 'Justify', value: 'justify', icon: 'fa-align-justify' }
-  ];
-  
-  listStyleOptions = [
-    { label: 'Disc', value: 'disc', icon: 'fa-circle' },
-    { label: 'Circle', value: 'circle', icon: 'fa-circle-o' },
-    { label: 'Square', value: 'square', icon: 'fa-square' },
-    { label: 'Decimal', value: 'decimal', icon: 'fa-list-ol' },
-    { label: 'Lower Alpha', value: 'lower-alpha', icon: 'fa-sort-alpha-asc' },
-    { label: 'Upper Alpha', value: 'upper-alpha', icon: 'fa-sort-alpha-desc' },
-    { label: 'Lower Roman', value: 'lower-roman', icon: 'fa-list-ol' },
-    { label: 'Upper Roman', value: 'upper-roman', icon: 'fa-list-ol' },
-    { label: 'None', value: 'none', icon: 'fa-ban' }
-  ];
-  
-  textDecorationOptions = [
-    { label: 'None', value: 'none', icon: 'fa-ban' },
-    { label: 'Underline', value: 'underline', icon: 'fa-underline' },
-    { label: 'Overline', value: 'overline', icon: 'fa-overline' },
-    { label: 'Line Through', value: 'line-through', icon: 'fa-strikethrough' },
-    { label: 'Underline Overline', value: 'underline overline', icon: 'fa-text-width' },
-    { label: 'Underline Line Through', value: 'underline line-through', icon: 'fa-text-width' },
-    { label: 'Overline Line Through', value: 'overline line-through', icon: 'fa-text-width' },
-    { label: 'Underline Overline Line Through', value: 'underline overline line-through', icon: 'fa-text-width' }
-  ];
-  
-  textTransformOptions = [
-    { label: 'None', value: 'none', icon: 'fa-ban' },
-    { label: 'Uppercase', value: 'uppercase', icon: 'fa-text-height' },
-    { label: 'Lowercase', value: 'lowercase', icon: 'fa-text-height' },
-    { label: 'Capitalize', value: 'capitalize', icon: 'fa-text-height' },
-    { label: 'Full Width', value: 'full-width', icon: 'fa-arrows-h' },
-    { label: 'Full Size Kana', value: 'full-size-kana', icon: 'fa-language' }
-  ];
-  
-  fontWeightOptions = [
-    { label: 'Normal', value: 'normal', weight: 400 },
-    { label: 'Bold', value: 'bold', weight: 700 },
-    { label: 'Bolder', value: 'bolder', weight: 800 },
-    { label: 'Lighter', value: 'lighter', weight: 300 },
-    { label: '100', value: '100', weight: 100 },
-    { label: '200', value: '200', weight: 200 },
-    { label: '300', value: '300', weight: 300 },
-    { label: '400', value: '400', weight: 400 },
-    { label: '500', value: '500', weight: 500 },
-    { label: '600', value: '600', weight: 600 },
-    { label: '700', value: '700', weight: 700 },
-    { label: '800', value: '800', weight: 800 },
-    { label: '900', value: '900', weight: 900 }
-  ];
-  
-  fontStyleOptions = [
-    { label: 'Normal', value: 'normal', icon: 'fa-font' },
-    { label: 'Italic', value: 'italic', icon: 'fa-italic' },
-    { label: 'Oblique', value: 'oblique', icon: 'fa-slant' }
-  ];
-  
-  lineHeightOptions = [
-    { label: '1.0', value: 1.0 },
-    { label: '1.2', value: 1.2 },
-    { label: '1.5', value: 1.5 },
-    { label: '1.8', value: 1.8 },
-    { label: '2.0', value: 2.0 },
-    { label: '2.5', value: 2.5 },
-    { label: '3.0', value: 3.0 }
-  ];
-  
-  letterSpacingOptions = [
-    { label: 'Normal', value: 'normal' },
-    { label: 'Tight', value: '-0.05em' },
-    { label: 'Loose', value: '0.1em' },
-    { label: 'Wide', value: '0.25em' },
-    { label: 'Wider', value: '0.5em' },
-    { label: 'Widest', value: '1em' }
-  ];
-  
-  wordSpacingOptions = [
-    { label: 'Normal', value: 'normal' },
-    { label: 'Tight', value: '-0.1em' },
-    { label: 'Loose', value: '0.2em' },
-    { label: 'Wide', value: '0.5em' },
-    { label: 'Wider', value: '1em' },
-    { label: 'Widest', value: '2em' }
-  ];
-  
-  textShadowOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Light', value: '1px 1px 2px rgba(0,0,0,0.1)' },
-    { label: 'Medium', value: '2px 2px 4px rgba(0,0,0,0.2)' },
-    { label: 'Heavy', value: '3px 3px 6px rgba(0,0,0,0.3)' },
-    { label: 'Glow', value: '0 0 10px rgba(59,130,246,0.5)' }
-  ];
-  
-  boxShadowOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Small', value: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)' },
-    { label: 'Medium', value: '0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)' },
-    { label: 'Large', value: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1)' },
-    { label: 'X-Large', value: '0 20px 40px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.15)' },
-    { label: 'Inner', value: 'inset 0 2px 4px rgba(0,0,0,0.1)' },
-    { label: 'Outline', value: '0 0 0 3px rgba(59,130,246,0.5)' }
-  ];
-  
-  borderStyleOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Solid', value: 'solid' },
-    { label: 'Dashed', value: 'dashed' },
-    { label: 'Dotted', value: 'dotted' },
-    { label: 'Double', value: 'double' },
-    { label: 'Groove', value: 'groove' },
-    { label: 'Ridge', value: 'ridge' },
-    { label: 'Inset', value: 'inset' },
-    { label: 'Outset', value: 'outset' }
-  ];
-  
-  borderWidthOptions = [
-    { label: '0', value: '0' },
-    { label: '1px', value: '1px' },
-    { label: '2px', value: '2px' },
-    { label: '3px', value: '3px' },
-    { label: '4px', value: '4px' },
-    { label: '5px', value: '5px' },
-    { label: '6px', value: '6px' },
-    { label: '8px', value: '8px' },
-    { label: '10px', value: '10px' }
-  ];
-  
-  borderRadiusOptions = [
-    { label: '0', value: '0' },
-    { label: '2px', value: '2px' },
-    { label: '4px', value: '4px' },
-    { label: '6px', value: '6px' },
-    { label: '8px', value: '8px' },
-    { label: '12px', value: '12px' },
-    { label: '16px', value: '16px' },
-    { label: '24px', value: '24px' },
-    { label: '32px', value: '32px' },
-    { label: '48px', value: '48px' },
-    { label: '50%', value: '50%' }
-  ];
-  
-  opacityOptions = [
-    { label: '0%', value: '0' },
-    { label: '25%', value: '0.25' },
-    { label: '50%', value: '0.5' },
-    { label: '75%', value: '0.75' },
-    { label: '100%', value: '1' }
-  ];
-  
-  transitionOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Fast', value: 'all 0.2s ease' },
-    { label: 'Medium', value: 'all 0.3s ease' },
-    { label: 'Slow', value: 'all 0.5s ease' },
-    { label: 'Bounce', value: 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
-    { label: 'Elastic', value: 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)' }
-  ];
-  
-  animationOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Fade In', value: 'fadeIn 0.5s ease' },
-    { label: 'Slide In', value: 'slideIn 0.5s ease' },
-    { label: 'Zoom In', value: 'zoomIn 0.5s ease' },
-    { label: 'Bounce', value: 'bounce 0.5s ease' },
-    { label: 'Pulse', value: 'pulse 2s infinite' },
-    { label: 'Rotate', value: 'rotate 2s linear infinite' },
-    { label: 'Shake', value: 'shake 0.5s ease' }
-  ];
-  
-  transformOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Rotate 90°', value: 'rotate(90deg)' },
-    { label: 'Rotate 180°', value: 'rotate(180deg)' },
-    { label: 'Rotate 270°', value: 'rotate(270deg)' },
-    { label: 'Scale 1.1', value: 'scale(1.1)' },
-    { label: 'Scale 1.2', value: 'scale(1.2)' },
-    { label: 'Scale 0.9', value: 'scale(0.9)' },
-    { label: 'Scale 0.8', value: 'scale(0.8)' },
-    { label: 'Skew X', value: 'skewX(10deg)' },
-    { label: 'Skew Y', value: 'skewY(10deg)' },
-    { label: 'Translate X', value: 'translateX(10px)' },
-    { label: 'Translate Y', value: 'translateY(10px)' }
-  ];
-  
-  filterOptions = [
-    { label: 'None', value: 'none' },
-    { label: 'Blur', value: 'blur(5px)' },
-    { label: 'Brightness', value: 'brightness(1.2)' },
-    { label: 'Contrast', value: 'contrast(1.2)' },
-    { label: 'Grayscale', value: 'grayscale(100%)' },
-    { label: 'Hue Rotate', value: 'hue-rotate(90deg)' },
-    { label: 'Invert', value: 'invert(100%)' },
-    { label: 'Opacity', value: 'opacity(0.5)' },
-    { label: 'Saturate', value: 'saturate(1.5)' },
-    { label: 'Sepia', value: 'sepia(100%)' },
-    { label: 'Drop Shadow', value: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }
-  ];
-  
-  blendModeOptions = [
-    { label: 'Normal', value: 'normal' },
-    { label: 'Multiply', value: 'multiply' },
-    { label: 'Screen', value: 'screen' },
-    { label: 'Overlay', value: 'overlay' },
-    { label: 'Darken', value: 'darken' },
-    { label: 'Lighten', value: 'lighten' },
-    { label: 'Color Dodge', value: 'color-dodge' },
-    { label: 'Color Burn', value: 'color-burn' },
-    { label: 'Hard Light', value: 'hard-light' },
-    { label: 'Soft Light', value: 'soft-light' },
-    { label: 'Difference', value: 'difference' },
-    { label: 'Exclusion', value: 'exclusion' },
-    { label: 'Hue', value: 'hue' },
-    { label: 'Saturation', value: 'saturation' },
-    { label: 'Color', value: 'color' },
-    { label: 'Luminosity', value: 'luminosity' }
-  ];
-  
-  cursorOptions = [
-    { label: 'Default', value: 'default' },
-    { label: 'Pointer', value: 'pointer' },
-    { label: 'Text', value: 'text' },
-    { label: 'Move', value: 'move' },
-    { label: 'Grab', value: 'grab' },
-    { label: 'Zoom In', value: 'zoom-in' },
-    { label: 'Zoom Out', value: 'zoom-out' },
-    { label: 'Not Allowed', value: 'not-allowed' },
-    { label: 'Wait', value: 'wait' },
-    { label: 'Help', value: 'help' },
-    { label: 'Crosshair', value: 'crosshair' },
-    { label: 'Cell', value: 'cell' },
-    { label: 'Copy', value: 'copy' },
-    { label: 'Alias', value: 'alias' },
-    { label: 'Context Menu', value: 'context-menu' }
-  ];
-  
-  userSelectOptions = [
-    { label: 'Auto', value: 'auto' },
-    { label: 'None', value: 'none' },
-    { label: 'Text', value: 'text' },
-    { label: 'All', value: 'all' },
-    { label: 'Contain', value: 'contain' }
-  ];
-  
-  pointerEventsOptions = [
-    { label: 'Auto', value: 'auto' },
-    { label: 'None', value: 'none' },
-    { label: 'Visible Painted', value: 'visiblePainted' },
-    { label: 'Visible Fill', value: 'visibleFill' },
-    { label: 'Visible Stroke', value: 'visibleStroke' },
-    { label: 'Visible', value: 'visible' },
-    { label: 'Painted', value: 'painted' },
-    { label: 'Fill', value: 'fill' },
-    { label: 'Stroke', value: 'stroke' },
-    { label: 'All', value: 'all' }
-  ];
-  
-  visibilityOptions = [
-    { label: 'Visible', value: 'visible' },
-    { label: 'Hidden', value: 'hidden' },
-    { label: 'Collapse', value: 'collapse' }
-  ];
-  
-  positionOptions = [
-    { label: 'Static', value: 'static' },
-    { label: 'Relative', value: 'relative' },
-    { label: 'Absolute', value: 'absolute' },
-    { label: 'Fixed', value: 'fixed' },
-    { label: 'Sticky', value: 'sticky' }
-  ];
-  
-  displayOptions = [
-    { label: 'Block', value: 'block' },
-    { label: 'Inline', value: 'inline' },
-    { label: 'Inline Block', value: 'inline-block' },
-    { label: 'Flex', value: 'flex' },
-    { label: 'Inline Flex', value: 'inline-flex' },
-    { label: 'Grid', value: 'grid' },
-    { label: 'Inline Grid', value: 'inline-grid' },
-    { label: 'Table', value: 'table' },
-    { label: 'Table Row', value: 'table-row' },
-    { label: 'Table Cell', value: 'table-cell' },
-    { label: 'None', value: 'none' }
-  ];
-  
-  flexDirectionOptions = [
-    { label: 'Row', value: 'row' },
-    { label: 'Row Reverse', value: 'row-reverse' },
-    { label: 'Column', value: 'column' },
-    { label: 'Column Reverse', value: 'column-reverse' }
-  ];
-  
-  flexWrapOptions = [
-    { label: 'Nowrap', value: 'nowrap' },
-    { label: 'Wrap', value: 'wrap' },
-    { label: 'Wrap Reverse', value: 'wrap-reverse' }
-  ];
-  
-  justifyContentOptions = [
-    { label: 'Flex Start', value: 'flex-start' },
-    { label: 'Flex End', value: 'flex-end' },
-    { label: 'Center', value: 'center' },
-    { label: 'Space Between', value: 'space-between' },
-    { label: 'Space Around', value: 'space-around' },
-    { label: 'Space Evenly', value: 'space-evenly' }
-  ];
-  
-  alignItemsOptions = [
-    { label: 'Stretch', value: 'stretch' },
-    { label: 'Flex Start', value: 'flex-start' },
-    { label: 'Flex End', value: 'flex-end' },
-    { label: 'Center', value: 'center' },
-    { label: 'Baseline', value: 'baseline' }
-  ];
-  
-  alignContentOptions = [
-    { label: 'Stretch', value: 'stretch' },
-    { label: 'Flex Start', value: 'flex-start' },
-    { label: 'Flex End', value: 'flex-end' },
-    { label: 'Center', value: 'center' },
-    { label: 'Space Between', value: 'space-between' },
-    { label: 'Space Around', value: 'space-around' }
-  ];
-  
-  flexGrowOptions = [
-    { label: '0', value: '0' },
-    { label: '1', value: '1' },
-    { label: '2', value: '2' },
-    { label: '3', value: '3' },
-    { label: '4', value: '4' },
-    { label: '5', value: '5' }
-  ];
-  
-  flexShrinkOptions = [
-    { label: '0', value: '0' },
-    { label: '1', value: '1' },
-    { label: '2', value: '2' },
-    { label: '3', value: '3' },
-    { label: '4', value: '4' },
-    { label: '5', value: '5' }
-  ];
-  
-  flexBasisOptions = [
-    { label: 'Auto', value: 'auto' },
-    { label: '0', value: '0' },
-    { label: '25%', value: '25%' },
-    { label: '50%', value: '50%' },
-    { label: '75%', value: '75%' },
-    { label: '100%', value: '100%' },
-    { label: '200px', value: '200px' },
-    { label: '400px', value: '400px' },
-    { label: '600px', value: '600px' },
-    { label: '800px', value: '800px' }
-  ];
-  
-  orderOptions = [
-    { label: '0', value: '0' },
-    { label: '1', value: '1' },
-    { label: '2', value: '2' },
-    { label: '3', value: '3' },
-    { label: '4', value: '4' },
-    { label: '5', value: '5' },
-    { label: '-1', value: '-1' },
-    { label: '-2', value: '-2' },
-    { label: '-3', value: '-3' },
-    { label: '-4', value: '-4' },
-    { label: '-5', value: '-5' }
-  ];
-  
-  gridAutoFlowOptions = [
-    { label: 'Row', value: 'row' },
-    { label: 'Column', value: 'column' },
-    { label: 'Row Dense', value: 'row dense' },
-    { label: 'Column Dense', value: 'column dense' }
-  ];
-  
-  gapOptions = [
-    { label: 'Normal', value: 'normal' },
-    { label: '0', value: '0' },
-    { label: '4px', value: '4px' },
-    { label: '8px', value: '8px' },
-    { label: '12px', value: '12px' },
-    { label: '16px', value: '16px' },
-    { label: '20px', value: '20px' },
-    { label: '24px', value: '24px' },
-    { label: '32px', value: '32px' },
-    { label: '48px', value: '48px' },
-    { label: '64px', value: '64px' }
-  ];
-  
-  backgroundSizeOptions = [
-    { label: 'Auto', value: 'auto' },
-    { label: 'Cover', value: 'cover' },
-    { label: 'Contain', value: 'contain' },
-    { label: '50%', value: '50%' },
-    { label: '100%', value: '100%' },
-    { label: '200%', value: '200%' }
-  ];
-  
-  backgroundPositionOptions = [
-    { label: '0% 0%', value: '0% 0%' },
-    { label: '50% 50%', value: '50% 50%' },
-    { label: '100% 100%', value: '100% 100%' },
-    { label: 'Top Left', value: 'top left' },
-    { label: 'Top Center', value: 'top center' },
-    { label: 'Top Right', value: 'top right' },
-    { label: 'Center Left', value: 'center left' },
-    { label: 'Center Center', value: 'center center' },
-    { label: 'Center Right', value: 'center right' },
-    { label: 'Bottom Left', value: 'bottom left' },
-    { label: 'Bottom Center', value: 'bottom center' },
-    { label: 'Bottom Right', value: 'bottom right' }
-  ];
-  
-  backgroundRepeatOptions = [
-    { label: 'Repeat', value: 'repeat' },
-    { label: 'Repeat X', value: 'repeat-x' },
-    { label: 'Repeat Y', value: 'repeat-y' },
-    { label: 'No Repeat', value: 'no-repeat' },
-    { label: 'Space', value: 'space' },
-    { label: 'Round', value: 'round' }
-  ];
-  
-  backgroundAttachmentOptions = [
-    { label: 'Scroll', value: 'scroll' },
-    { label: 'Fixed', value: 'fixed' },
-    { label: 'Local', value: 'local' }
-  ];
-  
-  backgroundBlendModeOptions = this.blendModeOptions;
-  
-  boxSizingOptions = [
-    { label: 'Content Box', value: 'content-box' },
-    { label: 'Border Box', value: 'border-box' }
-  ];
-  
-  // Enhanced Color Palettes
-  colorPalettes = {
-    text: [
-      '#000000', '#1f2937', '#374151', '#4b5563', '#6b7280',
-      '#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6', '#ffffff',
-      '#dc2626', '#ea580c', '#d97706', '#059669', '#0d9488',
-      '#0891b2', '#2563eb', '#4f46e5', '#7c3aed', '#a855f7',
-      '#db2777', '#e11d48'
-    ],
-    background: [
-      '#ffffff', '#f9fafb', '#f3f4f6', '#e5e7eb', '#d1d5db',
-      '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937',
-      '#fef2f2', '#fffbeb', '#f0fdf4', '#ecfdf5', '#f0f9ff',
-      '#eff6ff', '#eef2ff', '#f5f3ff', '#faf5ff', '#fdf4ff',
-      '#fdf2f8', '#fff1f2'
-    ],
-    highlight: [
-      '#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b',
-      '#d97706', '#b45309', '#92400e', '#78350f', '#451a03',
-      '#fce7f3', '#fbcfe8', '#f9a8d4', '#f472b6', '#ec4899',
-      '#db2777', '#be185d', '#9d174d', '#831843', '#500724',
-      '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6',
-      '#2563eb', '#1d4ed8', '#1e40af', '#1e3a8a', '#172554'
-    ]
-  };
-  
-  // Enhanced Themes
-  themes = [
-    { name: 'Light', value: 'light', primary: '#3b82f6', background: '#ffffff', text: '#1f2937' },
-    { name: 'Dark', value: 'dark', primary: '#60a5fa', background: '#1f2937', text: '#f9fafb' },
-    { name: 'Blue', value: 'blue', primary: '#2563eb', background: '#eff6ff', text: '#1e3a8a' },
-    { name: 'Green', value: 'green', primary: '#10b981', background: '#ecfdf5', text: '#064e3b' },
-    { name: 'Purple', value: 'purple', primary: '#8b5cf6', background: '#f5f3ff', text: '#4c1d95' },
-    { name: 'Red', value: 'red', primary: '#ef4444', background: '#fef2f2', text: '#7f1d1d' },
-    { name: 'Yellow', value: 'yellow', primary: '#f59e0b', background: '#fffbeb', text: '#78350f' },
-    { name: 'Gray', value: 'gray', primary: '#6b7280', background: '#f9fafb', text: '#374151' }
-  ];
-  
-  // Enhanced Templates
-  templates = [
-    {
-      name: 'Blank',
-      category: 'basic',
-      html: '<p><br></p>'
-    },
-    {
-      name: 'Article',
-      category: 'content',
-      html: `
-        <h1>Article Title</h1>
-        <p class="lead">This is a lead paragraph that introduces the article.</p>
-        <p>This is the main content of the article. You can add more paragraphs, images, and other elements here.</p>
-        <blockquote>
-          <p>This is a blockquote that highlights an important point.</p>
-        </blockquote>
-        <p>Continue with more content...</p>
-        <ul>
-          <li>First item in a list</li>
-          <li>Second item in a list</li>
-          <li>Third item in a list</li>
-        </ul>
-      `
-    },
-    {
-      name: 'Newsletter',
-      category: 'email',
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-          <h1 style="color: #2563eb; text-align: center;">Newsletter Title</h1>
-          <p style="font-size: 16px; line-height: 1.6;">Dear Subscriber,</p>
-          <p style="font-size: 16px; line-height: 1.6;">Here's our latest update...</p>
-          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1f2937;">Featured Content</h2>
-            <p>Check out our latest features and updates.</p>
-          </div>
-          <p style="font-size: 16px; line-height: 1.6;">Best regards,<br>The Team</p>
-        </div>
-      `
-    },
-    {
-      name: 'Blog Post',
-      category: 'content',
-      html: `
-        <article>
-          <header>
-            <h1>Blog Post Title</h1>
-            <div style="color: #6b7280; font-size: 14px;">
-              <span>By Author Name</span> • 
-              <span>Published on ${new Date().toLocaleDateString()}</span> • 
-              <span>5 min read</span>
-            </div>
-          </header>
-          <div style="margin-top: 30px;">
-            <p>Start writing your blog post here...</p>
-            <h2>Section Title</h2>
-            <p>Add more content in sections.</p>
-            <figure style="margin: 30px 0;">
-              <img src="https://via.placeholder.com/800x400" alt="Placeholder" style="width: 100%; border-radius: 8px;">
-              <figcaption style="text-align: center; color: #6b7280; font-style: italic; margin-top: 10px;">
-                Image caption goes here
-              </figcaption>
-            </figure>
-          </div>
-        </article>
-      `
-    },
-    {
-      name: 'Resume',
-      category: 'professional',
-      html: `
-        <div style="font-family: 'Times New Roman', serif; max-width: 800px; margin: 0 auto; padding: 40px;">
-          <h1 style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">John Doe</h1>
-          <div style="text-align: center; color: #666; margin-bottom: 30px;">
-            <span>Email: john@example.com</span> • 
-            <span>Phone: (123) 456-7890</span> • 
-            <span>LinkedIn: linkedin.com/in/johndoe</span>
-          </div>
-          
-          <h2>Professional Summary</h2>
-          <p>Experienced professional with expertise in...</p>
-          
-          <h2>Work Experience</h2>
-          <div style="margin-bottom: 20px;">
-            <h3>Job Title</h3>
-            <div style="color: #666;">Company Name • 2020 - Present</div>
-            <ul>
-              <li>Responsibility or achievement</li>
-              <li>Responsibility or achievement</li>
-            </ul>
-          </div>
-          
-          <h2>Education</h2>
-          <div style="margin-bottom: 20px;">
-            <h3>Degree Name</h3>
-            <div style="color: #666;">University Name • 2016 - 2020</div>
-          </div>
-        </div>
-      `
-    }
-  ];
-  
-  templateCategories = [
-    { name: 'All', value: 'all' },
-    { name: 'Basic', value: 'basic' },
-    { name: 'Content', value: 'content' },
-    { name: 'Email', value: 'email' },
-    { name: 'Professional', value: 'professional' },
-    { name: 'Creative', value: 'creative' }
-  ];
-  
-  // Enhanced Languages for Syntax Highlighting
-  codeLanguages = [
-    { name: 'HTML', value: 'html', mode: 'htmlmixed' },
-    { name: 'CSS', value: 'css', mode: 'css' },
-    { name: 'JavaScript', value: 'javascript', mode: 'javascript' },
-    { name: 'TypeScript', value: 'typescript', mode: 'typescript' },
-    { name: 'Python', value: 'python', mode: 'python' },
-    { name: 'Java', value: 'java', mode: 'text/x-java' },
-    { name: 'C++', value: 'cpp', mode: 'text/x-c++src' },
-    { name: 'C#', value: 'csharp', mode: 'text/x-csharp' },
-    { name: 'PHP', value: 'php', mode: 'php' },
-    { name: 'Ruby', value: 'ruby', mode: 'ruby' },
-    { name: 'Swift', value: 'swift', mode: 'swift' },
-    { name: 'Kotlin', value: 'kotlin', mode: 'text/x-kotlin' },
-    { name: 'Go', value: 'go', mode: 'go' },
-    { name: 'Rust', value: 'rust', mode: 'rust' },
-    { name: 'SQL', value: 'sql', mode: 'sql' },
-    { name: 'JSON', value: 'json', mode: 'application/json' },
-    { name: 'XML', value: 'xml', mode: 'xml' },
-    { name: 'Markdown', value: 'markdown', mode: 'markdown' },
-    { name: 'YAML', value: 'yaml', mode: 'yaml' },
-    { name: 'Shell', value: 'shell', mode: 'shell' },
-    { name: 'Plain Text', value: 'plain', mode: 'text/plain' }
-  ];
-  
-  codeThemes = [
-    { name: 'Default', value: 'default', dark: false },
-    { name: 'Dark', value: 'dark', dark: true },
-    { name: 'Solarized Light', value: 'solarized-light', dark: false },
-    { name: 'Solarized Dark', value: 'solarized-dark', dark: true },
-    { name: 'Monokai', value: 'monokai', dark: true },
-    { name: 'Dracula', value: 'dracula', dark: true },
-    { name: 'Material', value: 'material', dark: true },
-    { name: 'Nord', value: 'nord', dark: true }
-  ];
-  
-  // Enhanced Media Types
-  mediaTypes = [
-    { name: 'YouTube Video', value: 'youtube', icon: 'fa-youtube' },
-    { name: 'Vimeo Video', value: 'vimeo', icon: 'fa-vimeo' },
-    { name: 'Audio', value: 'audio', icon: 'fa-music' },
-    { name: 'Video File', value: 'video', icon: 'fa-video' },
-    { name: 'IFrame', value: 'iframe', icon: 'fa-window-maximize' },
-    { name: 'Embed', value: 'embed', icon: 'fa-code' }
-  ];
-  
-  // Enhanced Export Formats
-  exportFormats = [
-    { name: 'HTML', value: 'html', icon: 'fa-code', extension: '.html' },
-    { name: 'Plain Text', value: 'text', icon: 'fa-file-text', extension: '.txt' },
-    { name: 'PDF', value: 'pdf', icon: 'fa-file-pdf', extension: '.pdf' },
-    { name: 'Word Document', value: 'docx', icon: 'fa-file-word', extension: '.docx' },
-    { name: 'Markdown', value: 'markdown', icon: 'fa-markdown', extension: '.md' },
-    { name: 'Rich Text Format', value: 'rtf', icon: 'fa-file-alt', extension: '.rtf' },
-    { name: 'EPUB', value: 'epub', icon: 'fa-book', extension: '.epub' }
-  ];
-  
-  // Enhanced Import Formats
-  importFormats = [
-    { name: 'HTML', value: 'html', icon: 'fa-code', accept: '.html,.htm' },
-    { name: 'Plain Text', value: 'text', icon: 'fa-file-text', accept: '.txt' },
-    { name: 'Word Document', value: 'docx', icon: 'fa-file-word', accept: '.docx,.doc' },
-    { name: 'Markdown', value: 'markdown', icon: 'fa-markdown', accept: '.md,.markdown' },
-    { name: 'Rich Text Format', value: 'rtf', icon: 'fa-file-alt', accept: '.rtf' },
-    { name: 'PDF', value: 'pdf', icon: 'fa-file-pdf', accept: '.pdf' }
-  ];
-  
-  // Enhanced Print Options
-  printOptions = {
-    orientation: [
-      { label: 'Portrait', value: 'portrait' },
-      { label: 'Landscape', value: 'landscape' }
-    ],
-    margins: [
-      { label: 'Normal', value: 'normal', size: '1in' },
-      { label: 'Narrow', value: 'narrow', size: '0.5in' },
-      { label: 'Wide', value: 'wide', size: '2in' },
-      { label: 'Custom', value: 'custom', size: '' }
-    ],
-    paperSize: [
-      { label: 'Letter', value: 'letter', width: '8.5in', height: '11in' },
-      { label: 'Legal', value: 'legal', width: '8.5in', height: '14in' },
-      { label: 'A4', value: 'a4', width: '210mm', height: '297mm' },
-      { label: 'A3', value: 'a3', width: '297mm', height: '420mm' }
-    ]
-  };
-  
-  // Enhanced AI Tones
-  aiTones = [
-    { label: 'Professional', value: 'professional', icon: 'fa-suitcase' },
-    { label: 'Casual', value: 'casual', icon: 'fa-coffee' },
-    { label: 'Formal', value: 'formal', icon: 'fa-graduation-cap' },
-    { label: 'Friendly', value: 'friendly', icon: 'fa-smile' },
-    { label: 'Persuasive', value: 'persuasive', icon: 'fa-bullhorn' },
-    { label: 'Informative', value: 'informative', icon: 'fa-info-circle' },
-    { label: 'Creative', value: 'creative', icon: 'fa-palette' },
-    { label: 'Technical', value: 'technical', icon: 'fa-cogs' }
-  ];
-  
-  aiLengths = [
-    { label: 'Short', value: 'short', words: 50 },
-    { label: 'Medium', value: 'medium', words: 150 },
-    { label: 'Long', value: 'long', words: 300 },
-    { label: 'Very Long', value: 'very-long', words: 500 }
-  ];
-  
-  aiLanguages = [
-    { label: 'English', value: 'en' },
-    { label: 'Spanish', value: 'es' },
-    { label: 'French', value: 'fr' },
-    { label: 'German', value: 'de' },
-    { label: 'Chinese', value: 'zh' },
-    { label: 'Japanese', value: 'ja' },
-    { label: 'Korean', value: 'ko' },
-    { label: 'Russian', value: 'ru' },
-    { label: 'Arabic', value: 'ar' }
-  ];
-   selectedCategory: string = 'smileys';
-  
   // Add missing methods
   getEmojisByCategory(category: string): any[] {
     // Return emojis for the category
@@ -1408,7 +2372,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       }
     }
   }
-private insertText(text: string): void {
+  private insertText(text: string): void {
     const selection = this.doc.getSelection();
     if (selection) {
       if (selection.rangeCount > 0) {
@@ -1531,979 +2495,7 @@ private insertText(text: string): void {
       life: 3000
     });
   }
-  
-  // Enhanced Emoji Categories
-  emojiCategories = [
-    { name: 'Smileys & People', value: 'smileys', icon: 'fa-smile' },
-    { name: 'Animals & Nature', value: 'animals', icon: 'fa-dog' },
-    { name: 'Food & Drink', value: 'food', icon: 'fa-utensils' },
-    { name: 'Travel & Places', value: 'travel', icon: 'fa-plane' },
-    { name: 'Activities', value: 'activities', icon: 'fa-futbol' },
-    { name: 'Objects', value: 'objects', icon: 'fa-lightbulb' },
-    { name: 'Symbols', value: 'symbols', icon: 'fa-heart' },
-    { name: 'Flags', value: 'flags', icon: 'fa-flag' }
-  ];
-  
-  // Enhanced Special Characters
-  specialCharacters = [
-    // Currency
-    '€', '$', '£', '¥', '¢', '₹', '₽', '₿',
-    // Mathematical
-    '±', '≠', '≈', '≤', '≥', '∞', '°', 'µ', 'π', '∑', '√', '∆', '∂', '∫', '∏', '≈', '≠', '≡', '≅', '∼',
-    // Arrows
-    '→', '←', '↑', '↓', '↔', '⇔', '⇒', '⇐', '↗', '↖', '↘', '↙',
-    // Logical
-    '∀', '∃', '∅', '∈', '∉', '∋', '∩', '∪', '⊂', '⊃', '⊄', '⊆',
-    // Legal
-    '©', '®', '™', '§', '¶',
-    // Typographic
-    '•', '·', '…', '–', '—', '“', '”', '‘', '’', '«', '»',
-    // Fractions
-    '½', '¼', '¾', '⅓', '⅔', '⅕', '⅖', '⅗', '⅘',
-    // Superscript/Subscript
-    '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹', '⁰',
-    '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', '₀'
-  ];
-  
-  // Enhanced File Types
-  fileTypes = [
-    { name: 'Images', extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'], icon: 'fa-image' },
-    { name: 'Documents', extensions: ['.pdf', '.doc', '.docx', '.txt', '.rtf'], icon: 'fa-file' },
-    { name: 'Spreadsheets', extensions: ['.xls', '.xlsx', '.csv'], icon: 'fa-table' },
-    { name: 'Presentations', extensions: ['.ppt', '.pptx'], icon: 'fa-presentation' },
-    { name: 'Archives', extensions: ['.zip', '.rar', '.7z'], icon: 'fa-file-archive' }
-  ];
-  
-  // Enhanced Keyboard Shortcuts
-  keyboardShortcuts = [
-    { key: 'Ctrl+B', action: 'Bold' },
-    { key: 'Ctrl+I', action: 'Italic' },
-    { key: 'Ctrl+U', action: 'Underline' },
-    { key: 'Ctrl+K', action: 'Insert Link' },
-    { key: 'Ctrl+Shift+K', action: 'Remove Link' },
-    { key: 'Ctrl+L', action: 'Align Left' },
-    { key: 'Ctrl+E', action: 'Align Center' },
-    { key: 'Ctrl+R', action: 'Align Right' },
-    { key: 'Ctrl+J', action: 'Justify' },
-    { key: 'Ctrl+Shift+L', action: 'Bulleted List' },
-    { key: 'Ctrl+Shift+O', action: 'Numbered List' },
-    { key: 'Ctrl+Z', action: 'Undo' },
-    { key: 'Ctrl+Y', action: 'Redo' },
-    { key: 'Ctrl+S', action: 'Save' },
-    { key: 'Ctrl+P', action: 'Print' },
-    { key: 'Ctrl+F', action: 'Find' },
-    { key: 'Ctrl+H', action: 'Replace' },
-    { key: 'Ctrl+Shift+S', action: 'Source Mode' },
-    { key: 'Ctrl+Shift+P', action: 'Preview' },
-    { key: 'F11', action: 'Fullscreen' },
-    { key: 'Tab', action: 'Indent' },
-    { key: 'Shift+Tab', action: 'Outdent' },
-    { key: 'Ctrl+Space', action: 'Clear Formatting' },
-    { key: 'Ctrl+Shift+C', action: 'Copy Formatting' },
-    { key: 'Ctrl+Shift+V', action: 'Paste Formatting' },
-    { key: 'Ctrl+Enter', action: 'Insert Line Break' },
-    { key: 'Ctrl+Shift+Enter', action: 'Insert Page Break' }
-  ];
-  
-  // Enhanced Toolbar Layouts
-  toolbarLayouts = {
-    full: ['format', 'font', 'size', 'style', 'bold', 'italic', 'underline', 'strike', 'superscript', 'subscript', 'color', 'background', 'highlight', 'alignment', 'list', 'indent', 'link', 'image', 'table', 'media', 'code', 'emoji', 'special', 'hr', 'blockquote', 'pre', 'clear', 'undo', 'redo', 'find', 'spellcheck', 'wordcount', 'source', 'preview', 'fullscreen', 'zoom', 'templates', 'styles', 'scripts', 'metadata', 'export', 'import', 'print', 'help', 'more'],
-    standard: ['format', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'table', 'undo', 'redo', 'source', 'fullscreen'],
-    minimal: ['bold', 'italic', 'underline', 'link', 'undo', 'redo'],
-    email: ['format', 'font', 'size', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'undo', 'redo', 'source', 'preview'],
-    blog: ['format', 'bold', 'italic', 'underline', 'color', 'alignment', 'list', 'link', 'image', 'table', 'code', 'blockquote', 'undo', 'redo', 'source', 'preview', 'wordcount'],
-    code: ['source', 'code', 'pre', 'undo', 'redo', 'fullscreen', 'wordcount']
-  };
-  
-  // Enhanced Zoom Levels
-  zoomLevels = [
-    { label: '50%', value: 0.5 },
-    { label: '75%', value: 0.75 },
-    { label: '100%', value: 1 },
-    { label: '125%', value: 1.25 },
-    { label: '150%', value: 1.5 },
-    { label: '200%', value: 2 },
-    { label: '300%', value: 3 },
-    { label: 'Fit to Width', value: 'fit-width' },
-    { label: 'Fit to Page', value: 'fit-page' }
-  ];
-  
-  // Enhanced Status Bar Items
-  statusBarItems = [
-    { id: 'words', label: 'Words', icon: 'fa-file-word', visible: true },
-    { id: 'chars', label: 'Characters', icon: 'fa-font', visible: true },
-    { id: 'charsNoSpaces', label: 'Chars (no spaces)', icon: 'fa-font', visible: false },
-    { id: 'paragraphs', label: 'Paragraphs', icon: 'fa-paragraph', visible: true },
-    { id: 'lines', label: 'Lines', icon: 'fa-bars', visible: false },
-    { id: 'readingTime', label: 'Reading Time', icon: 'fa-clock', visible: true },
-    { id: 'pages', label: 'Pages', icon: 'fa-file', visible: false },
-    { id: 'images', label: 'Images', icon: 'fa-image', visible: false },
-    { id: 'links', label: 'Links', icon: 'fa-link', visible: false },
-    { id: 'tables', label: 'Tables', icon: 'fa-table', visible: false },
-    { id: 'lastSaved', label: 'Last Saved', icon: 'fa-save', visible: true },
-    { id: 'mode', label: 'Mode', icon: 'fa-code', visible: true }
-  ];
-  
-  // Enhanced Context Menu Items
-  contextMenuItems = [
-    { label: 'Cut', icon: 'fa-cut', action: 'cut', shortcut: 'Ctrl+X' },
-    { label: 'Copy', icon: 'fa-copy', action: 'copy', shortcut: 'Ctrl+C' },
-    { label: 'Paste', icon: 'fa-paste', action: 'paste', shortcut: 'Ctrl+V' },
-    { label: 'Paste as Text', icon: 'fa-paste', action: 'pasteAsText', shortcut: 'Ctrl+Shift+V' },
-    { separator: true },
-    { label: 'Bold', icon: 'fa-bold', action: 'bold', shortcut: 'Ctrl+B' },
-    { label: 'Italic', icon: 'fa-italic', action: 'italic', shortcut: 'Ctrl+I' },
-    { label: 'Underline', icon: 'fa-underline', action: 'underline', shortcut: 'Ctrl+U' },
-    { separator: true },
-    { label: 'Insert Link', icon: 'fa-link', action: 'insertLink', shortcut: 'Ctrl+K' },
-    { label: 'Remove Link', icon: 'fa-unlink', action: 'removeLink', shortcut: 'Ctrl+Shift+K' },
-    { separator: true },
-    { label: 'Insert Image', icon: 'fa-image', action: 'insertImage' },
-    { label: 'Insert Table', icon: 'fa-table', action: 'insertTable' },
-    { separator: true },
-    { label: 'Clear Formatting', icon: 'fa-eraser', action: 'clearFormatting', shortcut: 'Ctrl+Space' },
-    { label: 'Copy Formatting', icon: 'fa-clone', action: 'copyFormatting', shortcut: 'Ctrl+Shift+C' },
-    { label: 'Paste Formatting', icon: 'fa-clipboard', action: 'pasteFormatting', shortcut: 'Ctrl+Shift+V' },
-    { separator: true },
-    { label: 'Select All', icon: 'fa-mouse-pointer', action: 'selectAll', shortcut: 'Ctrl+A' }
-  ];
-  
-  // Enhanced AI Actions
-  aiActions = [
-    { label: 'Improve Writing', icon: 'fa-magic', action: 'improveWriting' },
-    { label: 'Make Shorter', icon: 'fa-compress', action: 'makeShorter' },
-    { label: 'Make Longer', icon: 'fa-expand', action: 'makeLonger' },
-    { label: 'Change Tone', icon: 'fa-comment-alt', action: 'changeTone' },
-    { label: 'Fix Grammar', icon: 'fa-spell-check', action: 'fixGrammar' },
-    { label: 'Summarize', icon: 'fa-file-contract', action: 'summarize' },
-    { label: 'Translate', icon: 'fa-language', action: 'translate' },
-    { label: 'Generate Ideas', icon: 'fa-lightbulb', action: 'generateIdeas' },
-    { label: 'Create Outline', icon: 'fa-list-ol', action: 'createOutline' },
-    { label: 'Write Introduction', icon: 'fa-pen-fancy', action: 'writeIntroduction' },
-    { label: 'Write Conclusion', icon: 'fa-flag-checkered', action: 'writeConclusion' }
-  ];
-  
-  // Enhanced Collaboration Features
-  collaborationFeatures = [
-    { label: 'Real-time Editing', icon: 'fa-users', enabled: false },
-    { label: 'Comments', icon: 'fa-comment', enabled: true },
-    { label: 'Track Changes', icon: 'fa-history', enabled: true },
-    { label: 'Version History', icon: 'fa-code-branch', enabled: true },
-    { label: 'User Presence', icon: 'fa-user-circle', enabled: false },
-    { label: 'Chat', icon: 'fa-comments', enabled: false }
-  ];
-  
-  // Enhanced Accessibility Features
-  accessibilityFeatures = [
-    { label: 'High Contrast Mode', icon: 'fa-adjust', enabled: false },
-    { label: 'Screen Reader Support', icon: 'fa-assistive-listening-systems', enabled: true },
-    { label: 'Keyboard Navigation', icon: 'fa-keyboard', enabled: true },
-    { label: 'Focus Indicators', icon: 'fa-mouse-pointer', enabled: true },
-    { label: 'Text Resizing', icon: 'fa-text-height', enabled: true },
-    { label: 'Color Blind Mode', icon: 'fa-palette', enabled: false }
-  ];
-  
-  // Enhanced Performance Features
-  performanceFeatures = [
-    { label: 'Lazy Loading', icon: 'fa-tachometer-alt', enabled: true },
-    { label: 'Image Optimization', icon: 'fa-compress', enabled: true },
-    { label: 'Code Minification', icon: 'fa-code', enabled: true },
-    { label: 'Caching', icon: 'fa-database', enabled: true },
-    { label: 'Debounced Input', icon: 'fa-clock', enabled: true },
-    { label: 'Virtual Scrolling', icon: 'fa-scroll', enabled: false }
-  ];
-  
-  // Enhanced Security Features
-  securityFeatures = [
-    { label: 'XSS Protection', icon: 'fa-shield-alt', enabled: true },
-    { label: 'Content Sanitization', icon: 'fa-filter', enabled: true },
-    { label: 'File Type Validation', icon: 'fa-file-check', enabled: true },
-    { label: 'Size Limits', icon: 'fa-weight-hanging', enabled: true },
-    { label: 'HTTPS Only', icon: 'fa-lock', enabled: true },
-    { label: 'CSP Headers', icon: 'fa-header', enabled: false }
-  ];
-  
-  // Enhanced Internationalization Features
-  i18nFeatures = [
-    { label: 'Multi-language UI', icon: 'fa-globe', enabled: true },
-    { label: 'RTL Support', icon: 'fa-text-width', enabled: true },
-    { label: 'Localized Formats', icon: 'fa-calendar-alt', enabled: true },
-    { label: 'Translation Ready', icon: 'fa-language', enabled: true },
-    { label: 'Unicode Support', icon: 'fa-font', enabled: true },
-    { label: 'Emoji Support', icon: 'fa-smile', enabled: true }
-  ];
-  
-  // Enhanced Analytics Features
-  analyticsFeatures = [
-    { label: 'Usage Tracking', icon: 'fa-chart-line', enabled: true },
-    { label: 'Error Reporting', icon: 'fa-exclamation-triangle', enabled: true },
-    { label: 'Performance Metrics', icon: 'fa-tachometer-alt', enabled: true },
-    { label: 'User Behavior', icon: 'fa-user-chart', enabled: false },
-    { label: 'A/B Testing', icon: 'fa-flask', enabled: false },
-    { label: 'Heatmaps', icon: 'fa-fire', enabled: false }
-  ];
-  
-  // Enhanced Backup Features
-  backupFeatures = [
-    { label: 'Auto-save', icon: 'fa-save', enabled: true },
-    { label: 'Version History', icon: 'fa-history', enabled: true },
-    { label: 'Cloud Backup', icon: 'fa-cloud', enabled: false },
-    { label: 'Local Storage', icon: 'fa-hdd', enabled: true },
-    { label: 'Export', icon: 'fa-download', enabled: true },
-    { label: 'Import', icon: 'fa-upload', enabled: true }
-  ];
-  
-  // Enhanced Integration Features
-  integrationFeatures = [
-    { label: 'CMS Integration', icon: 'fa-cogs', enabled: true },
-    { label: 'API Access', icon: 'fa-plug', enabled: true },
-    { label: 'Webhooks', icon: 'fa-link', enabled: false },
-    { label: 'OAuth', icon: 'fa-key', enabled: false },
-    { label: 'SSO', icon: 'fa-user-shield', enabled: false },
-    { label: 'Custom Plugins', icon: 'fa-puzzle-piece', enabled: true }
-  ];
-  
-  // Enhanced Mobile Features
-  mobileFeatures = [
-    { label: 'Responsive Design', icon: 'fa-mobile-alt', enabled: true },
-    { label: 'Touch Gestures', icon: 'fa-hand-pointer', enabled: true },
-    { label: 'Offline Support', icon: 'fa-wifi-slash', enabled: false },
-    { label: 'Push Notifications', icon: 'fa-bell', enabled: false },
-    { label: 'Camera Access', icon: 'fa-camera', enabled: false },
-    { label: 'Geolocation', icon: 'fa-map-marker-alt', enabled: false }
-  ];
-  
-  // Enhanced SEO Features
-  seoFeatures = [
-    { label: 'Meta Tags', icon: 'fa-tags', enabled: true },
-    { label: 'Structured Data', icon: 'fa-code', enabled: true },
-    { label: 'Sitemap Generation', icon: 'fa-sitemap', enabled: false },
-    { label: 'SEO Analysis', icon: 'fa-chart-bar', enabled: false },
-    { label: 'Canonical URLs', icon: 'fa-link', enabled: true },
-    { label: 'Social Media Tags', icon: 'fa-share-alt', enabled: true }
-  ];
-  
-  // Enhanced Content Features
-  contentFeatures = [
-    { label: 'Rich Text Editing', icon: 'fa-edit', enabled: true },
-    { label: 'Media Library', icon: 'fa-images', enabled: true },
-    { label: 'Template Library', icon: 'fa-layer-group', enabled: true },
-    { label: 'Content Blocks', icon: 'fa-cubes', enabled: true },
-    { label: 'Reusable Components', icon: 'fa-clone', enabled: true },
-    { label: 'Content Scheduling', icon: 'fa-calendar', enabled: false }
-  ];
-  
-  // Enhanced Development Features
-  developmentFeatures = [
-    { label: 'Custom CSS', icon: 'fa-css3', enabled: true },
-    { label: 'Custom JavaScript', icon: 'fa-js', enabled: true },
-    { label: 'API Documentation', icon: 'fa-book', enabled: true },
-    { label: 'Developer Tools', icon: 'fa-tools', enabled: true },
-    { label: 'Debug Mode', icon: 'fa-bug', enabled: true },
-    { label: 'Performance Profiling', icon: 'fa-tachometer-alt', enabled: false }
-  ];
-  
-  // Enhanced User Management Features
-  userManagementFeatures = [
-    { label: 'Roles & Permissions', icon: 'fa-user-tag', enabled: true },
-    { label: 'User Profiles', icon: 'fa-user-circle', enabled: false },
-    { label: 'Activity Logs', icon: 'fa-clipboard-list', enabled: true },
-    { label: 'Audit Trail', icon: 'fa-history', enabled: true },
-    { label: 'Session Management', icon: 'fa-user-clock', enabled: false },
-    { label: 'Two-factor Auth', icon: 'fa-user-lock', enabled: false }
-  ];
-  
-  // Enhanced Notification Features
-  notificationFeatures = [
-    { label: 'Email Notifications', icon: 'fa-envelope', enabled: false },
-    { label: 'In-app Notifications', icon: 'fa-bell', enabled: true },
-    { label: 'Browser Notifications', icon: 'fa-desktop', enabled: false },
-    { label: 'Mobile Notifications', icon: 'fa-mobile-alt', enabled: false },
-    { label: 'Sound Alerts', icon: 'fa-volume-up', enabled: false },
-    { label: 'Visual Alerts', icon: 'fa-eye', enabled: true }
-  ];
-  
-  // Enhanced Search Features
-  searchFeatures = [
-    { label: 'Full-text Search', icon: 'fa-search', enabled: true },
-    { label: 'Advanced Filters', icon: 'fa-filter', enabled: true },
-    { label: 'Search History', icon: 'fa-history', enabled: true },
-    { label: 'Search Suggestions', icon: 'fa-lightbulb', enabled: true },
-    { label: 'Fuzzy Search', icon: 'fa-search-plus', enabled: false },
-    { label: 'Synonyms', icon: 'fa-language', enabled: false }
-  ];
-  
-  // Enhanced Export/Import Features
-  exportImportFeatures = [
-    { label: 'Multiple Formats', icon: 'fa-file-export', enabled: true },
-    { label: 'Batch Export', icon: 'fa-download', enabled: false },
-    { label: 'Batch Import', icon: 'fa-upload', enabled: false },
-    { label: 'Cloud Import', icon: 'fa-cloud-download-alt', enabled: false },
-    { label: 'Cloud Export', icon: 'fa-cloud-upload-alt', enabled: false },
-    { label: 'API Export', icon: 'fa-code', enabled: true }
-  ];
-  
-  // Enhanced Printing Features
-  printingFeatures = [
-    { label: 'Print Preview', icon: 'fa-eye', enabled: true },
-    { label: 'Page Breaks', icon: 'fa-file-alt', enabled: true },
-    { label: 'Headers & Footers', icon: 'fa-header', enabled: true },
-    { label: 'Page Numbers', icon: 'fa-list-ol', enabled: true },
-    { label: 'Watermarks', icon: 'fa-tint', enabled: false },
-    { label: 'Print Styles', icon: 'fa-print', enabled: true }
-  ];
-  
-  // Enhanced Help Features
-  helpFeatures = [
-    { label: 'User Guide', icon: 'fa-book', enabled: true },
-    { label: 'Tooltips', icon: 'fa-comment-alt', enabled: true },
-    { label: 'Keyboard Shortcuts', icon: 'fa-keyboard', enabled: true },
-    { label: 'Video Tutorials', icon: 'fa-video', enabled: false },
-    { label: 'FAQs', icon: 'fa-question-circle', enabled: false },
-    { label: 'Live Chat', icon: 'fa-comments', enabled: false }
-  ];
-  
-  // Enhanced State Management
-  public _content = '';
-  public onChange = (value: string) => {};
-  public onTouched = () => {};
-  public destroy$ = new Subject<void>();
-  public originalStyles: any = {};
-  public zoomLevel = 1.0;
-  public isMobileView = false;
-  public resizeObserver: ResizeObserver | null = null;
-  public mutationObserver: MutationObserver | null = null;
-  public selectionObserver: any = null;
-  public autoFormatTimer: any = null;
-  public spellCheckTimer: any = null;
-  public collaborationTimer: any = null;
-  public backupTimer: any = null;
-  public analyticsTimer: any = null;
-  public performanceTimer: any = null;
-  public securityScannerTimer: any = null;
-  public seoAnalyzerTimer: any = null;
-  public notificationTimer: any = null;
-  public searchIndexTimer: any = null;
-  public exportTimer: any = null;
-  public importTimer: any = null;
-  public printTimer: any = null;
-  public helpTimer: any = null;
-  public developmentTimer: any = null;
-  public userManagementTimer: any = null;
-  public mobileTimer: any = null;
-  public i18nTimer: any = null;
-  public accessibilityTimer: any = null;
-  public contentTimer: any = null;
-  public backupStorage: Storage = localStorage;
-  public collaborationStorage: Storage = sessionStorage;
-  public analyticsStorage: Storage = localStorage;
-  public performanceStorage: Storage = localStorage;
-  public securityStorage: Storage = localStorage;
-  public seoStorage: Storage = localStorage;
-  public notificationStorage: Storage = localStorage;
-  public searchStorage: Storage = localStorage;
-  public exportStorage: Storage = localStorage;
-  public importStorage: Storage = localStorage;
-  public printStorage: Storage = localStorage;
-  public helpStorage: Storage = localStorage;
-  public developmentStorage: Storage = localStorage;
-  public userManagementStorage: Storage = localStorage;
-  public mobileStorage: Storage = localStorage;
-  public i18nStorage: Storage = localStorage;
-  public accessibilityStorage: Storage = localStorage;
-  public contentStorage: Storage = localStorage;
-  public featureFlags: Map<string, boolean> = new Map();
-  public performanceMetrics: Map<string, number> = new Map();
-  public securityMetrics: Map<string, number> = new Map();
-  public seoMetrics: Map<string, number> = new Map();
-  public analyticsMetrics: Map<string, number> = new Map();
-  public collaborationMetrics: Map<string, number> = new Map();
-  public backupMetrics: Map<string, number> = new Map();
-  public integrationMetrics: Map<string, number> = new Map();
-  public mobileMetrics: Map<string, number> = new Map();
-  public userManagementMetrics: Map<string, number> = new Map();
-  public notificationMetrics: Map<string, number> = new Map();
-  public searchMetrics: Map<string, number> = new Map();
-  public exportMetrics: Map<string, number> = new Map();
-  public importMetrics: Map<string, number> = new Map();
-  public printMetrics: Map<string, number> = new Map();
-  public helpMetrics: Map<string, number> = new Map();
-  public developmentMetrics: Map<string, number> = new Map();
-  public i18nMetrics: Map<string, number> = new Map();
-  public accessibilityMetrics: Map<string, number> = new Map();
-  public contentMetrics: Map<string, number> = new Map();
-  public performanceEntries: PerformanceEntry[] = [];
-  public securityEntries: SecurityEntry[] = [];
-  public seoEntries: SEOEntry[] = [];
-  public analyticsEntries: AnalyticsEntry[] = [];
-  public collaborationEntries: CollaborationEntry[] = [];
-  public backupEntries: BackupEntry[] = [];
-  public integrationEntries: IntegrationEntry[] = [];
-  public mobileEntries: MobileEntry[] = [];
-  public userManagementEntries: UserManagementEntry[] = [];
-  public notificationEntries: NotificationEntry[] = [];
-  public searchEntries: SearchEntry[] = [];
-  public exportEntries: ExportEntry[] = [];
-  public importEntries: ImportEntry[] = [];
-  public printEntries: PrintEntry[] = [];
-  public helpEntries: HelpEntry[] = [];
-  public developmentEntries: DevelopmentEntry[] = [];
-  public i18nEntries: I18nEntry[] = [];
-  public accessibilityEntries: AccessibilityEntry[] = [];
-  public contentEntries: ContentEntry[] = [];
-  public performanceThresholds: Map<string, number> = new Map();
-  public securityThresholds: Map<string, number> = new Map();
-  public seoThresholds: Map<string, number> = new Map();
-  public analyticsThresholds: Map<string, number> = new Map();
-  public collaborationThresholds: Map<string, number> = new Map();
-  public backupThresholds: Map<string, number> = new Map();
-  public integrationThresholds: Map<string, number> = new Map();
-  public mobileThresholds: Map<string, number> = new Map();
-  public userManagementThresholds: Map<string, number> = new Map();
-  public notificationThresholds: Map<string, number> = new Map();
-  public searchThresholds: Map<string, number> = new Map();
-  public exportThresholds: Map<string, number> = new Map();
-  public importThresholds: Map<string, number> = new Map();
-  public printThresholds: Map<string, number> = new Map();
-  public helpThresholds: Map<string, number> = new Map();
-  public developmentThresholds: Map<string, number> = new Map();
-  public i18nThresholds: Map<string, number> = new Map();
-  public accessibilityThresholds: Map<string, number> = new Map();
-  public contentThresholds: Map<string, number> = new Map();
-  public performanceAlerts: PerformanceAlert[] = [];
-  public securityAlerts: SecurityAlert[] = [];
-  public seoAlerts: SEOAlert[] = [];
-  public analyticsAlerts: AnalyticsAlert[] = [];
-  public collaborationAlerts: CollaborationAlert[] = [];
-  public backupAlerts: BackupAlert[] = [];
-  public integrationAlerts: IntegrationAlert[] = [];
-  public mobileAlerts: MobileAlert[] = [];
-  public userManagementAlerts: UserManagementAlert[] = [];
-  public notificationAlerts: NotificationAlert[] = [];
-  public searchAlerts: SearchAlert[] = [];
-  public exportAlerts: ExportAlert[] = [];
-  public importAlerts: ImportAlert[] = [];
-  public printAlerts: PrintAlert[] = [];
-  public helpAlerts: HelpAlert[] = [];
-  public developmentAlerts: DevelopmentAlert[] = [];
-  public i18nAlerts: I18nAlert[] = [];
-  public accessibilityAlerts: AccessibilityAlert[] = [];
-  public contentAlerts: ContentAlert[] = [];
-  public performanceReports: PerformanceReport[] = [];
-  public securityReports: SecurityReport[] = [];
-  public seoReports: SEOReport[] = [];
-  public analyticsReports: AnalyticsReport[] = [];
-  public collaborationReports: CollaborationReport[] = [];
-  public backupReports: BackupReport[] = [];
-  public integrationReports: IntegrationReport[] = [];
-  public mobileReports: MobileReport[] = [];
-  public userManagementReports: UserManagementReport[] = [];
-  public notificationReports: NotificationReport[] = [];
-  public searchReports: SearchReport[] = [];
-  public exportReports: ExportReport[] = [];
-  public importReports: ImportReport[] = [];
-  public printReports: PrintReport[] = [];
-  public helpReports: HelpReport[] = [];
-  public developmentReports: DevelopmentReport[] = [];
-  public i18nReports: I18nReport[] = [];
-  public accessibilityReports: AccessibilityReport[] = [];
-  public contentReports: ContentReport[] = [];
-  public performanceDashboards: PerformanceDashboard[] = [];
-  public securityDashboards: SecurityDashboard[] = [];
-  public seoDashboards: SEODashboard[] = [];
-  public analyticsDashboards: AnalyticsDashboard[] = [];
-  public collaborationDashboards: CollaborationDashboard[] = [];
-  public backupDashboards: BackupDashboard[] = [];
-  public integrationDashboards: IntegrationDashboard[] = [];
-  public mobileDashboards: MobileDashboard[] = [];
-  public userManagementDashboards: UserManagementDashboard[] = [];
-  public notificationDashboards: NotificationDashboard[] = [];
-  public searchDashboards: SearchDashboard[] = [];
-  public exportDashboards: ExportDashboard[] = [];
-  public importDashboards: ImportDashboard[] = [];
-  public printDashboards: PrintDashboard[] = [];
-  public helpDashboards: HelpDashboard[] = [];
-  public developmentDashboards: DevelopmentDashboard[] = [];
-  public i18nDashboards: I18nDashboard[] = [];
-  public accessibilityDashboards: AccessibilityDashboard[] = [];
-  public contentDashboards: ContentDashboard[] = [];
-  public performanceMonitors: PerformanceMonitor[] = [];
-  public securityMonitors: SecurityMonitor[] = [];
-  public seoMonitors: SEOMonitor[] = [];
-  public analyticsMonitors: AnalyticsMonitor[] = [];
-  public collaborationMonitors: CollaborationMonitor[] = [];
-  public backupMonitors: BackupMonitor[] = [];
-  public integrationMonitors: IntegrationMonitor[] = [];
-  public mobileMonitors: MobileMonitor[] = [];
-  public userManagementMonitors: UserManagementMonitor[] = [];
-  public notificationMonitors: NotificationMonitor[] = [];
-  public searchMonitors: SearchMonitor[] = [];
-  public exportMonitors: ExportMonitor[] = [];
-  public importMonitors: ImportMonitor[] = [];
-  public printMonitors: PrintMonitor[] = [];
-  public helpMonitors: HelpMonitor[] = [];
-  public developmentMonitors: DevelopmentMonitor[] = [];
-  public i18nMonitors: I18nMonitor[] = [];
-  public accessibilityMonitors: AccessibilityMonitor[] = [];
-  public contentMonitors: ContentMonitor[] = [];
-  public performanceControllers: PerformanceController[] = [];
-  public securityControllers: SecurityController[] = [];
-  public seoControllers: SEOController[] = [];
-  public analyticsControllers: AnalyticsController[] = [];
-  public collaborationControllers: CollaborationController[] = [];
-  public backupControllers: BackupController[] = [];
-  public integrationControllers: IntegrationController[] = [];
-  public mobileControllers: MobileController[] = [];
-  public userManagementControllers: UserManagementController[] = [];
-  public notificationControllers: NotificationController[] = [];
-  public searchControllers: SearchController[] = [];
-  public exportControllers: ExportController[] = [];
-  public importControllers: ImportController[] = [];
-  public printControllers: PrintController[] = [];
-  public helpControllers: HelpController[] = [];
-  public developmentControllers: DevelopmentController[] = [];
-  public i18nControllers: I18nController[] = [];
-  public accessibilityControllers: AccessibilityController[] = [];
-  public contentControllers: ContentController[] = [];
-  public performanceServices: PerformanceService[] = [];
-  public securityServices: SecurityService[] = [];
-  public seoServices: SEOService[] = [];
-  public analyticsServices: AnalyticsService[] = [];
-  public collaborationServices: CollaborationService[] = [];
-  public backupServices: BackupService[] = [];
-  public integrationServices: IntegrationService[] = [];
-  public mobileServices: MobileService[] = [];
-  public userManagementServices: UserManagementService[] = [];
-  public notificationServices: NotificationService[] = [];
-  public searchServices: SearchService[] = [];
-  public exportServices: ExportService[] = [];
-  public importServices: ImportService[] = [];
-  public printServices: PrintService[] = [];
-  public helpServices: HelpService[] = [];
-  public developmentServices: DevelopmentService[] = [];
-  public i18nServices: I18nService[] = [];
-  public accessibilityServices: AccessibilityService[] = [];
-  public contentServices: ContentService[] = [];
-  public performanceProviders: PerformanceProvider[] = [];
-  public securityProviders: SecurityProvider[] = [];
-  public seoProviders: SEOProvider[] = [];
-  public analyticsProviders: AnalyticsProvider[] = [];
-  public collaborationProviders: CollaborationProvider[] = [];
-  public backupProviders: BackupProvider[] = [];
-  public integrationProviders: IntegrationProvider[] = [];
-  public mobileProviders: MobileProvider[] = [];
-  public userManagementProviders: UserManagementProvider[] = [];
-  public notificationProviders: NotificationProvider[] = [];
-  public searchProviders: SearchProvider[] = [];
-  public exportProviders: ExportProvider[] = [];
-  public importProviders: ImportProvider[] = [];
-  public printProviders: PrintProvider[] = [];
-  public helpProviders: HelpProvider[] = [];
-  public developmentProviders: DevelopmentProvider[] = [];
-  public i18nProviders: I18nProvider[] = [];
-  public accessibilityProviders: AccessibilityProvider[] = [];
-  public contentProviders: ContentProvider[] = [];
-  public performanceModules: PerformanceModule[] = [];
-  public securityModules: SecurityModule[] = [];
-  public seoModules: SEOModule[] = [];
-  public analyticsModules: AnalyticsModule[] = [];
-  public collaborationModules: CollaborationModule[] = [];
-  public backupModules: BackupModule[] = [];
-  public integrationModules: IntegrationModule[] = [];
-  public mobileModules: MobileModule[] = [];
-  public userManagementModules: UserManagementModule[] = [];
-  public notificationModules: NotificationModule[] = [];
-  public searchModules: SearchModule[] = [];
-  public exportModules: ExportModule[] = [];
-  public importModules: ImportModule[] = [];
-  public printModules: PrintModule[] = [];
-  public helpModules: HelpModule[] = [];
-  public developmentModules: DevelopmentModule[] = [];
-  public i18nModules: I18nModule[] = [];
-  public accessibilityModules: AccessibilityModule[] = [];
-  public contentModules: ContentModule[] = [];
-  public performanceComponents: PerformanceComponent[] = [];
-  public securityComponents: SecurityComponent[] = [];
-  public seoComponents: SEOComponent[] = [];
-  public analyticsComponents: AnalyticsComponent[] = [];
-  public collaborationComponents: CollaborationComponent[] = [];
-  public backupComponents: BackupComponent[] = [];
-  public integrationComponents: IntegrationComponent[] = [];
-  public mobileComponents: MobileComponent[] = [];
-  public userManagementComponents: UserManagementComponent[] = [];
-  public notificationComponents: NotificationComponent[] = [];
-  public searchComponents: SearchComponent[] = [];
-  public exportComponents: ExportComponent[] = [];
-  public importComponents: ImportComponent[] = [];
-  public printComponents: PrintComponent[] = [];
-  public helpComponents: HelpComponent[] = [];
-  public developmentComponents: DevelopmentComponent[] = [];
-  public i18nComponents: I18nComponent[] = [];
-  public accessibilityComponents: AccessibilityComponent[] = [];
-  public contentComponents: ContentComponent[] = [];
-  public performanceDirectives: PerformanceDirective[] = [];
-  public securityDirectives: SecurityDirective[] = [];
-  public seoDirectives: SEODirective[] = [];
-  public analyticsDirectives: AnalyticsDirective[] = [];
-  public collaborationDirectives: CollaborationDirective[] = [];
-  public backupDirectives: BackupDirective[] = [];
-  public integrationDirectives: IntegrationDirective[] = [];
-  public mobileDirectives: MobileDirective[] = [];
-  public userManagementDirectives: UserManagementDirective[] = [];
-  public notificationDirectives: NotificationDirective[] = [];
-  public searchDirectives: SearchDirective[] = [];
-  public exportDirectives: ExportDirective[] = [];
-  public importDirectives: ImportDirective[] = [];
-  public printDirectives: PrintDirective[] = [];
-  public helpDirectives: HelpDirective[] = [];
-  public developmentDirectives: DevelopmentDirective[] = [];
-  public i18nDirectives: I18nDirective[] = [];
-  public accessibilityDirectives: AccessibilityDirective[] = [];
-  public contentDirectives: ContentDirective[] = [];
-  public performancePipes: PerformancePipe[] = [];
-  public securityPipes: SecurityPipe[] = [];
-  public seoPipes: SEOPipe[] = [];
-  public analyticsPipes: AnalyticsPipe[] = [];
-  public collaborationPipes: CollaborationPipe[] = [];
-  public backupPipes: BackupPipe[] = [];
-  public integrationPipes: IntegrationPipe[] = [];
-  public mobilePipes: MobilePipe[] = [];
-  public userManagementPipes: UserManagementPipe[] = [];
-  public notificationPipes: NotificationPipe[] = [];
-  public searchPipes: SearchPipe[] = [];
-  public exportPipes: ExportPipe[] = [];
-  public importPipes: ImportPipe[] = [];
-  public printPipes: PrintPipe[] = [];
-  public helpPipes: HelpPipe[] = [];
-  public developmentPipes: DevelopmentPipe[] = [];
-  public i18nPipes: I18nPipe[] = [];
-  public accessibilityPipes: AccessibilityPipe[] = [];
-  public contentPipes: ContentPipe[] = [];
-  public performanceGuards: PerformanceGuard[] = [];
-  public securityGuards: SecurityGuard[] = [];
-  public seoGuards: SEOGuard[] = [];
-  public analyticsGuards: AnalyticsGuard[] = [];
-  public collaborationGuards: CollaborationGuard[] = [];
-  public backupGuards: BackupGuard[] = [];
-  public integrationGuards: IntegrationGuard[] = [];
-  public mobileGuards: MobileGuard[] = [];
-  public userManagementGuards: UserManagementGuard[] = [];
-  public notificationGuards: NotificationGuard[] = [];
-  public searchGuards: SearchGuard[] = [];
-  public exportGuards: ExportGuard[] = [];
-  public importGuards: ImportGuard[] = [];
-  public printGuards: PrintGuard[] = [];
-  public helpGuards: HelpGuard[] = [];
-  public developmentGuards: DevelopmentGuard[] = [];
-  public i18nGuards: I18nGuard[] = [];
-  public accessibilityGuards: AccessibilityGuard[] = [];
-  public contentGuards: ContentGuard[] = [];
-  public performanceResolvers: PerformanceResolver[] = [];
-  public securityResolvers: SecurityResolver[] = [];
-  public seoResolvers: SEOResolver[] = [];
-  public analyticsResolvers: AnalyticsResolver[] = [];
-  public collaborationResolvers: CollaborationResolver[] = [];
-  public backupResolvers: BackupResolver[] = [];
-  public integrationResolvers: IntegrationResolver[] = [];
-  public mobileResolvers: MobileResolver[] = [];
-  public userManagementResolvers: UserManagementResolver[] = [];
-  public notificationResolvers: NotificationResolver[] = [];
-  public searchResolvers: SearchResolver[] = [];
-  public exportResolvers: ExportResolver[] = [];
-  public importResolvers: ImportResolver[] = [];
-  public printResolvers: PrintResolver[] = [];
-  public helpResolvers: HelpResolver[] = [];
-  public developmentResolvers: DevelopmentResolver[] = [];
-  public i18nResolvers: I18nResolver[] = [];
-  public accessibilityResolvers: AccessibilityResolver[] = [];
-  public contentResolvers: ContentResolver[] = [];
-  public performanceInterceptors: PerformanceInterceptor[] = [];
-  public securityInterceptors: SecurityInterceptor[] = [];
-  public seoInterceptors: SEOInterceptor[] = [];
-  public analyticsInterceptors: AnalyticsInterceptor[] = [];
-  public collaborationInterceptors: CollaborationInterceptor[] = [];
-  public backupInterceptors: BackupInterceptor[] = [];
-  public integrationInterceptors: IntegrationInterceptor[] = [];
-  public mobileInterceptors: MobileInterceptor[] = [];
-  public userManagementInterceptors: UserManagementInterceptor[] = [];
-  public notificationInterceptors: NotificationInterceptor[] = [];
-  public searchInterceptors: SearchInterceptor[] = [];
-  public exportInterceptors: ExportInterceptor[] = [];
-  public importInterceptors: ImportInterceptor[] = [];
-  public printInterceptors: PrintInterceptor[] = [];
-  public helpInterceptors: HelpInterceptor[] = [];
-  public developmentInterceptors: DevelopmentInterceptor[] = [];
-  public i18nInterceptors: I18nInterceptor[] = [];
-  public accessibilityInterceptors: AccessibilityInterceptor[] = [];
-  public contentInterceptors: ContentInterceptor[] = [];
-  public performanceFilters: PerformanceEntry[] = [];
-  public securityFilters: SecurityEntry[] = [];
-  public seoFilters: SEOEntry[] = [];
-  public analyticsFilters: AnalyticsEntry[] = [];
-  public collaborationFilters: CollaborationEntry[] = [];
-  public backupFilters: BackupEntry[] = [];
-  public integrationFilters: IntegrationEntry[] = [];
-  public mobileFilters: MobileEntry[] = [];
-  public userManagementFilters: UserManagementEntry[] = [];
-  public notificationFilters: NotificationEntry[] = [];
-  public searchFilters: SearchEntry[] = [];
-  public exportFilters: ExportEntry[] = [];
-  public importFilters: ImportEntry[] = [];
-  public printFilters: PrintEntry[] = [];
-  public helpFilters: HelpEntry[] = [];
-  public developmentFilters: DevelopmentEntry[] = [];
-  public i18nFilters: I18nEntry[] = [];
-  public accessibilityFilters: AccessibilityEntry[] = [];
-  public contentFilters: ContentEntry[] = [];
-  public performanceMiddlewares: PerformanceMeasure[] = [];
-  public securityMiddlewares: SecurityEntry[] = [];
-  public seoMiddlewares: SEOEntry[] = [];
-  public analyticsMiddlewares: AnalyticsEntry[] = [];
-  public collaborationMiddlewares: CollaborationEntry[] = [];
-  public backupMiddlewares: BackupEntry[] = [];
-  public integrationMiddlewares: IntegrationEntry[] = [];
-  public mobileMiddlewares: MobileEntry[] = [];
-  public userManagementMiddlewares: UserManagementEntry[] = [];
-  public notificationMiddlewares: NotificationEntry[] = [];
-  public searchMiddlewares: SearchEntry[] = [];
-  public exportMiddlewares: ExportEntry[] = [];
-  public importMiddlewares: ImportEntry[] = [];
-  public printMiddlewares: PrintEntry[] = [];
-  public helpMiddlewares: HelpEntry[] = [];
-  public developmentMiddlewares: DevelopmentEntry[] = [];
-  public i18nMiddlewares: I18nEntry[] = [];
-  public accessibilityMiddlewares: AccessibilityEntry[] = [];
-  public contentMiddlewares: ContentEntry[] = [];
-  public performanceStrategies: PerformanceEntry[] = [];
-  public securityStrategies: SecurityEntry[] = [];
-  public seoStrategies: SEOEntry[] = [];
-  public analyticsStrategies: AnalyticsEntry[] = [];
-  public collaborationStrategies: CollaborationEntry[] = [];
-  public backupStrategies: BackupEntry[] = [];
-  public integrationStrategies: IntegrationEntry[] = [];
-  public mobileStrategies: MobileEntry[] = [];
-  public userManagementStrategies: UserManagementEntry[] = [];
-  public notificationStrategies: NotificationEntry[] = [];
-  public searchStrategies: SearchEntry[] = [];
-  public exportStrategies: ExportEntry[] = [];
-  public importStrategies: ImportEntry[] = [];
-  public printStrategies: PrintEntry[] = [];
-  public helpStrategies: HelpEntry[] = [];
-  public developmentStrategies: DevelopmentEntry[] = [];
-  public i18nStrategies: I18nEntry[] = [];
-  public accessibilityStrategies: AccessibilityEntry[] = [];
-  public contentStrategies: ContentEntry[] = [];
-  public performanceObservables: PerformanceObservable[] = [];
-  public securityObservables: SecurityObservable[] = [];
-  public seoObservables: SEOObservable[] = [];
-  public analyticsObservables: AnalyticsObservable[] = [];
-  public collaborationObservables: CollaborationObservable[] = [];
-  public backupObservables: BackupObservable[] = [];
-  public integrationObservables: IntegrationObservable[] = [];
-  public mobileObservables: MobileObservable[] = [];
-  public userManagementObservables: UserManagementObservable[] = [];
-  public notificationObservables: NotificationObservable[] = [];
-  public searchObservables: SearchObservable[] = [];
-  public exportObservables: ExportObservable[] = [];
-  public importObservables: ImportObservable[] = [];
-  public printObservables: PrintObservable[] = [];
-  public helpObservables: HelpObservable[] = [];
-  public developmentObservables: DevelopmentObservable[] = [];
-  public i18nObservables: I18nObservable[] = [];
-  public accessibilityObservables: AccessibilityObservable[] = [];
-  public contentObservables: ContentObservable[] = [];
-  public performanceSubjects: PerformanceSubject[] = [];
-  public securitySubjects: SecuritySubject[] = [];
-  public seoSubjects: SEOSubject[] = [];
-  public analyticsSubjects: AnalyticsSubject[] = [];
-  public collaborationSubjects: CollaborationSubject[] = [];
-  public backupSubjects: BackupSubject[] = [];
-  public integrationSubjects: IntegrationSubject[] = [];
-  public mobileSubjects: MobileSubject[] = [];
-  public userManagementSubjects: UserManagementSubject[] = [];
-  public notificationSubjects: NotificationSubject[] = [];
-  public searchSubjects: SearchSubject[] = [];
-  public exportSubjects: ExportSubject[] = [];
-  public importSubjects: ImportSubject[] = [];
-  public printSubjects: PrintSubject[] = [];
-  public helpSubjects: HelpSubject[] = [];
-  public developmentSubjects: DevelopmentSubject[] = [];
-  public i18nSubjects: I18nSubject[] = [];
-  public accessibilitySubjects: AccessibilitySubject[] = [];
-  public contentSubjects: ContentSubject[] = [];
-  public performanceBehaviors: PerformanceEntry[] = [];
-  public securityBehaviors: SecurityEntry[] = [];
-  public seoBehaviors: SEOEntry[] = [];
-  public analyticsBehaviors: AnalyticsEntry[] = [];
-  public collaborationBehaviors: CollaborationEntry[] = [];
-  public backupBehaviors: BackupEntry[] = [];
-  public integrationBehaviors: IntegrationEntry[] = [];
-  public mobileBehaviors: MobileEntry[] = [];
-  public userManagementBehaviors: UserManagementEntry[] = [];
-  public notificationBehaviors: NotificationEntry[] = [];
-  public searchBehaviors: SearchEntry[] = [];
-  public exportBehaviors: ExportEntry[] = [];
-  public importBehaviors: ImportEntry[] = [];
-  public printBehaviors: PrintEntry[] = [];
-  public helpBehaviors: HelpEntry[] = [];
-  public developmentBehaviors: DevelopmentEntry[] = [];
-  public i18nBehaviors: I18nEntry[] = [];
-  public accessibilityBehaviors: AccessibilityEntry[] = [];
-  public contentBehaviors: ContentEntry[] = [];
-  public performanceReplays: PerformanceEntry[] = [];
-  public securityReplays: SecurityEntry[] = [];
-  public seoReplays: SEOEntry[] = [];
-  public analyticsReplays: AnalyticsEntry[] = [];
-  public collaborationReplays: CollaborationEntry[] = [];
-  public backupReplays: BackupEntry[] = [];
-  public integrationReplays: IntegrationEntry[] = [];
-  public mobileReplays: MobileEntry[] = [];
-  public userManagementReplays: UserManagementEntry[] = [];
-  public notificationReplays: NotificationEntry[] = [];
-  public searchReplays: SearchEntry[] = [];
-  public exportReplays: ExportEntry[] = [];
-  public importReplays: ImportEntry[] = [];
-  public printReplays: PrintEntry[] = [];
-  public helpReplays: HelpEntry[] = [];
-  public developmentReplays: DevelopmentEntry[] = [];
-  public i18nReplays: I18nEntry[] = [];
-  public accessibilityReplays: AccessibilityEntry[] = [];
-  public contentReplays: ContentEntry[] = [];
-  public performanceAsyncs: PerformanceEntry[] = [];
-  public securityAsyncs: SecurityEntry[] = [];
-  public seoAsyncs: SEOEntry[] = [];
-  public analyticsAsyncs: AnalyticsEntry[] = [];
-  public collaborationAsyncs: CollaborationEntry[] = [];
-  public backupAsyncs: BackupEntry[] = [];
-  public integrationAsyncs: IntegrationEntry[] = [];
-  public mobileAsyncs: MobileEntry[] = [];
-  public userManagementAsyncs: UserManagementEntry[] = [];
-  public notificationAsyncs: NotificationEntry[] = [];
-  public searchAsyncs: SearchEntry[] = [];
-  public exportAsyncs: ExportEntry[] = [];
-  public importAsyncs: ImportEntry[] = [];
-  public printAsyncs: PrintEntry[] = [];
-  public helpAsyncs: HelpEntry[] = [];
-  public developmentAsyncs: DevelopmentEntry[] = [];
-  public i18nAsyncs: I18nEntry[] = [];
-  public accessibilityAsyncs: AccessibilityEntry[] = [];
-  public contentAsyncs: ContentEntry[] = [];
-  public performancePromises: PerformancePromise[] = [];
-  public securityPromises: SecurityPromise[] = [];
-  public seoPromises: SEOPromise[] = [];
-  public analyticsPromises: AnalyticsPromise[] = [];
-  public collaborationPromises: CollaborationPromise[] = [];
-  public backupPromises: BackupPromise[] = [];
-  public integrationPromises: IntegrationPromise[] = [];
-  public mobilePromises: MobilePromise[] = [];
-  public userManagementPromises: UserManagementPromise[] = [];
-  public notificationPromises: NotificationPromise[] = [];
-  public searchPromises: SearchPromise[] = [];
-  public exportPromises: ExportPromise[] = [];
-  public importPromises: ImportPromise[] = [];
-  public printPromises: PrintPromise[] = [];
-  public helpPromises: HelpPromise[] = [];
-  public developmentPromises: DevelopmentPromise[] = [];
-  public i18nPromises: I18nPromise[] = [];
-  public accessibilityPromises: AccessibilityPromise[] = [];
-  public contentPromises: ContentPromise[] = [];
-  public performanceIterators: PerformanceInterceptor[] = [];
-  public securityIterators: SecurityInterceptor[] = [];
-  public seoIterators: SEOInterceptor[] = [];
-  public analyticsIterators: AnalyticsInterceptor[] = [];
-  public collaborationIterators: CollaborationInterceptor[] = [];
-  public backupIterators: BackupInterceptor[] = [];
-  public integrationIterators: IntegrationInterceptor[] = [];
-  public mobileIterators: MobileInterceptor[] = [];
-  public userManagementIterators: UserManagementInterceptor[] = [];
-  public notificationIterators: NotificationInterceptor[] = [];
-  public searchIterators: SearchInterceptor[] = [];
-  public exportIterators: ExportInterceptor[] = [];
-  public importIterators: ImportInterceptor[] = [];
-  public printIterators: PrintInterceptor[] = [];
-  public helpIterators: HelpInterceptor[] = [];
-  public developmentIterators: DevelopmentInterceptor[] = [];
-  public i18nIterators: I18nInterceptor[] = [];
-  public accessibilityIterators: AccessibilityInterceptor[] = [];
-  public contentIterators: ContentInterceptor[] = [];
-  public performanceGenerators: PerformanceEntry[] = [];
-  public securityGenerators: SecurityEntry[] = [];
-  public seoGenerators: Generator[] = [];
-  public analyticsGenerators: AnalyticsEntry[] = [];
-  public collaborationGenerators: CollaborationEntry[] = [];
-  public backupGenerators: BackupEntry[] = [];
-  public integrationGenerators: IntegrationEntry[] = [];
-  public mobileGenerators: MobileEntry[] = [];
-  public userManagementGenerators: UserManagementEntry[] = [];
-  public notificationGenerators: NotificationEntry[] = [];
-  public searchGenerators: SearchEntry[] = [];
-  public exportGenerators: ExportEntry[] = [];
-  public importGenerators: ImportEntry[] = [];
-  public printGenerators: PrintEntry[] = [];
-  public helpGenerators: HelpEntry[] = [];
-  public developmentGenerators: DevelopmentEntry[] = [];
-  public i18nGenerators: I18nEntry[] = [];
-  public accessibilityGenerators: AccessibilityEntry[] = [];
-  public contentGenerators: ContentEntry[] = [];
-  public performanceObservers: PerformanceObserver[] = [];
-  public securityObservers: SecurityObservable[] = [];
-  public seoObservers: Observer[] = [];
-  public analyticsObservers: AnalyticsObservable[] = [];
-  public collaborationObservers: CollaborationObservable[] = [];
-  public backupObservers: BackupObservable[] = [];
-  public integrationObservers: IntegrationObservable[] = [];
-  public mobileObservers: MobileObservable[] = [];
-  public userManagementObservers: UserManagementObservable[] = [];
-  public notificationObservers: NotificationObservable[] = [];
-  public searchObservers: SearchObservable[] = [];
-  public exportObservers: ExportObservable[] = [];
-  public importObservers: ImportObservable[] = [];
-  public printObservers: PrintObservable[] = [];
-  public helpObservers: HelpObservable[] = [];
-  public developmentObservers: DevelopmentObservable[] = [];
-  public i18nObservers: I18nObservable[] = [];
-  public accessibilityObservers: AccessibilityObservable[] = [];
-  public contentObservers: ContentObservable[] = [];
-  currentImage: HTMLImageElement = new Image();
-  currentTable!: HTMLTableElement;
-  linkNoFollow: boolean = false;
-  showPerformanceDashboard: boolean = false;
-  linkNewTab: any;
-  tableConfig!: { rows: any; cols: any; header: any; footer: any; border: any; striped: any; hover: any; bordered: any; condensed: any; responsive: any; cellPadding: any; cellSpacing: any; width: any; height: any; alignment: any; caption: any; summary: any; };
 
-  constructor(
-    @Inject(DOCUMENT) public doc: Document,
-    public renderer: Renderer2,
-    public messageService: MessageService,
-    public cdRef: ChangeDetectorRef,
-    public sanitizer: DomSanitizer,
-       public textEditorService: TextEditorService,
-    public textFormattingService: TextFormattingService,
-    public textHistoryService: TextHistoryService,
-    public textAutosaveService: TextAutosaveService,
-  ) {
-    // Initialize feature flags
-    this.initializeFeatureFlags();
-    this.initializePerformanceMetrics();
-    this.initializeSecurityMetrics();
-    this.initializeSEOMetrics();
-    this.initializeAnalyticsMetrics();
-    this.initializeCollaborationMetrics();
-    this.initializeBackupMetrics();
-    this.initializeIntegrationMetrics();
-    this.initializeMobileMetrics();
-    this.initializeUserManagementMetrics();
-    this.initializeNotificationMetrics();
-    this.initializeSearchMetrics();
-    this.initializeExportMetrics();
-    this.initializeImportMetrics();
-    this.initializePrintMetrics();
-    this.initializeHelpMetrics();
-    this.initializeDevelopmentMetrics();
-    this.initializeI18nMetrics();
-    this.initializeAccessibilityMetrics();
-    this.initializeContentMetrics();
-  }
    newDocument(): void {
      // Implementation
      this.textEditorService.resetState();

@@ -1,7 +1,4 @@
 <div class="pro-editor-container" [class.fullscreen]="isFullscreen" [class.dark]="isDark">
-  <p-toast></p-toast>
-  
-    <!-- Advanced Editor Component -->
     <div class="pro-editor-wrapper" 
          [style.width]="width"
          [style.height]="height"
@@ -265,6 +262,7 @@
            contenteditable="true" 
            class="editor-content" 
            [style.display]="isSource && !isSplitView ? 'none' : 'block'"
+           [style.width]="isSplitView ? '50%' : '100%'"
            [class.readonly]="isReadOnly"
            [attr.spellcheck]="spellCheck"
            [attr.autocorrect]="autoCorrect ? 'on' : 'off'"
@@ -281,6 +279,7 @@
        <textarea #sourceEditor
                  class="source-editor"
                  [style.display]="!isSource && !isSplitView ? 'none' : 'block'"
+                 [style.width]="isSplitView ? '50%' : '100%'"
                  [readonly]="isReadOnly"
                  [placeholder]="placeholder"
                  (input)="sync()"
