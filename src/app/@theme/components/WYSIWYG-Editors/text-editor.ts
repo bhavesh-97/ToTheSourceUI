@@ -2290,7 +2290,6 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       tableConfig!: { rows: any; cols: any; header: any; footer: any; border: any; striped: any; hover: any; bordered: any; condensed: any; responsive: any; cellPadding: any; cellSpacing: any; width: any; height: any; alignment: any; caption: any; summary: any; };
     //#endregion
     //#region Services and Dependencies
-      @Inject(DOCUMENT) public doc =inject(Document);
       private messageService = inject(NotificationService);
       private renderer = inject(Renderer2);
       private cdRef = inject(ChangeDetectorRef);
@@ -2300,7 +2299,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       private textHistoryService = inject(TextHistoryService);
       private textAutosaveService = inject(TextAutosaveService);
     //#endregion
-      constructor() {
+      constructor( @Inject(DOCUMENT) public doc: Document) {
                 this.initializeFeatureFlags();
                 this.initializePerformanceMetrics();
                 this.initializeSecurityMetrics();
