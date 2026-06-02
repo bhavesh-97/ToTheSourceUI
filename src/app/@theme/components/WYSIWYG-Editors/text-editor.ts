@@ -33,6 +33,7 @@ import { TextAutosaveService } from './text-autosave.service';
 import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorConfig, EditorPreset, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, ToolbarPreset, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
 import { AnalyticsService } from '../../../@core/utils';
 import { NotificationService } from '../../../services/notification.service';
+import { PopupMessageType } from '../../../models/PopupMessageType';
 
 @Component({
   selector: 'app-text-editor',
@@ -2363,12 +2364,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       const selectedElement = range.startContainer.parentElement;
       if (selectedElement && selectedElement.tagName === 'IMG') {
         selectedElement.remove();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Image Removed',
-          detail: 'Image has been removed',
-          life: 3000
-        });
+         this.messageService.showMessage('Image has been removed', 'Image Removed', PopupMessageType.Success);
       }
     }
   }
@@ -2462,12 +2458,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
   }
    aiTranslate(): void {
     // Implementation
-    this.messageService.add({
-      severity: 'info',
-      summary: 'AI Translate',
-      detail: 'Translation would be implemented with AI API',
-      life: 3000
-    });
+    this.messageService.showMessage('Translation would be implemented with AI API', 'AI Translate', PopupMessageType.Info);
   }
     
   aiSummarize(): void {
@@ -2477,36 +2468,21 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       const text = selection.toString();
       // Call AI API to summarize
       // For now, just show a message
-      this.messageService.add({
-        severity: 'info',
-        summary: 'AI Summarize',
-        detail: 'Summarization would be implemented with AI API',
-        life: 3000
-      });
+       this.messageService.showMessage('Summarization would be implemented with AI API', 'AI Summarize', PopupMessageType.Info);
     }
   }
   
   aiExpand(): void {
     // Implementation
-    this.messageService.add({
-      severity: 'info',
-      summary: 'AI Expand',
-      detail: 'Text expansion would be implemented with AI API',
-      life: 3000
-    });
+    this.messageService.showMessage('Text expansion would be implemented with AI API', 'AI Expand', PopupMessageType.Info);
   }
 
-   newDocument(): void {
-     // Implementation
-     this.textEditorService.resetState();
-     this.editor.nativeElement.innerHTML = '';
-     this.messageService.add({
-       severity: 'success',
-       summary: 'New Document',
-       detail: 'Created new document',
-       life: 3000
-     });
-   }
+    newDocument(): void {
+      // Implementation
+      this.textEditorService.resetState();
+      this.editor.nativeElement.innerHTML = '';
+      this.messageService.showMessage('Created new document', 'New Document', PopupMessageType.Created);
+    }
   
   public initializeFeatureFlags() {
     // Performance features
@@ -3678,12 +3654,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
     this.securityAlerts.push(alert);
     
     if (alert.severity === 'critical' || alert.severity === 'warning') {
-      this.messageService.add({
-        severity: alert.severity === 'critical' ? 'error' : 'warn',
-        summary: 'Security Alert',
-        detail: alert.message,
-        life: 5000
-      });
+      this.messageService.showMessage(alert.message, 'Security Alert', alert.severity === 'critical' ? PopupMessageType.Error : PopupMessageType.Warning);
     }
   }
 
@@ -4338,11 +4309,7 @@ public generateAccessibilityIssues(): AccessibilityIssue[] {
     } else if (file.type === 'application/pdf') {
       this.handlePDFUpload(file);
     } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Unsupported file type'
-      });
+       this.messageService.showMessage('Unsupported file type', 'Error', PopupMessageType.Error);
     }
   }
   readTextFile(file: File) {
@@ -4382,11 +4349,7 @@ public generateAccessibilityIssues(): AccessibilityIssue[] {
 
   public handlePDFUpload(file: File) {
     // This would require a PDF parsing library
-    this.messageService.add({
-      severity: 'info',
-      summary: 'PDF Import',
-      detail: 'PDF import would require additional libraries'
-    });
+    this.messageService.showMessage('PDF import would require additional libraries', 'PDF Import', PopupMessageType.Info);
   }
 
   public handleResize(entry: ResizeObserverEntry) {
@@ -4499,12 +4462,7 @@ public aiImproveWriting() {
   selection.removeAllRanges();
   selection.addRange(newRange);
   
-  this.messageService.add({
-    severity: 'success',
-    summary: 'AI Improvement',
-    detail: 'Text improved using AI',
-    life: 3000
-  });
+         this.messageService.showMessage('Image has been removed', 'Image Removed', PopupMessageType.Success);
 }
 
   public simulateAIImprovement(text: string): string {
@@ -4540,11 +4498,7 @@ public aiImproveWriting() {
 
   public exportDOCX() {
     // This would require a DOCX generation library
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Export',
-      detail: 'DOCX export would require additional libraries'
-    });
+     this.messageService.showMessage('DOCX export would require additional libraries', 'Export', PopupMessageType.Info);
   }
 
   public exportMarkdown() {
@@ -4604,11 +4558,7 @@ public aiImproveWriting() {
   // Enhanced Import Features
   public importWithOptions() {
     if (!this.importFile) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Import',
-        detail: 'Please select a file to import'
-      });
+      this.messageService.showMessage('Please select a file to import', 'Import', PopupMessageType.Warning);
       return;
     }
 
@@ -4644,11 +4594,7 @@ public aiImproveWriting() {
       }
       this.sync();
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Import',
-        detail: 'HTML imported successfully'
-      });
+       this.messageService.showMessage('HTML imported successfully', 'Import', PopupMessageType.Success);
     };
     reader.readAsText(this.importFile!);
   }
@@ -4664,22 +4610,14 @@ public aiImproveWriting() {
       }
       this.sync();
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Import',
-        detail: 'Text imported successfully'
-      });
+      this.messageService.showMessage('Text imported successfully', 'Import', PopupMessageType.Success);
     };
     reader.readAsText(this.importFile!);
   }
 
   public importDOCX() {
     // This would require a DOCX parsing library
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Import',
-      detail: 'DOCX import would require additional libraries'
-    });
+    this.messageService.showMessage('DOCX import would require additional libraries', 'Import', PopupMessageType.Info);
   }
 
   public importMarkdown() {
@@ -4705,11 +4643,7 @@ public aiImproveWriting() {
       }
       this.sync();
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Import',
-        detail: 'Markdown imported successfully'
-      });
+      this.messageService.showMessage('Markdown imported successfully', 'Import', PopupMessageType.Success);
     };
     reader.readAsText(this.importFile!);
   }
@@ -4873,12 +4807,7 @@ public aiImproveWriting() {
        this.exec('insertHTML', template.html);
     }
     this.sync();
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Template Applied',
-      detail: `"${template.name}" template applied successfully`
-    });
+    this.messageService.showMessage(`"${template.name}" template applied successfully`, 'Template Applied', PopupMessageType.Success);
   }
 
   // Enhanced Source Mode
@@ -5172,12 +5101,7 @@ public aiImproveWriting() {
       
       this.sync();
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'History Restored',
-        detail: `Restored from ${historyItem.timestamp.toLocaleString()}`,
-        life: 3000
-      });
+      this.messageService.showMessage(`Restored from ${historyItem.timestamp.toLocaleString()}`, 'Success', PopupMessageType.Success);
     }
   }
 
@@ -5217,21 +5141,13 @@ public aiImproveWriting() {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Please select an image file (JPG, PNG, GIF, WebP, SVG)'
-      });
+      this.messageService.showMessage('Please select an image file (JPG, PNG, GIF, WebP, SVG)', 'Error', PopupMessageType.Error);
       return;
     }
 
     // Check file size
     if (file.size > this.config.maxImageSize) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: `Image size should be less than ${this.config.maxImageSize / 1024 / 1024}MB`
-      });
+      this.messageService.showMessage(`Image size should be less than ${this.config.maxImageSize / 1024 / 1024}MB`, 'Error', PopupMessageType.Error);
       return;
     }
 
@@ -5271,11 +5187,7 @@ public aiImproveWriting() {
     };
     
     reader.onerror = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to read image file'
-      });
+      this.messageService.showMessage('Failed to read image file', 'Error', PopupMessageType.Error);
     };
     
     reader.readAsDataURL(file);
@@ -5305,21 +5217,13 @@ public aiImproveWriting() {
 
    insertImageFromUrl() {
      if (!this.imageUrl) {
-       this.messageService.add({
-         severity: 'warn',
-         summary: 'Warning',
-         detail: 'Please enter an image URL'
-       });
+      this.messageService.showMessage('Please enter an image URL', 'Warning', PopupMessageType.Warning)
        return;
      }
      
      // Prevent inserting image when there's no meaningful content
      if (!this.hasMeaningfulContent()) {
-       this.messageService.add({
-         severity: 'warn',
-         summary: 'Warning',
-         detail: 'Please enter some text before inserting an image'
-       });
+       this.messageService.showMessage('Please enter some text before inserting an image', 'Warning', PopupMessageType.Warning);
        return;
      }
      
@@ -5416,11 +5320,7 @@ public aiImproveWriting() {
      this.sync();
      this.showImageEditor = false;
      
-     this.messageService.add({
-       severity: 'success',
-       summary: 'Success',
-       detail: 'Image updated successfully'
-     });
+     this.messageService.showMessage('Image updated successfully', 'Success', PopupMessageType.Success);
    }
 
   // Enhanced Table Editor
@@ -5490,21 +5390,13 @@ public aiImproveWriting() {
     this.sync();
     this.showTableEditor = false;
     
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Table updated successfully'
-    });
+    this.messageService.showMessage('Table updated successfully', 'Success', PopupMessageType.Success);
   }
 
   // Enhanced Media Embed
   insertMedia() {
     if (!this.mediaUrl) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Please enter a media URL'
-      });
+      this.messageService.showMessage('Please enter a media URL', 'Warning', PopupMessageType.Warning);
       return;
     }
 
@@ -5574,12 +5466,7 @@ public aiImproveWriting() {
      this.exec('insertHTML', mediaHTML);
     this.showMediaDialog = false;
     this.mediaUrl = '';
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Media inserted successfully'
-    });
+    this.messageService.showMessage('Media inserted successfully', 'Success', PopupMessageType.Success);
   }
 
   // Enhanced Code Block with Syntax Highlighting
@@ -5657,11 +5544,7 @@ public aiImproveWriting() {
       try {
         searchRegex = new RegExp(this.findText, this.findCaseSensitive ? 'g' : 'gi');
       } catch (e) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Regex Error',
-          detail: 'Invalid regular expression'
-        });
+        this.messageService.showMessage('Invalid regular expression', 'Regex Error', PopupMessageType.Error);
         return;
       }
     } else {
@@ -5680,17 +5563,9 @@ public aiImproveWriting() {
         this.sourceEditor.nativeElement.value = replaced;
         this.sync();
         
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Find & Replace',
-          detail: `Replaced ${matches.length} occurrence(s)`
-        });
+        this.messageService.showMessage(`Replaced ${matches.length} occurrence(s)`, 'Find & Replace', PopupMessageType.Success);
       } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Find & Replace',
-          detail: 'No matches found'
-        });
+        this.messageService.showMessage('No matches found', 'Find & Replace', PopupMessageType.Info);
       }
     } else {
       // WYSIWYG mode
@@ -5722,23 +5597,11 @@ public aiImproveWriting() {
         this.editor.nativeElement.innerHTML = newContent;
         this.sync();
         
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Find & Replace',
-          detail: `Replaced ${matchCount} occurrence(s)`
-        });
+        this.messageService.showMessage(`Replaced ${matchCount} occurrence(s)`, 'Find & Replace', PopupMessageType.Success);
       } else if (matchCount > 0) {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Find & Replace',
-          detail: `Found ${matchCount} occurrence(s)`
-        });
+        this.messageService.showMessage(`Found ${matchCount} occurrence(s)`, 'Find & Replace', PopupMessageType.Info);
       } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Find & Replace',
-          detail: 'No matches found'
-        });
+        this.messageService.showMessage('No matches found', 'Find & Replace', PopupMessageType.Info);
       }
     }
   }
@@ -5749,11 +5612,7 @@ public aiImproveWriting() {
 
     const selection = this.doc.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Comment',
-        detail: 'Please select text to comment on'
-      });
+      this.messageService.showMessage('Please select text to comment on', 'Comment', PopupMessageType.Warning);
       return;
     }
 
@@ -5804,22 +5663,12 @@ public aiImproveWriting() {
 
     this.sync();
     this.commentText = '';
-    
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Comment Added',
-      detail: 'Comment added successfully'
-    });
+    this.messageService.showMessage('Comment added successfully', 'Comment Added', PopupMessageType.Success);
   }
 
   public showCommentDetails(comment: any) {
     // Show comment in sidebar or tooltip
-    this.messageService.add({
-      severity: 'info',
-      summary: `Comment by ${comment.author}`,
-      detail: comment.text,
-      life: 5000
-    });
+    this.messageService.showMessage(`Comment by ${comment.author}: ${comment.text}`, 'Comment Details', PopupMessageType.Info);
   }
 
   // Enhanced Track Changes
@@ -5827,21 +5676,13 @@ public aiImproveWriting() {
     this.enableTrackChanges = true;
     this.trackChangeAuthor = this.trackChangeAuthor || 'User';
     
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Track Changes',
-      detail: 'Track changes enabled'
-    });
+    this.messageService.showMessage('Track changes enabled', 'Track Changes', PopupMessageType.Success);
   }
 
   stopTracking() {
     this.enableTrackChanges = false;
     
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Track Changes',
-      detail: 'Track changes disabled'
-    });
+    this.messageService.showMessage('Track changes disabled', 'Track Changes', PopupMessageType.Info);
   }
 
    acceptAllChanges() {
@@ -5852,12 +5693,7 @@ public aiImproveWriting() {
        change.rejected = false;
      });
      this.textEditorService.setState(state);
-     
-     this.messageService.add({
-       severity: 'success',
-       summary: 'Track Changes',
-       detail: 'All changes accepted'
-     });
+     this.messageService.showMessage('All changes accepted', 'Track Changes', PopupMessageType.Success);
    }
    
    rejectAllChanges() {
@@ -5869,20 +5705,12 @@ public aiImproveWriting() {
      });
      this.textEditorService.setState(state);
      
-     this.messageService.add({
-       severity: 'warn',
-       summary: 'Track Changes',
-       detail: 'All changes rejected'
-     });
+     this.messageService.showMessage('All changes rejected', 'Track Changes', PopupMessageType.Warning);
    }
   // Enhanced Collaboration
   startCollaboration() {
     if (!this.enableCollaboration) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Collaboration',
-        detail: 'Collaboration is not enabled'
-      });
+      this.messageService.showMessage('Collaboration is not enabled', 'Collaboration', PopupMessageType.Warning);
       return;
     }
 
@@ -5894,11 +5722,7 @@ public aiImproveWriting() {
       { user: 'System', message: 'Collaboration session started', timestamp: new Date() }
     ];
     
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Collaboration',
-      detail: 'Collaboration session started'
-    });
+    this.messageService.showMessage('Collaboration session started', 'Collaboration', PopupMessageType.Success);
   }
 
   sendCollaborationMessage() {
@@ -5935,11 +5759,7 @@ public aiImproveWriting() {
   activateFormatPainter() {
     const selection = this.doc.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Format Painter',
-        detail: 'Please select text to copy formatting from'
-      });
+      this.messageService.showMessage('Please select text to copy formatting from', 'Format Painter', PopupMessageType.Warning);
       return;
     }
 
@@ -5954,31 +5774,19 @@ public aiImproveWriting() {
       
       this.formatPainterActive = true;
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Format Painter',
-        detail: 'Formatting copied. Click on text to apply.'
-      });
+      this.messageService.showMessage('Formatting copied. Click on text to apply.', 'Format Painter', PopupMessageType.Success);
     }
   }
 
   applyFormatPainter() {
     if (!this.formatPainterActive || !this.formatPainterSource) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Format Painter',
-        detail: 'Please copy formatting first'
-      });
+      this.messageService.showMessage('Please copy formatting first', 'Format Painter', PopupMessageType.Warning);
       return;
     }
 
     const selection = this.doc.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Format Painter',
-        detail: 'Please select text to apply formatting to'
-      });
+      this.messageService.showMessage('Please select text to apply formatting to', 'Format Painter', PopupMessageType.Warning);
       return;
     }
 
@@ -6004,11 +5812,7 @@ public aiImproveWriting() {
       this.formatPainterActive = false;
       this.sync();
       
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Format Painter',
-        detail: 'Formatting applied successfully'
-      });
+      this.messageService.showMessage('Formatting applied successfully', 'Format Painter', PopupMessageType.Success);
     }
   }
 
@@ -6786,11 +6590,8 @@ private insertElement(element: HTMLElement): void {
   // Enhanced insert methods
    insertLink() {
      if (!this.linkUrl) {
-       this.messageService.add({
-         severity: 'warn',
-         summary: 'Warning',
-         detail: 'Please enter a URL'
-       });
+      
+       this.messageService.showMessage('Please enter a URL', 'Warning', PopupMessageType.Warning);
        return;
      }
      const linkNoFollow: boolean = this.linkNoFollow;
@@ -6808,11 +6609,7 @@ private insertElement(element: HTMLElement): void {
      this.showLink = false;
      this.linkUrl = this.linkText = this.linkTitle = this.linkStyle = this.linkClass = this.linkId = '';
      
-     this.messageService.add({
-       severity: 'success',
-       summary: 'Success',
-       detail: 'Link inserted successfully'
-     });
+     this.messageService.showMessage('Link inserted successfully', 'Success', PopupMessageType.Success);
    }
 
   // Enhanced table methods
@@ -6993,13 +6790,7 @@ async toggleFullscreen() {
     const element = this.isSource && this.sourceEditor ? this.sourceEditor.nativeElement : this.editor.nativeElement;
     this.renderer.setStyle(element, 'transform', `scale(${this.zoomLevel})`);
     this.renderer.setStyle(element, 'transform-origin', 'top left');
-    
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Zoom',
-      detail: `${Math.round(this.zoomLevel * 100)}%`,
-      life: 1000
-    });
+    this.messageService.showMessage(`Zoom: ${Math.round(this.zoomLevel * 100)}%`, 'Info', PopupMessageType.Info);
   }
 
   // Enhanced theme toggle
@@ -7117,11 +6908,7 @@ async toggleFullscreen() {
     
     this.exportRequested.emit({ type: 'html', content: html });
     
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'HTML exported successfully'
-    });
+    this.messageService.showMessage('HTML exported successfully', 'Success', PopupMessageType.Success);
   }
 
   exportText() {
@@ -7138,21 +6925,12 @@ async toggleFullscreen() {
     
     this.exportRequested.emit({ type: 'text', content: text });
     
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Text exported successfully'
-    });
+    this.messageService.showMessage('Text exported successfully', 'Success', PopupMessageType.Success);
   }
 
   exportPDF() {
     // This would require a PDF generation library like jsPDF or pdfmake
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Info',
-      detail: 'PDF export would require a PDF generation library'
-    });
-    
+    this.messageService.showMessage('PDF export would require a PDF generation library', 'Info', PopupMessageType.Info);
     this.exportRequested.emit({ type: 'pdf', content: this._content });
   }
 
@@ -7170,13 +6948,7 @@ async toggleFullscreen() {
       Tables: ${this.tableCount}
       Links: ${this.linkCount}
     `;
-    
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Document Statistics',
-      detail: stats,
-      life: 10000
-    });
+      this.messageService.showMessage(stats, 'Document Statistics', PopupMessageType.Info);
   }
 
   // Enhanced resize handler
