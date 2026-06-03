@@ -8,19 +8,16 @@ import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToggleButtonModule } from 'primeng/togglebutton';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/text-editor';
-import { Template, TemplateStatus } from './Template';
+import { Template, TemplateType } from './Template';
 import { IconField } from "primeng/iconfield";
 import { InputIcon } from "primeng/inputicon";
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { ConfirmationService } from 'primeng/api';
 import { FormUtils } from '../../../shared/utilities/form-utils';
-import { MRoleMaster } from '../rolemaster/MRoleMaster';
-import { RolemasterService } from '../rolemaster/rolemaster.service';
 import { TemplateMasterService } from './template-master.service';
 import { Select } from "primeng/select";
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
@@ -67,79 +64,103 @@ export class TemplateMaster implements OnInit {
   rows: number = 10;
   totalRecords: number = 0;
   roleDialogHeader: string = '';
-  templateForm!: FormGroup; 
-  
-  private formFields: FormFieldConfig[] = [
-      { name: 'templateID', isMandatory: false, events: [] },
-      { name: 'templateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
-      { name: 'templateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
-      { name: 'templateContent', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
-      { name: 'mCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
-    ];
+  templateForm!: FormGroup;   
+  templateTypes: TemplateType[] = [];
+  selectedTemplateType: TemplateType | null = null;
+
+   private formFields: FormFieldConfig[] = [
+       { name: 'templateID', isMandatory: false, events: [] },
+       { name: 'templateTypeID', isMandatory: true, validationMessage: 'Please select a Template Type.', events: [] },
+       { name: 'templateName', isMandatory: true,validationMessage: 'Please enter a valid Template Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+       { name: 'templateCode', isMandatory: true,validationMessage: 'Please enter a valid Template Code.', events: [{ type: 'keypress', validationRule: ValidationRules.AlphanumericOnly }] },
+       { name: 'templateContent', isMandatory: true,validationMessage: 'Please enter a valid data.', events: [] },
+       { name: 'mCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
+     ];
   
   constructor(){
     this.templateForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
   }
-  ngOnInit() {
-    this.loadData();
-
-  console.log("form",this.templateForm);
-  }
+   ngOnInit() {
+     this.loadData();
+     this.loadTemplateTypes();
   ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.templateForm);
   }
-  loadData() {
-       this.loading = true;
-       this.TemplateMasterService.GetAllTemplateDetails().subscribe({
-          next: (res) => {
-            if (!res.isError) {
-              var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
-              this.loading = false;
-              this.templetelist = response;
-              // console.log("templetelist",this.templetelist);
-              this.totalRecords = this.templetelist.length;
-              // this.messageService.showMessage(res.strMessage, res.title, res.type);
-            } else {
-              this.messageService.showMessage(res.strMessage, res.title, res.type);
-            }
-          },
-          error: () => {
-            this.loading = false;
-            this.messageService.showMessage(
-              'Something went wrong while connecting to the server.',
-              'Error',
-              PopupMessageType.Error
-            );
-          }
-        });
-  }
-  openDialog(isNew: boolean, tpl?: Template) {
-    debugger;
-    this.isNew = isNew;
-    if (isNew) {
-      this.templateForm.reset( {
-        templateID: 0,
-        templateName: '',
-        templateCode: '',
-        mCommonEntitiesMaster:{
-            isActive: true
-        },
-        templateContent: ''
-      });
-    } 
-    else if (tpl) {
-      this.templateForm.patchValue({
-        templateID: tpl.templateID,
-        templateName: tpl.templateName,
-        templateCode: tpl.templateCode,
-        templateContent: tpl.templateContent,
-        mCommonEntitiesMaster:{
-            isActive: tpl.mCommonEntitiesMaster?.isActive
-        },
-      });
-    }
-    this.dialogVisible = true;
-  }
+   loadData() {
+        this.loading = true;
+        this.TemplateMasterService.GetAllTemplateDetails().subscribe({
+           next: (res) => {
+             if (!res.isError) {
+               var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+               this.loading = false;
+               this.templetelist = response;
+               // console.log("templetelist",this.templetelist);
+               this.totalRecords = this.templetelist.length;
+               // this.messageService.showMessage(res.strMessage, res.title, res.type);
+             } else {
+               this.messageService.showMessage(res.strMessage, res.title, res.type);
+             }
+           },
+           error: () => {
+             this.loading = false;
+             this.messageService.showMessage(
+               'Something went wrong while connecting to the server.',
+               'Error',
+               PopupMessageType.Error
+             );
+           }
+         });
+   }
+
+   loadTemplateTypes() {
+        this.TemplateMasterService.GetTemplateTypes().subscribe({
+           next: (res) => {
+             if (!res.isError) {
+               var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+               this.templateTypes = response;
+               // console.log("templateTypes", this.templateTypes);
+             } else {
+               this.messageService.showMessage(res.strMessage, res.title, res.type);
+             }
+           },
+           error: () => {
+             this.messageService.showMessage(
+               'Something went wrong while connecting to the server.',
+               'Error',
+               PopupMessageType.Error
+             );
+           }
+         });
+   }
+   openDialog(isNew: boolean, tpl?: Template) {
+     // debugger;
+     this.isNew = isNew;
+     if (isNew) {
+       this.templateForm.reset( {
+         templateID: 0,
+         templateTypeID: 0,
+         templateName: '',
+         templateCode: '',
+         mCommonEntitiesMaster:{
+             isActive: true
+         },
+         templateContent: ''
+       });
+     } 
+     else if (tpl) {
+       this.templateForm.patchValue({
+         templateID: tpl.templateID,
+         templateTypeID: tpl.templateTypeID,
+         templateName: tpl.templateName,
+         templateCode: tpl.templateCode,
+         templateContent: tpl.templateContent,
+         mCommonEntitiesMaster:{
+             isActive: tpl.mCommonEntitiesMaster?.isActive
+         },
+       });
+     }
+     this.dialogVisible = true;
+   }
   deletetemplate(temp: Template) {
     this.confirmationService.confirm({
       key: 'roleDialog',
@@ -173,7 +194,7 @@ export class TemplateMaster implements OnInit {
   }
 
   async SaveTemplate() {
-    debugger;
+    // debugger;
      if (this.templateForm.invalid) {
 
     this.templateForm.markAllAsTouched();
@@ -191,7 +212,7 @@ export class TemplateMaster implements OnInit {
     return;
   }
 
-  console.log(this.templateForm.value);
+  // console.log(this.templateForm.value);
     // Mark all controls as touched to show validation errors
     // this.markFormGroupTouched(this.roleForm);
     const outcome = this.FormUtils.validateFormFields(this.formFields, this.templateForm, this.inputElements.toArray(), this.renderer);
@@ -209,7 +230,7 @@ export class TemplateMaster implements OnInit {
          this.TemplateMasterService.SaveTemplate(tempModel).subscribe({
             next: (res) => {
                 if (!res.isError) {
-                  debugger;
+                  // debugger;
                   // var response = JSON.parse(res.result);
                   const response = res.result;
                   this.templateForm.reset();

@@ -6,5 +6,12 @@ export class Template {
   templateName: string = "";
   templateCode: string = "";
   templateContent: string = "";
+  templateTypeID: number = 0;
+  templateTypeName: string = "";
+  mCommonEntitiesMaster?: MCommonEntitiesMaster;
+}
+export class TemplateType {
+  templateTypeID: number = 0;
+  templateTypeName: string = "";
   mCommonEntitiesMaster?: MCommonEntitiesMaster;
 }

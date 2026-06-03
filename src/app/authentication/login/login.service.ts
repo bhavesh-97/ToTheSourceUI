@@ -11,6 +11,7 @@ import { Encryption } from '../../services/encryption';
 import { MUserMenuIDAM } from '../../models/usermenuidem';
 import { PopupMessageType } from '../../models/PopupMessageType';
 import { delay, of } from 'rxjs';
+import { CurrentUser } from '../../services/CurrentUser';
 
 @Injectable({
   providedIn: 'root'
@@ -267,6 +268,7 @@ export class LoginService {
       storeUserInfo(user: MUser) {
         const json = JSON.stringify(user);
         const encrypted = this.encryption.frontEncryptEncode(json);
+        CurrentUser.userInfo = json ? JSON.parse(json) : null;
         localStorage.setItem(this.USER_INFO_KEY, encrypted);
       }
       getUserInfo(): MUser | null {

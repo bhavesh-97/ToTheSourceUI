@@ -51,6 +51,12 @@
             <p-columnFilter type="text" field="templateCode" display="menu"></p-columnFilter>
           </div>
         </th>
+        <th style="min-width: 16rem">
+          <div class="flex align-items-center justify-content-between">
+            Template Type
+            <p-columnFilter type="text" field="templateTypeName" display="menu"></p-columnFilter>
+          </div>
+        </th>
         <th style="min-width: 10rem">
           <div class="flex align-items-center justify-content-between">
             Status
@@ -92,6 +98,11 @@
           </div>
         </td>
         <td>
+          <div class="flex align-items-center gap-3">
+            <span class="font-medium">{{ template.templateTypeName }}</span>
+          </div>
+        </td>
+        <td>
           <p-tag 
             [value]="template.mCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
             [severity]="template.mCommonEntitiesMaster.isActive ? 'success' : 'danger'"
@@ -130,21 +141,19 @@
   </p-table>
 </div>
 <!-- Template Editor Dialog -->
-<p-dialog [(visible)]="dialogVisible" [modal]="true" [style]="{width:'90%', maxWidth:'800px', height:'85vh'}"
+<p-dialog [(visible)]="dialogVisible" [draggable]="false" [modal]="true" [style]="{width:'90%', maxWidth:'800px', height:'85vh'}"
     header="{{ isNew ? 'Create New Template' : 'Edit: ' + templateForm.get('templateName')?.value }}" [baseZIndex]="10000">
     <div class="container d-flex justify-content-center">
       <form [formGroup]="templateForm" id="templateForm" (ngSubmit)="SaveTemplate()"> 
-         <input pInputText #templateIdInput formControlName="templateID"  hidden/>
-           
-           <div class="mb-3">
-               <label class="form-label fw-medium mb-0">
-                 Template Name <span class="text-danger">*</span>
-               </label>
+          <input pInputText #templateIdInput formControlName="templateID"  hidden/>
+          <div class="mb-3">
+                <label class="form-label fw-medium mb-0">
+                  Template Name 
+                </label>
            </div>
-           
            <div class="mb-3">
              <input pInputText
-                   #templateNameInput
+                   #inputField
                    formControlName="templateName"
                    class="form-control input100"
                    [class.is-invalid]="templateForm.get('templateName')?.invalid && templateForm.get('templateName')?.touched"/>
@@ -157,12 +166,12 @@
            </div>
            <div class="mt-3 ">
              <label class="form-label fw-medium mb-0">
-               Template Code <span class="text-danger">*</span>
+               Template Code 
              </label>
            </div>
            <div class="mb-3">
              <input pInputText
-                 #templateCodeInput
+                 #inputField
                  formControlName="templateCode"
                  class="form-control input100"
                  [class.is-invalid]="templateForm.get('templateCode')?.invalid && templateForm.get('templateCode')?.touched" />
@@ -173,21 +182,40 @@
                    Template code must be at least {{templateForm.get('templateCode')?.errors?.['minlength']?.requiredLength}} characters
                  </div>
              </div>
+           </div> 
+           <div class="mb-3">
+                <label class="form-label fw-medium mb-0">
+                   Template Type 
+                </label>
            </div>
+            <div class="mb-3">
+                <p-select #inputField
+                          formControlName="templateTypeID"
+                          [options]="templateTypes"
+                          optionLabel="templateTypeName"
+                          optionValue="templateTypeID"
+                          [showClear]="true"
+                          placeholder="Select Template Type"
+                          class="form-control input100 w-100"
+                          [class.is-invalid]="templateForm.get('templateTypeID')?.invalid && templateForm.get('templateTypeID')?.touched">
+                </p-select>
+                <div *ngIf="templateForm.get('templateTypeID')?.invalid && templateForm.get('templateTypeID')?.touched" class="invalid-feedback">
+                    <div *ngIf="templateForm.get('templateTypeID')?.errors?.['required']">Template type is required</div>
+                </div>
+            </div>
            <div class="mt-3 " formGroupName="mCommonEntitiesMaster">
                <div class="row mb-3 align-items-center">
                  <div class="col-8 d-flex align-items-center gap-3">
-                     <p-toggleswitch #isActiveInput formControlName="isActive"></p-toggleswitch>
+                     <p-toggleswitch #inputField formControlName="isActive"></p-toggleswitch>
                      <span>
                            {{ templateForm.get('mCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}
                      </span>
                  </div>
              </div>
            </div>
-           
            <div class="mt-3 rounded-lg">
              <app-text-editor
-               #htmlEditor
+               #inputField
                formControlName="templateContent"
                [width]="'100%'"
                [height]="'100%'"
@@ -209,3 +237,5 @@
     </button>
   </ng-template>
 </p-dialog>
+
+<p-confirmDialog  [draggable]="false" key="roleDialog"></p-confirmDialog>

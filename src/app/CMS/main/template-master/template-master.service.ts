@@ -8,6 +8,7 @@ import { JsonResponseModel } from '../../../models/JsonResponseModel';
 import { Encryption } from '../../../services/encryption';
 import { MRoleMaster } from '../rolemaster/MRoleMaster';
 import { Template } from './Template';
+import { CurrentUser } from '../../../services/CurrentUser';
 
 @Injectable({
   providedIn: 'root'
@@ -34,13 +35,28 @@ export class TemplateMasterService {
             );
       }
     SaveTemplate(roleModel: Template, encryptPayload = false): Observable<JsonResponseModel> {
+      const userId = CurrentUser.userId;
+      roleModel.mCommonEntitiesMaster!.createdBy = userId;
+      roleModel.mCommonEntitiesMaster!.updatedBy = userId;
         return this.http.post<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/SaveTemplateDetails`,roleModel,                    
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
-    DeleteTemplate(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
-        return this.http.post<JsonResponseModel>(`${this.baseUrl}/TemplateMaster/DeleteTemplate`, { TemplateID: templateId },                    
-                                                          { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
-        );
-      }
+   DeleteTemplate(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
+    debugger;
+    const userId = CurrentUser.userId;
+
+    return this.http.post<JsonResponseModel>(
+        `${this.baseUrl}/TemplateMaster/DeleteTemplate?TemplateID=${templateId}&DeletedBy=${userId}`,
+        null,
+        {
+            context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload)
+        }
+    );
+}
+   GetTemplateTypes(encryptPayload = false): Observable<JsonResponseModel> {
+         return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateTypeMaster/GetTemplateTypes`,
+                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
+             );
+       }
 }
