@@ -83,6 +83,7 @@ export class TemplateMaster implements OnInit {
    ngOnInit() {
      this.loadData();
      this.loadTemplateTypes();
+   }
   ngAfterViewInit() {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.templateForm);
   }
