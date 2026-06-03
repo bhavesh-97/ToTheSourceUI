@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { WebLayoutComponent } from './web-layout/web-layout.component';
+import { WebLayout } from './web-layout/web-layout';
 
 export const WebRoutes: Routes = [
   {
     path: '',
-    component: WebLayoutComponent,
+    component: WebLayout,
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },

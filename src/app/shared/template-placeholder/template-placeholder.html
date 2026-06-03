@@ -1,0 +1,18 @@
+@if (isLoading) {
+  <div class="loading-placeholder">
+    <span class="placeholder-text">
+      Loading {{ templateType }}...
+    </span>
+  </div>
+} @else if (error) {
+  <div class="error-placeholder">
+    <span class="placeholder-text">
+      {{ error }}
+    </span>
+  </div>
+} @else if (safeContent) {
+  <div
+    class="template-content"
+    [innerHTML]="safeContent">
+  </div>
+}

@@ -1,0 +1,455 @@
+$color-dark:       #0a0c14;
+$color-dark-mid:   #111420;
+$color-accent:     #00c896;
+$color-accent-2:   #00a3d4;
+$color-white:      #ffffff;
+$color-off-white:  #f4f5f7;
+$color-muted:      rgba(255, 255, 255, 0.55);
+$color-border:     rgba(255, 255, 255, 0.1);
+$color-border-dark: rgba(0, 0, 0, 0.08);
+$font-primary:     'DM Sans', 'Helvetica Neue', sans-serif;
+$transition-fast:  0.2s ease;
+$transition-med:   0.35s cubic-bezier(0.4, 0, 0.2, 1);
+$header-height:    72px;
+$header-pad-x:     clamp(1.5rem, 4vw, 4rem);
+
+// ── Base ───────────────────────────────────────────────────
+:host {
+  display: block;
+  font-family: $font-primary;
+}
+
+// ── Header Shell ──────────────────────────────────────────
+.amnex-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 20px $header-pad-x;
+  background: transparent;
+  transition: background $transition-med, padding $transition-med, box-shadow $transition-med;
+  will-change: background, padding;
+
+  // Default (transparent) — show dark logo
+  .logo-white  { display: none; }
+  .logo-default{ display: block; }
+
+  &.scrolled {
+    background: rgba($color-dark, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
+    padding: 12px $header-pad-x;
+
+    // Swap logo to white version on dark scrolled header
+    .logo-white  { display: block; }
+    .logo-default{ display: none; }
+
+    .nav-link { color: $color-muted; }
+    .nav-link:hover,
+    .nav-link.active,
+    .menu-active .nav-link { color: $color-white; }
+
+    .header-cta {
+      background: $color-accent;
+      border-color: $color-accent;
+      color: $color-dark;
+    }
+  }
+}
+
+// ── Inner Layout ──────────────────────────────────────────
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+// ── Logo ──────────────────────────────────────────────────
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+  margin-right: auto;
+
+  .logo {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+  }
+}
+
+// ── Desktop Nav ───────────────────────────────────────────
+.desktop-nav {
+  @media (max-width: 1023px) { display: none; }
+}
+
+.nav-list {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  position: relative;
+
+  &.menu-active .nav-link { color: $color-white; }
+  &.menu-active .nav-arrow { transform: rotate(180deg); }
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba($color-white, 0.75);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color $transition-fast;
+  white-space: nowrap;
+
+  &:hover,
+  &.active { color: $color-white; }
+
+  &-btn { font-family: $font-primary; }
+}
+
+.nav-arrow {
+  display: inline-flex;
+  transition: transform $transition-med;
+
+  i { font-size: 11px; }
+}
+
+// ── Mega Menu Panel ───────────────────────────────────────
+.mega-menu-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 560px;
+  background: $color-white;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  z-index: 100;
+  transform-origin: top center;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: $color-white;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  }
+
+  // Wider for products mega menu
+  &[data-menu="Products"] {
+    min-width: 640px;
+  }
+}
+
+.mega-menu-inner {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.mega-menu-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid $color-border-dark;
+  background: $color-off-white;
+}
+
+.mega-menu-category {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $color-accent;
+}
+
+.mega-menu-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba($color-dark, 0.55);
+  line-height: 1.5;
+  max-width: 440px;
+}
+
+.mega-menu-columns {
+  display: flex;
+  padding: 20px 24px 24px;
+  gap: 40px;
+}
+
+.mega-menu-col {
+  flex: 1;
+}
+
+.col-heading {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba($color-dark, 0.4);
+  margin-bottom: 12px;
+}
+
+.mega-items-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mega-menu-item {
+  margin: 0;
+}
+
+.mega-item-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: $color-dark;
+  font-size: 13.5px;
+  font-weight: 450;
+  transition: background $transition-fast, color $transition-fast;
+  cursor: pointer;
+
+  .item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba($color-accent, 0.1);
+    color: $color-accent;
+    flex-shrink: 0;
+    transition: background $transition-fast;
+
+    i { font-size: 13px; }
+  }
+
+  .item-label { flex: 1; }
+
+  .item-arrow {
+    font-size: 10px;
+    color: rgba($color-dark, 0.2);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity $transition-fast, transform $transition-fast;
+  }
+
+  &:hover {
+    background: rgba($color-accent, 0.06);
+    color: darken($color-accent, 5%);
+
+    .item-icon {
+      background: rgba($color-accent, 0.2);
+    }
+
+    .item-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+// ── Header Actions ────────────────────────────────────────
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: $font-primary;
+  text-decoration: none;
+  background: transparent;
+  color: $color-white;
+  border: 1.5px solid rgba($color-white, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background $transition-fast, border-color $transition-fast, color $transition-fast;
+  white-space: nowrap;
+
+  &:hover {
+    background: $color-accent;
+    border-color: $color-accent;
+    color: $color-dark;
+  }
+}
+
+// ── Mobile Toggle ─────────────────────────────────────────
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+
+  @media (max-width: 1023px) { display: flex; }
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 22px;
+
+  span {
+    display: block;
+    height: 1.5px;
+    background: $color-white;
+    border-radius: 2px;
+    transition: transform $transition-med, opacity $transition-fast, width $transition-med;
+  }
+
+  &.open {
+    span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+      width: 0;
+    }
+    span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+  }
+}
+
+// ── Mobile Menu Overlay ───────────────────────────────────
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 100vw);
+  background: $color-dark-mid;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-shadow: -20px 0 60px rgba(0,0,0,0.3);
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid $color-border;
+}
+
+.mobile-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba($color-white, 0.08);
+  border: 1px solid $color-border;
+  color: $color-white;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover { background: rgba($color-white, 0.14); }
+
+  i { font-size: 15px; }
+}
+
+.mobile-nav {
+  flex: 1;
+  padding: 16px 0;
+}
+
+.mobile-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba($color-white, 0.85);
+  text-decoration: none;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: rgba($color-white, 0.06);
+    color: $color-white;
+  }
+
+  i { font-size: 13px; color: rgba($color-white, 0.3); }
+}
+
+.mobile-cta {
+  padding: 20px 24px 32px;
+  border-top: 1px solid $color-border;
+}
+
+.mobile-cta-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 13px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: $font-primary;
+  text-decoration: none;
+  background: $color-accent;
+  color: $color-dark;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity $transition-fast;
+
+  &:hover { opacity: 0.9; }
+}
+
+@media (max-width: 1023px) {
+  .amnex-header {
+    background: rgba($color-dark, 0.92) !important;
+    backdrop-filter: blur(20px);
+    padding: 14px $header-pad-x;
+
+    .logo-white  { display: block !important; }
+    .logo-default{ display: none !important; }
+  }
+}

@@ -1,0 +1,168 @@
+<!-- Amnex-style Header Component -->
+<header
+  #headerEl
+  class="amnex-header"
+  [class.scrolled]="isScrolled()"
+>
+  <div class="header-inner">
+
+    <!-- Logo -->
+    <a class="logo-wrapper" routerLink="/" aria-label="Amnex Home">
+      <img
+        class="logo logo-default"
+        src="assets/logo-dark.svg"
+        alt="Amnex"
+        width="140"
+        height="36"
+      />
+      <img
+        class="logo logo-white"
+        src="assets/logo-white.svg"
+        alt="Amnex"
+        width="140"
+        height="36"
+      />
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav #navEl class="desktop-nav" aria-label="Main navigation">
+      <ul class="nav-list" role="list">
+        @for (item of navItems; track item.label) {
+          <li
+            class="nav-item"
+            [class.has-mega]="!!item.megaMenu"
+            [class.menu-active]="hasActiveMegaMenu(item.label)"
+            (mouseenter)="item.megaMenu ? openMenu(item.label) : null"
+            (mouseleave)="item.megaMenu ? closeMenu() : null"
+          >
+            @if (item.route && !item.megaMenu) {
+              <a class="nav-link" [routerLink]="item.route" routerLinkActive="active">
+                {{ item.label }}
+              </a>
+            } @else {
+              <button class="nav-link nav-link-btn" type="button" [attr.aria-expanded]="hasActiveMegaMenu(item.label)">
+                {{ item.label }}
+                <span class="nav-arrow">
+                  <i class="pi pi-chevron-down"></i>
+                </span>
+              </button>
+            }
+
+            <!-- Mega Menu Panel -->
+            @if (item.megaMenu && hasActiveMegaMenu(item.label)) {
+              <div
+                class="mega-menu-panel"
+                [attr.data-menu]="item.label"
+                (mouseenter)="keepMenuOpen()"
+                (mouseleave)="closeMenu()"
+                role="region"
+                [attr.aria-label]="item.label + ' menu'"
+              >
+                <div class="mega-menu-inner">
+                  <div class="mega-menu-header">
+                    <span class="mega-menu-category">{{ item.label }}</span>
+                    <p class="mega-menu-desc">{{ item.megaMenu.description }}</p>
+                  </div>
+                  <div class="mega-menu-columns">
+                    @for (col of item.megaMenu.columns; track col.heading) {
+                      <div class="mega-menu-col">
+                        @if (col.heading) {
+                          <span class="col-heading">{{ col.heading }}</span>
+                        }
+                        <ul class="mega-items-list" role="list">
+                          @for (menuItem of col.items; track menuItem.label) {
+                            <li class="mega-menu-item">
+                              <a
+                                class="mega-item-link"
+                                [routerLink]="menuItem.route"
+                              >
+                                @if (menuItem.icon) {
+                                  <span class="item-icon">
+                                    <i [class]="menuItem.icon"></i>
+                                  </span>
+                                }
+                                <span class="item-label">{{ menuItem.label }}</span>
+                                <i class="pi pi-arrow-right item-arrow"></i>
+                              </a>
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <a routerLink="/contact" class="header-cta" pButton pRipple>
+        Contact Us
+      </a>
+
+      <!-- Mobile Menu Toggle -->
+      <button
+        class="mobile-toggle"
+        type="button"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-label="Toggle menu"
+        (click)="toggleMobileMenu()"
+      >
+        <span class="hamburger" [class.open]="isMobileMenuOpen()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Mobile Menu Overlay -->
+@if (isMobileMenuOpen()) {
+  <div class="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+    <div class="mobile-menu-header">
+      <a class="logo-wrapper" routerLink="/" (click)="isMobileMenuOpen.set(false)">
+        <img src="assets/logo-white.svg" alt="Amnex" width="120" height="30" />
+      </a>
+      <button
+        class="mobile-close"
+        type="button"
+        aria-label="Close menu"
+        (click)="toggleMobileMenu()"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <ul class="mobile-nav-list" role="list">
+        @for (item of navItems; track item.label) {
+          <li class="mobile-nav-item">
+            <a
+              class="mobile-nav-link"
+              [routerLink]="item.route || null"
+              (click)="isMobileMenuOpen.set(false)"
+            >
+              {{ item.label }}
+              @if (item.megaMenu) {
+                <i class="pi pi-chevron-right"></i>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="mobile-cta">
+      <a routerLink="/contact" class="mobile-cta-btn" pButton pRipple (click)="isMobileMenuOpen.set(false)">
+        Contact Us
+      </a>
+    </div>
+  </div>
+}

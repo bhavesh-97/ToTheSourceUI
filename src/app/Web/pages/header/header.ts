@@ -1,0 +1,382 @@
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  HostListener,
+  ElementRef,
+  ViewChild,
+  PLATFORM_ID,
+  Inject,
+  signal,
+  computed,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { RippleModule } from 'primeng/ripple';
+import { BadgeModule } from 'primeng/badge';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { PopoverModule } from 'primeng/popover';
+
+export interface MegaMenuColumn {
+  heading?: string;
+  items: MegaMenuItem[];
+}
+
+export interface MegaMenuItem {
+  label: string;
+  icon?: string;
+  route?: string;
+  children?: MegaMenuItem[];
+}
+
+export interface NavItem {
+  label: string;
+  route?: string;
+  megaMenu?: {
+    description: string;
+    columns: MegaMenuColumn[];
+  };
+}
+
+@Component({
+  selector: 'web-header',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    ButtonModule,
+    RippleModule,
+    BadgeModule,
+    PopoverModule ,
+  ],
+  templateUrl: './header.html',
+  styleUrls: ['./header.scss'],
+})
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('headerEl') headerEl!: ElementRef<HTMLElement>;
+  @ViewChild('logoEl') logoEl!: ElementRef<HTMLElement>;
+  @ViewChild('navEl') navEl!: ElementRef<HTMLElement>;
+
+  isScrolled = signal(false);
+  isMobileMenuOpen = signal(false);
+  activeMenu = signal<string | null>(null);
+  isBrowser: boolean;
+
+  private scrollTl?: gsap.core.Timeline;
+  private megaMenuTl?: gsap.core.Timeline;
+  private mobileMenuTl?: gsap.core.Timeline;
+  private activeMenuTimeout?: ReturnType<typeof setTimeout>;
+
+  navItems: NavItem[] = [
+    {
+      label: 'About Us',
+      route: '/about-us',
+    },
+    {
+      label: 'Industries',
+      route: '/industries',
+      megaMenu: {
+        description:
+          'Explore the diverse industries we support with tailored solutions designed to meet unique business challenges.',
+        columns: [
+          {
+            heading: 'Sector',
+            items: [
+              { label: 'Agriculture', icon: 'pi pi-leaf', route: '/industries/agriculture' },
+              { label: 'Traffic & Highway', icon: 'pi pi-car', route: '/industries/traffic' },
+              { label: 'Public Transport', icon: 'pi pi-map', route: '/industries/transport' },
+              { label: 'Urban Solutions', icon: 'pi pi-building', route: '/industries/urban' },
+            ],
+          },
+          {
+            heading: 'More',
+            items: [
+              { label: 'Logistics', icon: 'pi pi-box', route: '/industries/logistics' },
+              { label: 'Resources', icon: 'pi pi-database', route: '/industries/resources' },
+              { label: 'Utilities', icon: 'pi pi-bolt', route: '/industries/utilities' },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      label: 'Technology',
+      route: '/technology',
+      megaMenu: {
+        description:
+          'Empowering innovation with smart tech solutions that drive digital transformation and keep businesses ahead.',
+        columns: [
+          {
+            heading: 'Core Tech',
+            items: [
+              { label: 'Advance Analytics', icon: 'pi pi-chart-line', route: '/technology/analytics' },
+              { label: 'AI / ML', icon: 'pi pi-microchip-ai', route: '/technology/ai-ml' },
+              { label: 'Automatic Payments', icon: 'pi pi-credit-card', route: '/technology/payments' },
+              { label: 'Blockchain', icon: 'pi pi-lock', route: '/technology/blockchain' },
+              { label: 'Cloud Technology', icon: 'pi pi-cloud', route: '/technology/cloud' },
+            ],
+          },
+          {
+            heading: 'Engineering',
+            items: [
+              { label: 'Edge Computing', icon: 'pi pi-server', route: '/technology/edge' },
+              { label: 'Geospatial Engineering', icon: 'pi pi-map-marker', route: '/technology/geo' },
+              { label: 'IoT & M2M', icon: 'pi pi-wifi', route: '/technology/iot' },
+              { label: 'User Experience', icon: 'pi pi-palette', route: '/technology/ux' },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      label: 'Products',
+      megaMenu: {
+        description:
+          'Built to solve real-world problems with precision and purpose — innovation, usability, and scalability at the core.',
+        columns: [
+          {
+            heading: 'Mobility',
+            items: [
+              { label: 'Locomate – AVLS', icon: 'pi pi-truck', route: '/locomate-avls' },
+              { label: 'Locomate – DMS', icon: 'pi pi-display', route: '/locomate-dms' },
+              { label: 'Locomate – PIS', icon: 'pi pi-info-circle', route: '/locomate-pis' },
+              { label: 'SyncNex', icon: 'pi pi-arrows-h', route: '/syncnex' },
+              { label: 'RapidGo', icon: 'pi pi-send', route: '/rapidgo' },
+            ],
+          },
+          {
+            heading: 'Smart City',
+            items: [
+              { label: 'Outline', icon: 'pi pi-pencil', route: '/outline' },
+              { label: 'Spectator', icon: 'pi pi-eye', route: '/spectator' },
+              { label: 'IION', icon: 'pi pi-sitemap', route: '/iion' },
+              { label: 'Ecokeeper', icon: 'pi pi-sun', route: '/ecokeeper' },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      label: 'Insights',
+      route: '/insights',
+    },
+    {
+      label: 'Careers',
+      route: '/careers',
+    },
+  ];
+
+  constructor(
+    @Inject(PLATFORM_ID) platformId: Object,
+    private el: ElementRef
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      gsap.registerPlugin(ScrollTrigger);
+    }
+  }
+
+  ngOnInit(): void {}
+
+  ngAfterViewInit(): void {
+    if (!this.isBrowser) return;
+    this.initHeaderAnimation();
+    this.initScrollBehavior();
+  }
+
+  private initHeaderAnimation(): void {
+    const header = this.headerEl?.nativeElement;
+    if (!header) return;
+
+    // Entrance animation
+    gsap.fromTo(
+      header,
+      { y: -80, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.1 }
+    );
+
+    // Stagger nav items
+    const navLinks = header.querySelectorAll('.nav-item');
+    gsap.fromTo(
+      navLinks,
+      { y: -20, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.07,
+        ease: 'power2.out',
+        delay: 0.4,
+      }
+    );
+
+    // Logo
+    const logo = header.querySelector('.logo-wrapper');
+    if (logo) {
+      gsap.fromTo(
+        logo,
+        { x: -30, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.2 }
+      );
+    }
+
+    // CTA button
+    const cta = header.querySelector('.header-cta');
+    if (cta) {
+      gsap.fromTo(
+        cta,
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)', delay: 0.8 }
+      );
+    }
+  }
+
+  private initScrollBehavior(): void {
+    ScrollTrigger.create({
+      start: 'top -60px',
+      onEnter: () => {
+        this.isScrolled.set(true);
+        this.animateScrolledState(true);
+      },
+      onLeaveBack: () => {
+        this.isScrolled.set(false);
+        this.animateScrolledState(false);
+      },
+    });
+  }
+
+  private animateScrolledState(scrolled: boolean): void {
+    const header = this.headerEl?.nativeElement;
+    if (!header) return;
+
+    if (scrolled) {
+      gsap.to(header, {
+        backgroundColor: 'rgba(10, 12, 20, 0.96)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 4px 30px rgba(0,0,0,0.3)',
+        paddingTop: '12px',
+        paddingBottom: '12px',
+        duration: 0.4,
+        ease: 'power2.out',
+      });
+    } else {
+      gsap.to(header, {
+        backgroundColor: 'transparent',
+        backdropFilter: 'blur(0px)',
+        boxShadow: 'none',
+        paddingTop: '20px',
+        paddingBottom: '20px',
+        duration: 0.4,
+        ease: 'power2.out',
+      });
+    }
+  }
+
+  openMenu(label: string): void {
+    if (this.activeMenuTimeout) clearTimeout(this.activeMenuTimeout);
+
+    const previous = this.activeMenu();
+    this.activeMenu.set(label);
+
+    if (previous !== label) {
+      this.animateMegaMenuIn(label);
+    }
+  }
+
+  closeMenu(): void {
+    this.activeMenuTimeout = setTimeout(() => {
+      const label = this.activeMenu();
+      if (label) {
+        this.animateMegaMenuOut(label);
+      }
+      this.activeMenu.set(null);
+    }, 150);
+  }
+
+  keepMenuOpen(): void {
+    if (this.activeMenuTimeout) clearTimeout(this.activeMenuTimeout);
+  }
+
+  private animateMegaMenuIn(label: string): void {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      const panel = document.querySelector(`.mega-menu-panel[data-menu="${label}"]`);
+      if (!panel) return;
+
+      gsap.fromTo(
+        panel,
+        { y: -10, opacity: 0, scaleY: 0.95 },
+        {
+          y: 0,
+          opacity: 1,
+          scaleY: 1,
+          duration: 0.3,
+          ease: 'power2.out',
+          transformOrigin: 'top center',
+        }
+      );
+
+      // Stagger inner items
+      const items = panel.querySelectorAll('.mega-menu-item');
+      gsap.fromTo(
+        items,
+        { x: -8, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.25, stagger: 0.04, ease: 'power2.out', delay: 0.05 }
+      );
+    });
+  }
+
+  private animateMegaMenuOut(label: string): void {
+    const panel = document.querySelector(`.mega-menu-panel[data-menu="${label}"]`);
+    if (!panel) return;
+
+    gsap.to(panel, {
+      y: -8,
+      opacity: 0,
+      scaleY: 0.96,
+      duration: 0.2,
+      ease: 'power2.in',
+      transformOrigin: 'top center',
+    });
+  }
+
+  toggleMobileMenu(): void {
+    const isOpen = !this.isMobileMenuOpen();
+    this.isMobileMenuOpen.set(isOpen);
+
+    const overlay = document.querySelector('.mobile-menu-overlay');
+    if (!overlay) return;
+
+    if (isOpen) {
+      gsap.fromTo(
+        overlay,
+        { x: '100%', opacity: 0 },
+        { x: '0%', opacity: 1, duration: 0.4, ease: 'power3.out' }
+      );
+      const items = overlay.querySelectorAll('.mobile-nav-item');
+      gsap.fromTo(
+        items,
+        { x: 40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.35, stagger: 0.07, ease: 'power2.out', delay: 0.15 }
+      );
+    } else {
+      gsap.to(overlay, { x: '100%', opacity: 0, duration: 0.3, ease: 'power3.in' });
+    }
+  }
+
+  hasActiveMegaMenu(label: string): boolean {
+    return this.activeMenu() === label;
+  }
+
+  getMegaMenu(item: NavItem) {
+    return item.megaMenu;
+  }
+
+  ngOnDestroy(): void {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    if (this.activeMenuTimeout) clearTimeout(this.activeMenuTimeout);
+  }
+}

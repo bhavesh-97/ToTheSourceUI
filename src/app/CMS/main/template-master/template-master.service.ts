@@ -34,7 +34,7 @@ export class TemplateMasterService {
                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
             );
       }
-    SaveTemplate(roleModel: Template, encryptPayload = false): Observable<JsonResponseModel> {
+     SaveTemplate(roleModel: Template, encryptPayload = false): Observable<JsonResponseModel> {
       const userId = CurrentUser.userId;
       roleModel.mCommonEntitiesMaster!.createdBy = userId;
       roleModel.mCommonEntitiesMaster!.updatedBy = userId;
@@ -42,21 +42,27 @@ export class TemplateMasterService {
                                                           { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
         );
       }
-   DeleteTemplate(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
-    debugger;
-    const userId = CurrentUser.userId;
-
-    return this.http.post<JsonResponseModel>(
-        `${this.baseUrl}/TemplateMaster/DeleteTemplate?TemplateID=${templateId}&DeletedBy=${userId}`,
-        null,
-        {
-            context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload)
+      DeleteTemplate(templateId: number, encryptPayload = false): Observable<JsonResponseModel> {
+            const userId = CurrentUser.userId;
+    
+            return this.http.post<JsonResponseModel>(
+                `${this.baseUrl}/TemplateMaster/DeleteTemplate?TemplateID=${templateId}&DeletedBy=${userId}`,
+                null,
+                {
+                    context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload)
+                }
+            );
         }
-    );
-}
-   GetTemplateTypes(encryptPayload = false): Observable<JsonResponseModel> {
-         return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateTypeMaster/GetTemplateTypes`,
-                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
-             );
+      GetTemplateTypes(encryptPayload = false): Observable<JsonResponseModel> {
+           return this.http.get<JsonResponseModel>(`${this.baseUrl}/TemplateTypeMaster/GetTemplateTypes`,
+                                                       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) });
        }
+      GetTemplateByTemplateType(templateTypeCode: string, encryptPayload = false): Observable<JsonResponseModel> {
+        return this.http.get<JsonResponseModel>(
+            `${this.baseUrl}/TemplateMaster/GetTemplateByTemplateType/${templateTypeCode}`,
+            { 
+                context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload)
+            }
+        );
+    }
 }
