@@ -36,51 +36,6 @@
               </button>
             }
 
-            <!-- Mega Menu Panel -->
-            @if (item.megaMenu && hasActiveMegaMenu(item.label)) {
-              <div
-                class="mega-menu-panel"
-                [attr.data-menu]="item.label"
-                (mouseenter)="keepMenuOpen()"
-                (mouseleave)="closeMenu()"
-                role="region"
-                [attr.aria-label]="item.label + ' menu'"
-              >
-                <div class="mega-menu-inner">
-                  <div class="mega-menu-header">
-                    <span class="mega-menu-category">{{ item.label }}</span>
-                    <p class="mega-menu-desc">{{ item.megaMenu.description }}</p>
-                  </div>
-                  <div class="mega-menu-columns">
-                    @for (col of item.megaMenu.columns; track col.heading) {
-                      <div class="mega-menu-col">
-                        @if (col.heading) {
-                          <span class="col-heading">{{ col.heading }}</span>
-                        }
-                        <ul class="mega-items-list" role="list">
-                          @for (menuItem of col.items; track menuItem.label) {
-                            <li class="mega-menu-item">
-                              <a
-                                class="mega-item-link"
-                                [routerLink]="menuItem.route"
-                              >
-                                @if (menuItem.icon) {
-                                  <span class="item-icon">
-                                    <i [class]="menuItem.icon"></i>
-                                  </span>
-                                }
-                                <span class="item-label">{{ menuItem.label }}</span>
-                                <i class="pi pi-arrow-right item-arrow"></i>
-                              </a>
-                            </li>
-                          }
-                        </ul>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
           </li>
         }
       </ul>
@@ -110,6 +65,49 @@
 
   </div>
 </header>
+
+<!-- Mega Menu Panels — outside header so position:fixed is viewport-relative -->
+@for (item of navItems; track item.label) {
+  @if (item.megaMenu) {
+    <div
+      class="mega-menu-panel"
+      [class.mega-menu-panel--active]="hasActiveMegaMenu(item.label)"
+      [attr.data-menu]="item.label"
+      (mouseenter)="keepMenuOpen()"
+      (mouseleave)="closeMenu()"
+      role="region"
+      [attr.aria-label]="item.label + ' menu'"
+    >
+      <div class="mega-menu-inner">
+        <div class="mega-menu-header">
+          <span class="mega-menu-category">{{ item.label }}</span>
+          <p class="mega-menu-desc">{{ item.megaMenu.description }}</p>
+        </div>
+        <div class="mega-menu-columns">
+          @for (col of item.megaMenu.columns; track col.heading) {
+            <div class="mega-menu-col">
+              @if (col.heading) {
+                <span class="col-heading">{{ col.heading }}</span>
+              }
+              <ul class="mega-items-list" role="list">
+                @for (menuItem of col.items; track menuItem.label) {
+                  <li class="mega-menu-item">
+                    <a class="mega-item-link" [routerLink]="menuItem.route" (click)="activeMenu.set(null)">
+                      @if (menuItem.icon) {
+                        <span class="item-icon"><i [class]="menuItem.icon"></i></span>
+                      }
+                      <span class="item-label">{{ menuItem.label }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+}
 
 <!-- Mobile Menu Overlay -->
 @if (isMobileMenuOpen()) {
