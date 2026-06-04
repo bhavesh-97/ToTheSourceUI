@@ -24,25 +24,6 @@ $mega-menu-width:  720px;
     scroll-behavior: smooth;
   }
 }
-[data-theme="light"] {
-  .logo-light {
-    display: block;
-  }
-
-  .logo-dark {
-    display: none;
-  }
-}
-
-.scrolled {
-  .logo-light {
-    display: none;
-  }
-
-  .logo-dark {
-    display: block;
-  }
-}
 .logo-default{
   width: auto;
   height: 60px;
@@ -166,10 +147,20 @@ $mega-menu-width:  720px;
 }
 
 .nav-item {
-  position: relative;
-
-  &.menu-active .nav-link { color: $color-white; }
-  &.menu-active .nav-arrow { transform: rotate(180deg); }
+  position: static; // Changed from 'relative' to allow full-width mega menu
+  
+  &.has-mega {
+    position: static;
+  }
+  
+  &.menu-active {
+    .nav-link { 
+      color: $color-white; 
+    }
+    .nav-arrow { 
+      transform: rotate(180deg); 
+    }
+  }
 }
 
 .nav-link {
@@ -223,149 +214,147 @@ $mega-menu-width:  720px;
 
   i { font-size: 11px; }
 }
-
 .mega-menu-panel {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 560px;
+  position: fixed;
+  top: $header-height;
+  left: 0;
+  right: 0;
+  width: 100%;
   background: $color-white;
-  border-radius: 16px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   z-index: 100;
-  transform-origin: top center;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 12px;
-    height: 12px;
-    background: $color-white;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  }
-
-  &[data-menu="Products"] {
-    min-width: 640px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  
+  .nav-item.menu-active & {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
 }
-
 .mega-menu-inner {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: row;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+  min-height: 380px;
 }
 
 .mega-menu-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid $color-border-dark;
+  flex: 0 0 300px;
+  padding: 40px 32px;
   background: $color-off-white;
+  border-bottom: none;
+  border-right: 1px solid $color-border-dark;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .mega-menu-category {
-  font-size: 11px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: $color-accent;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: $color-dark;
+  margin-bottom: 16px;
 }
 
 .mega-menu-desc {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: rgba($color-dark, 0.55);
-  line-height: 1.5;
-  max-width: 440px;
+  margin: 0;
+  font-size: 14px;
+  color: rgba($color-dark, 0.6);
+  line-height: 1.6;
+  max-width: 100%;
 }
-
 .mega-menu-columns {
+  flex: 1;
   display: flex;
-  padding: 20px 24px 24px;
-  gap: 40px;
+  padding: 40px 40px 40px 48px;
+  gap: 60px;
+  background: $color-white;
 }
 
 .mega-menu-col {
   flex: 1;
+  min-width: 0;
 }
 
 .col-heading {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba($color-dark, 0.4);
-  margin-bottom: 12px;
+  color: $color-accent;
+  margin-bottom: 20px;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .mega-items-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .mega-menu-item {
   margin: 0;
 }
-
 .mega-item-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 10px 0;
+  border-radius: 0;
   text-decoration: none;
   color: $color-dark;
-  font-size: 13.5px;
-  font-weight: 450;
-  transition: background $transition-fast, color $transition-fast;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   cursor: pointer;
+  background: transparent;
 
   .item-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     background: rgba($color-accent, 0.1);
     color: $color-accent;
     flex-shrink: 0;
-    transition: background $transition-fast;
 
-    i { font-size: 13px; }
+    i { 
+      font-size: 13px; 
+    }
   }
 
-  .item-label { flex: 1; }
+  .item-label { 
+    flex: 1;
+  }
 
   .item-arrow {
-    font-size: 10px;
-    color: rgba($color-dark, 0.2);
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity $transition-fast, transform $transition-fast;
+    display: none;
   }
 
   &:hover {
-    background: rgba($color-accent, 0.06);
-    color: darken($color-accent, 5%);
+    background: transparent;
+    transform: translateX(4px);
+    color: $color-accent;
 
     .item-icon {
       background: rgba($color-accent, 0.2);
     }
-
-    .item-arrow {
-      opacity: 1;
-      transform: translateX(0);
-    }
   }
 }
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -537,5 +526,8 @@ $mega-menu-width:  720px;
 
     .logo-white  { display: block !important; }
     .logo-default{ display: none !important; }
+  }
+   .mega-menu-panel {
+    display: none !important;
   }
 }
