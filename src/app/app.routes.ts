@@ -11,11 +11,11 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'CMS',
+    redirectTo: 'Web',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'CMS'
+    redirectTo: 'Web'
   }
 ];

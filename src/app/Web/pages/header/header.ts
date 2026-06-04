@@ -57,7 +57,6 @@ export interface NavItem {
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('headerEl') headerEl!: ElementRef<HTMLElement>;
-  @ViewChild('logoEl') logoEl!: ElementRef<HTMLElement>;
   @ViewChild('navEl') navEl!: ElementRef<HTMLElement>;
 
   isScrolled = signal(false);
@@ -187,56 +186,57 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initScrollBehavior();
   }
 
-  private initHeaderAnimation(): void {
-    const header = this.headerEl?.nativeElement;
-    if (!header) return;
+   private initHeaderAnimation(): void {
+     const header = this.headerEl?.nativeElement;
+     if (!header) return;
 
-    // Entrance animation
-    gsap.fromTo(
-      header,
-      { y: -80, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.1 }
-    );
+     // Entrance animation with more refined timing
+     gsap.fromTo(
+       header,
+       { y: -60, opacity: 0 },
+       { y: 0, opacity: 1, duration: 0.8, ease: 'power4.out', delay: 0.2 }
+     );
 
-    // Stagger nav items
-    const navLinks = header.querySelectorAll('.nav-item');
-    gsap.fromTo(
-      navLinks,
-      { y: -20, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.5,
-        stagger: 0.07,
-        ease: 'power2.out',
-        delay: 0.4,
-      }
-    );
+     // Stagger nav items with more refined animation
+     const navLinks = header.querySelectorAll('.nav-item');
+     gsap.fromTo(
+       navLinks,
+       { y: -15, opacity: 0 },
+       {
+         y: 0,
+         opacity: 1,
+         duration: 0.6,
+         stagger: 0.05,
+         ease: 'power3.out',
+         delay: 0.3,
+       }
+     );
 
-    // Logo
-    const logo = header.querySelector('.logo-wrapper');
-    if (logo) {
-      gsap.fromTo(
-        logo,
-        { x: -30, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out', delay: 0.2 }
-      );
-    }
+     // Logo with scale and fade
+     const logo = header.querySelector('.logo-wrapper');
+     if (logo) {
+       gsap.fromTo(
+         logo,
+         { scale: 0.9, opacity: 0 },
+         { scale: 1, opacity: 1, duration: 0.7, ease: 'elastic.out(1, 0.3)', delay: 0.2 }
+       );
+     }
 
-    // CTA button
-    const cta = header.querySelector('.header-cta');
-    if (cta) {
-      gsap.fromTo(
-        cta,
-        { scale: 0.8, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)', delay: 0.8 }
-      );
-    }
-  }
+     // CTA button with more subtle animation
+     const cta = header.querySelector('.header-cta');
+     if (cta) {
+       gsap.fromTo(
+         cta,
+         { scale: 0.9, opacity: 0 },
+         { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.2)', delay: 0.6 }
+       );
+     }
+   }
 
   private initScrollBehavior(): void {
     ScrollTrigger.create({
-      start: 'top -60px',
+      start: 'top -80px',
+      end: 'bottom top',
       onEnter: () => {
         this.isScrolled.set(true);
         this.animateScrolledState(true);
@@ -245,10 +245,118 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isScrolled.set(false);
         this.animateScrolledState(false);
       },
+      onUpdate: (self) => {
+        // Add subtle height adjustment based on scroll position
+        const progress = self.progress;
+        const header = this.headerEl?.nativeElement;
+        if (header) {
+          gsap.to(header, {
+            height: progress > 0 ? '64px' : '72px',
+            duration: 0.3,
+            ease: 'power2.out',
+            overwrite: true
+          });
+        }
+        
+        // Check background brightness for theme adjustment
+        if (this.isBrowser) {
+          this.checkBackgroundTheme();
+        }
+      }
     });
   }
+  
+  private checkBackgroundTheme(): void {
+    const header = this.headerEl?.nativeElement as HTMLElement;
+    if (!header) return;
+    
+    // Create a temporary element to sample the background color
+    const sampler = document.createElement('div');
+    sampler.style.position = 'fixed';
+    sampler.style.top = '0';
+    sampler.style.left = '0';
+    sampler.style.width = '1px';
+    sampler.style.height = '1px';
+    sampler.style.pointerEvents = 'none';
+    sampler.style.zIndex = '9999';
+    document.body.appendChild(sampler);
+    
+    // Get computed styles to determine if we're over a light or dark background
+    const headerComputed = window.getComputedStyle(header);
+    const backgroundColor = headerComputed.backgroundColor;
+    
+    // Remove sampler
+    document.body.removeChild(sampler);
+    
+    // Parse RGB color and calculate brightness
+    const rgbMatch = backgroundColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (rgbMatch) {
+      const r = parseInt(rgbMatch[1]);
+      const g = parseInt(rgbMatch[2]);
+      const b = parseInt(rgbMatch[3]);
+      
+      // Calculate luminance using relative luminance formula
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      
+      // Update theme based on luminance
+      this.updateThemeBasedOnLuminance(luminance);
+    }
+  }
+  
+   private updateThemeBasedOnLuminance(luminance: number): void {
+    const header = this.headerEl?.nativeElement;
+    if (!header) return;
+    
+    // If background is light (luminance > 0.5), use dark theme
+    // If background is dark (luminance <= 0.5), use light theme
+    const isLightBackground = luminance > 0.5;
+    
+    // Remove any existing theme attributes
+    header.removeAttribute('data-theme');
+    
+    // Set theme based on background luminance
+    if (isLightBackground) {
+      // Light background - use dark theme for header
+      header.setAttribute('data-theme', 'dark');
+    } else {
+      // Dark background - use light theme for header
+      header.setAttribute('data-theme', 'light');
+    }
+    
+    // Update logo visibility based on theme
+    const logoDefault = header.querySelector('.logo-default') as HTMLElement;
+    const logoWhite = header.querySelector('.logo-white') as HTMLElement;
+    
+    if (logoDefault && logoWhite) {
+      if (isLightBackground) {
+        // Light background - show dark logo
+        logoDefault.style.display = 'block';
+        logoWhite.style.display = 'none';
+      } else {
+        // Dark background - show white logo
+        logoDefault.style.display = 'none';
+        logoWhite.style.display = 'block';
+      }
+    }
+    
+    // Update CTA button based on background
+    const ctaButton = header.querySelector('.header-cta') as HTMLElement;
+    if (ctaButton) {
+      if (isLightBackground) {
+        // Light background - use accent color for CTA
+        ctaButton.style.backgroundColor = '#00c896';
+        ctaButton.style.borderColor = '#00c896';
+        ctaButton.style.color = '#0a0c14';
+      } else {
+        // Dark background - use transparent with white border
+        ctaButton.style.backgroundColor = 'transparent';
+        ctaButton.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+        ctaButton.style.color = '#ffffff';
+      }
+    }
+  }
 
-  private animateScrolledState(scrolled: boolean): void {
+   private animateScrolledState(scrolled: boolean): void {
     const header = this.headerEl?.nativeElement;
     if (!header) return;
 
@@ -261,6 +369,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         paddingBottom: '12px',
         duration: 0.4,
         ease: 'power2.out',
+        onComplete: () => {
+          // Force scrolled theme when scrolling
+          header.setAttribute('data-theme', 'dark');
+          header.classList.add('scrolled');
+        }
       });
     } else {
       gsap.to(header, {
@@ -271,6 +384,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         paddingBottom: '20px',
         duration: 0.4,
         ease: 'power2.out',
+        onComplete: () => {
+          // Restore theme based on background when not scrolled
+          header.classList.remove('scrolled');
+          // Note: Theme will be restored by scroll update function
+        }
       });
     }
   }
@@ -375,8 +493,8 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return item.megaMenu;
   }
 
-  ngOnDestroy(): void {
-    ScrollTrigger.getAll().forEach((t) => t.kill());
-    if (this.activeMenuTimeout) clearTimeout(this.activeMenuTimeout);
-  }
+   ngOnDestroy(): void {
+     ScrollTrigger.getAll().forEach((t) => t.kill());
+     if (this.activeMenuTimeout) clearTimeout(this.activeMenuTimeout);
+   }
 }

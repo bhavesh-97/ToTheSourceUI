@@ -3,63 +3,132 @@ $color-dark-mid:   #111420;
 $color-accent:     #00c896;
 $color-accent-2:   #00a3d4;
 $color-white:      #ffffff;
-$color-off-white:  #f4f5f7;
-$color-muted:      rgba(255, 255, 255, 0.55);
-$color-border:     rgba(255, 255, 255, 0.1);
-$color-border-dark: rgba(0, 0, 0, 0.08);
-$font-primary:     'DM Sans', 'Helvetica Neue', sans-serif;
-$transition-fast:  0.2s ease;
-$transition-med:   0.35s cubic-bezier(0.4, 0, 0.2, 1);
-$header-height:    72px;
-$header-pad-x:     clamp(1.5rem, 4vw, 4rem);
+$color-off-white:  #f8f9fa;
+$color-muted:      rgba(255, 255, 255, 0.6);
+$color-border:     rgba(255, 255, 255, 0.12);
+$color-border-dark: rgba(0, 0, 0, 0.06);
+$font-primary:     'Inter', 'DM Sans', 'Helvetica Neue', sans-serif;
+$font-secondary:   'Grotesk', 'Helvetica Neue', sans-serif;
+$transition-fast:  0.15s ease;
+$transition-med:   0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow:  0.4s cubic-bezier(0.4, 0, 0.2, 1);
+$header-height:    80px;
+$header-pad-x:     clamp(2rem, 5vw, 5rem);
+$mega-menu-width:  720px;
 
-// ── Base ───────────────────────────────────────────────────
 :host {
   display: block;
   font-family: $font-primary;
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+[data-theme="light"] {
+  .logo-light {
+    display: block;
+  }
+
+  .logo-dark {
+    display: none;
+  }
 }
 
-// ── Header Shell ──────────────────────────────────────────
-.amnex-header {
+.scrolled {
+  .logo-light {
+    display: none;
+  }
+
+  .logo-dark {
+    display: block;
+  }
+}
+.logo-default{
+  width: auto;
+  height: 60px;
+}
+.header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 20px $header-pad-x;
+  height: $header-height;
+  padding: 0 $header-pad-x;
   background: transparent;
-  transition: background $transition-med, padding $transition-med, box-shadow $transition-med;
-  will-change: background, padding;
-
-  // Default (transparent) — show dark logo
-  .logo-white  { display: none; }
-  .logo-default{ display: block; }
-
-  &.scrolled {
-    background: rgba($color-dark, 0.95);
+  transition: all $transition-med;
+  will-change: transform, background;
+  backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  
+  
+  &[data-theme="light"] {
+    background: transparent;
+    backdrop-filter: blur(0px);
+    box-shadow: none;
+    border-bottom: 1px solid var(--border-color-light, rgba(255, 255, 255, 0.1));
+    
+    .logo-white  { display: none; }
+    .logo-default{ display: block; }
+    
+    .nav-link { color: var(--text-color-light, rgba(255, 255, 255, 0.7)); }
+    .nav-link:hover,
+    .nav-link.active,
+    .menu-active .nav-link { color: var(--text-color-light, #ffffff); }
+    
+    .header-cta {
+      background: var(--cta-bg-light, transparent);
+      border-color: var(--cta-border-light, rgba(255, 255, 255, 0.4));
+      color: var(--cta-color-light, #ffffff);
+    }
+  }
+  
+  &[data-theme="dark"] {
+    background: rgba($color-dark, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
-    padding: 12px $header-pad-x;
-
-    // Swap logo to white version on dark scrolled header
+    border-bottom: 1px solid var(--border-color-dark, rgba(0, 0, 0, 0.1));
+    
     .logo-white  { display: block; }
     .logo-default{ display: none; }
-
-    .nav-link { color: $color-muted; }
+    
+    .nav-link { color: var(--text-color-dark, rgba(255, 255, 255, 0.5)); }
     .nav-link:hover,
     .nav-link.active,
-    .menu-active .nav-link { color: $color-white; }
-
+    .menu-active .nav-link { color: var(--text-color-dark, #ffffff); }
+    
     .header-cta {
-      background: $color-accent;
-      border-color: $color-accent;
-      color: $color-dark;
+      background: var(--cta-bg-dark, $color-accent);
+      border-color: var(--cta-border-dark, $color-accent);
+      color: var(--cta-color-dark, $color-dark);
+    }
+  }
+  
+  &.scrolled {
+    /* Override when scrolled regardless of theme */
+    background: rgba($color-dark, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    padding-top: 12px;
+    padding-bottom: 12px;
+    
+    .logo-white  { display: block; }
+    .logo-default{ display: none; }
+    
+    .nav-link { color: var(--text-color-scrolled, rgba(255, 255, 255, 0.5)); }
+    .nav-link:hover,
+    .nav-link.active,
+    .menu-active .nav-link { color: var(--text-color-scrolled, #ffffff); }
+    
+    .header-cta {
+      background: var(--cta-bg-scrolled, $color-accent);
+      border-color: var(--cta-border-scrolled, $color-accent);
+      color: var(--cta-color-scrolled, $color-dark);
     }
   }
 }
-
-// ── Inner Layout ──────────────────────────────────────────
 .header-inner {
   display: flex;
   align-items: center;
@@ -68,22 +137,21 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
   margin: 0 auto;
 }
 
-// ── Logo ──────────────────────────────────────────────────
 .logo-wrapper {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   text-decoration: none;
   margin-right: auto;
-
+  padding: 8px 0;
   .logo {
-    height: 36px;
     width: auto;
     object-fit: contain;
+    height: 80px;
+    // filter: drop-shadow(0 2px 8px rgba(255,255,255,0.25));
   }
 }
 
-// ── Desktop Nav ───────────────────────────────────────────
 .desktop-nav {
   @media (max-width: 1023px) { display: none; }
 }
@@ -107,23 +175,46 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: 0.01em;
-  color: rgba($color-white, 0.75);
+  letter-spacing: -0.01em;
+  color: var(--text-color, rgba(255, 255, 255, 0.7));
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition: color $transition-fast;
+  transition: all $transition-fast;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 
   &:hover,
-  &.active { color: $color-white; }
+  &.active { 
+    color: var(--text-color, #ffffff); 
+  }
 
-  &-btn { font-family: $font-primary; }
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--text-color, #ffffff);
+    transition: width $transition-med;
+  }
+
+  &:hover::after,
+  &.active::after {
+    width: 100%;
+  }
+
+  &-btn { 
+    font-family: $font-primary;
+    font-weight: 600;
+  }
 }
 
 .nav-arrow {
@@ -133,7 +224,6 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
   i { font-size: 11px; }
 }
 
-// ── Mega Menu Panel ───────────────────────────────────────
 .mega-menu-panel {
   position: absolute;
   top: calc(100% + 12px);
@@ -161,7 +251,6 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
     clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   }
 
-  // Wider for products mega menu
   &[data-menu="Products"] {
     min-width: 640px;
   }
@@ -277,7 +366,6 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
   }
 }
 
-// ── Header Actions ────────────────────────────────────────
 .header-actions {
   display: flex;
   align-items: center;
@@ -308,7 +396,6 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
   }
 }
 
-// ── Mobile Toggle ─────────────────────────────────────────
 .mobile-toggle {
   display: none;
   background: none;
@@ -347,7 +434,6 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
   }
 }
 
-// ── Mobile Menu Overlay ───────────────────────────────────
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
@@ -444,7 +530,7 @@ $header-pad-x:     clamp(1.5rem, 4vw, 4rem);
 }
 
 @media (max-width: 1023px) {
-  .amnex-header {
+  .header {
     background: rgba($color-dark, 0.92) !important;
     backdrop-filter: blur(20px);
     padding: 14px $header-pad-x;

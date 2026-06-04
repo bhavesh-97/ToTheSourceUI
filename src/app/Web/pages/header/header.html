@@ -1,28 +1,16 @@
-<!-- Amnex-style Header Component -->
 <header
   #headerEl
-  class="amnex-header"
+  class="header"
   [class.scrolled]="isScrolled()"
 >
   <div class="header-inner">
-
-    <!-- Logo -->
-    <a class="logo-wrapper" routerLink="/" aria-label="Amnex Home">
-      <img
-        class="logo logo-default"
-        src="assets/logo-dark.svg"
-        alt="Amnex"
-        width="140"
-        height="36"
-      />
-      <img
-        class="logo logo-white"
-        src="assets/logo-white.svg"
-        alt="Amnex"
-        width="140"
-        height="36"
-      />
-    </a>
+     <a class="logo-wrapper" #logoEl routerLink="/" aria-label="TO THE SOURCE Home">
+       <img
+         class="logo logo-default"
+         src="../../../../assets/images/product/TTS-.png"
+         alt="TO THE SOURCE"
+       />
+     </a>
 
     <!-- Desktop Navigation -->
     <nav #navEl class="desktop-nav" aria-label="Main navigation">
@@ -128,7 +116,7 @@
   <div class="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="Mobile navigation">
     <div class="mobile-menu-header">
       <a class="logo-wrapper" routerLink="/" (click)="isMobileMenuOpen.set(false)">
-        <img src="assets/logo-white.svg" alt="Amnex" width="120" height="30" />
+        <img src="../../../../assets/images/product/To the Source.png" alt="TO THE SOURCE" width="120" height="30" />
       </a>
       <button
         class="mobile-close"
