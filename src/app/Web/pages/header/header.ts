@@ -62,6 +62,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   isScrolled = signal(false);
   isMobileMenuOpen = signal(false);
   activeMenu = signal<string | null>(null);
+  mobileExpandedMenu = signal<string | null>(null);
   isBrowser: boolean;
 
   private scrollTl?: gsap.core.Timeline;
@@ -460,10 +461,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       transformOrigin: 'top center',
     });
   }
-
-  toggleMobileMenu(): void {
+ toggleMobileMenu(): void {
     const isOpen = !this.isMobileMenuOpen();
     this.isMobileMenuOpen.set(isOpen);
+
+    if (!isOpen) {
+      this.mobileExpandedMenu.set(null); // collapse all sub-menus on close
+    }
 
     const overlay = document.querySelector('.mobile-menu-overlay');
     if (!overlay) return;
@@ -485,6 +489,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  toggleMobileExpand(label: string): void {
+    this.mobileExpandedMenu.set(
+      this.mobileExpandedMenu() === label ? null : label
+    );
+  }
   hasActiveMegaMenu(label: string): boolean {
     return this.activeMenu() === label;
   }

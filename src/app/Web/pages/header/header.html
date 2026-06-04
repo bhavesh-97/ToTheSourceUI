@@ -11,8 +11,6 @@
          alt="TO THE SOURCE"
        />
      </a>
-
-    <!-- Desktop Navigation -->
     <nav #navEl class="desktop-nav" aria-label="Main navigation">
       <ul class="nav-list" role="list">
         @for (item of navItems; track item.label) {
@@ -40,14 +38,10 @@
         }
       </ul>
     </nav>
-
-    <!-- Header Actions -->
     <div class="header-actions">
       <a routerLink="/contact" class="header-cta" pButton pRipple>
         Contact Us
       </a>
-
-      <!-- Mobile Menu Toggle -->
       <button
         class="mobile-toggle"
         type="button"
@@ -65,8 +59,6 @@
 
   </div>
 </header>
-
-<!-- Mega Menu Panels — outside header so position:fixed is viewport-relative -->
 @for (item of navItems; track item.label) {
   @if (item.megaMenu) {
     <div
@@ -108,7 +100,6 @@
     </div>
   }
 }
-
 <!-- Mobile Menu Overlay -->
 @if (isMobileMenuOpen()) {
   <div class="mobile-menu-overlay" role="dialog" aria-modal="true" aria-label="Mobile navigation">
@@ -130,16 +121,56 @@
       <ul class="mobile-nav-list" role="list">
         @for (item of navItems; track item.label) {
           <li class="mobile-nav-item">
-            <a
-              class="mobile-nav-link"
-              [routerLink]="item.route || null"
-              (click)="isMobileMenuOpen.set(false)"
-            >
-              {{ item.label }}
-              @if (item.megaMenu) {
-                <i class="pi pi-chevron-right"></i>
+
+            @if (item.megaMenu) {
+              <!-- Parent with children: button toggles accordion -->
+              <button
+                class="mobile-nav-link"
+                type="button"
+                (click)="toggleMobileExpand(item.label)"
+              >
+                <span>{{ item.label }}</span>
+                <i class="pi"
+                   [class.pi-chevron-down]="mobileExpandedMenu() === item.label"
+                   [class.pi-chevron-right]="mobileExpandedMenu() !== item.label">
+                </i>
+              </button>
+
+              <!-- Sub items accordion -->
+              @if (mobileExpandedMenu() === item.label) {
+                <ul class="mobile-sub-list" role="list">
+                  @for (col of item.megaMenu.columns; track col.heading) {
+                    @if (col.heading) {
+                      <li class="mobile-sub-heading">{{ col.heading }}</li>
+                    }
+                    @for (subItem of col.items; track subItem.label) {
+                      <li class="mobile-sub-item">
+                        <a
+                          class="mobile-sub-link"
+                          [routerLink]="subItem.route"
+                          (click)="isMobileMenuOpen.set(false); mobileExpandedMenu.set(null)"
+                        >
+                          @if (subItem.icon) {
+                            <span class="mobile-sub-icon"><i [class]="subItem.icon"></i></span>
+                          }
+                          <span>{{ subItem.label }}</span>
+                        </a>
+                      </li>
+                    }
+                  }
+                </ul>
               }
-            </a>
+            } @else {
+              <!-- Simple link -->
+              <a
+                class="mobile-nav-link"
+                [routerLink]="item.route || null"
+                (click)="isMobileMenuOpen.set(false)"
+              >
+                <span>{{ item.label }}</span>
+              </a>
+            }
+
           </li>
         }
       </ul>

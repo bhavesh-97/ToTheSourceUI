@@ -408,6 +408,7 @@ $mega-menu-width:  720px;
   @media (max-width: 1023px) { display: flex; }
 }
 
+
 .hamburger {
   display: flex;
   flex-direction: column;
@@ -491,12 +492,17 @@ $mega-menu-width:  720px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 14px 12px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 500;
   color: rgba($color-white, 0.85);
   text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: $font-primary;
   transition: background $transition-fast, color $transition-fast;
 
   &:hover {
@@ -505,6 +511,55 @@ $mega-menu-width:  720px;
   }
 
   i { font-size: 13px; color: rgba($color-white, 0.3); }
+}
+
+// Mobile sub-menu accordion
+.mobile-sub-list {
+  list-style: none;
+  margin: 0 0 8px 0;
+  padding: 0 0 0 12px;
+  border-left: 2px solid rgba($color-accent, 0.3);
+  margin-left: 12px;
+}
+
+.mobile-sub-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $color-accent;
+  padding: 10px 12px 4px;
+}
+
+.mobile-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba($color-white, 0.7);
+  text-decoration: none;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: rgba($color-white, 0.06);
+    color: $color-white;
+  }
+}
+
+.mobile-sub-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba($color-accent, 0.12);
+  color: $color-accent;
+  flex-shrink: 0;
+  i { font-size: 13px; }
 }
 
 .mobile-cta {
