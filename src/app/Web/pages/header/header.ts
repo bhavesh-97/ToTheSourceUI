@@ -10,6 +10,7 @@ import {
   Inject,
   signal,
   computed,
+  inject,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -19,6 +20,7 @@ import { BadgeModule } from 'primeng/badge';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PopoverModule } from 'primeng/popover';
+import { HeaderMenuService } from '../../services/header-menu.service';
 
 export interface MegaMenuColumn {
   heading?: string;
@@ -69,6 +71,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   private megaMenuTl?: gsap.core.Timeline;
   private mobileMenuTl?: gsap.core.Timeline;
   private activeMenuTimeout?: ReturnType<typeof setTimeout>;
+  private headerMenuService = inject(HeaderMenuService);
 
   navItems: NavItem[] = [
     {
@@ -173,6 +176,10 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     @Inject(PLATFORM_ID) platformId: Object,
     private el: ElementRef
   ) {
+     this.headerMenuService.getHeaderMenu().subscribe(items => {
+      debugger;
+        this.navItems = items;
+      });
     this.isBrowser = isPlatformBrowser(platformId);
     if (this.isBrowser) {
       gsap.registerPlugin(ScrollTrigger);
@@ -500,6 +507,10 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getMegaMenu(item: NavItem) {
     return item.megaMenu;
+  }
+
+  isSingleColumnOverflow(items: unknown[]): boolean {
+    return items.length > 5;
   }
 
    ngOnDestroy(): void {

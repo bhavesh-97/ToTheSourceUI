@@ -77,22 +77,59 @@
         </div>
         <div class="mega-menu-columns">
           @for (col of item.megaMenu.columns; track col.heading) {
-            <div class="mega-menu-col">
+             <div class="mega-menu-col"
+                  [class.mega-menu-col--wide]="item.megaMenu.columns.length === 1 && isSingleColumnOverflow(col.items)">
               @if (col.heading) {
                 <span class="col-heading">{{ col.heading }}</span>
               }
-              <ul class="mega-items-list" role="list">
-                @for (menuItem of col.items; track menuItem.label) {
+              <div class="mega-items-wrapper">
+                <ul class="mega-items-list" role="list">
+                  @for (menuItem of col.items; track $index) {
                   <li class="mega-menu-item">
                     <a class="mega-item-link" [routerLink]="menuItem.route" (click)="activeMenu.set(null)">
                       @if (menuItem.icon) {
                         <span class="item-icon"><i [class]="menuItem.icon"></i></span>
                       }
                       <span class="item-label">{{ menuItem.label }}</span>
+                      @if (menuItem.children?.length) {
+                        <span class="item-arrow"><i class="pi pi-chevron-right"></i></span>
+                      }
                     </a>
+                    @if (menuItem.children?.length) {
+                      <ul class="mega-sub-list" role="list" [class.two-column]="col.items.length > 5">
+                        @for (subItem of menuItem.children; track $index) {
+                          <li class="mega-menu-item">
+                            <a class="mega-item-link mega-item-link--child" [routerLink]="subItem.route" (click)="activeMenu.set(null)">
+                              @if (subItem.icon) {
+                                <span class="item-icon"><i [class]="subItem.icon"></i></span>
+                              }
+                              <span class="item-label">{{ subItem.label }}</span>
+                              @if (subItem.children?.length) {
+                                <span class="item-arrow"><i class="pi pi-chevron-right"></i></span>
+                              }
+                            </a>
+                            @if (subItem.children?.length) {
+                              <ul class="mega-sub-list" role="list">
+                                @for (deepItem of subItem.children; track $index) {
+                                  <li class="mega-menu-item">
+                                    <a class="mega-item-link mega-item-link--child" [routerLink]="deepItem.route" (click)="activeMenu.set(null)">
+                                      @if (deepItem.icon) {
+                                        <span class="item-icon"><i class="{{ deepItem.icon }}"></i></span>
+                                      }
+                                      <span class="item-label">{{ deepItem.label }}</span>
+                                    </a>
+                                  </li>
+                                }
+                              </ul>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    }
                   </li>
-                }
-              </ul>
+                  }
+                </ul>
+              </div>
             </div>
           }
         </div>
@@ -143,7 +180,7 @@
                     @if (col.heading) {
                       <li class="mobile-sub-heading">{{ col.heading }}</li>
                     }
-                    @for (subItem of col.items; track subItem.label) {
+                    @for (subItem of col.items; track $index) {
                       <li class="mobile-sub-item">
                         <a
                           class="mobile-sub-link"
@@ -154,7 +191,28 @@
                             <span class="mobile-sub-icon"><i [class]="subItem.icon"></i></span>
                           }
                           <span>{{ subItem.label }}</span>
+                          @if (subItem.children?.length) {
+                            <i class="pi pi-chevron-right mobile-sub-arrow"></i>
+                          }
                         </a>
+                        @if (subItem.children?.length) {
+                          <ul class="mobile-sub-list mobile-sub-list--nested" role="list">
+                            @for (deepItem of subItem.children; track $index) {
+                              <li class="mobile-sub-item">
+                                <a
+                                  class="mobile-sub-link"
+                                  [routerLink]="deepItem.route"
+                                  (click)="isMobileMenuOpen.set(false); mobileExpandedMenu.set(null)"
+                                >
+                                  @if (deepItem.icon) {
+                                    <span class="mobile-sub-icon"><i class="{{ deepItem.icon }}"></i></span>
+                                  }
+                                  <span>{{ deepItem.label }}</span>
+                                </a>
+                              </li>
+                            }
+                          </ul>
+                        }
                       </li>
                     }
                   }
