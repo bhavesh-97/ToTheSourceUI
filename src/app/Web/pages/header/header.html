@@ -73,7 +73,7 @@
       <div class="mega-menu-inner">
         <div class="mega-menu-header">
           <span class="mega-menu-category">{{ item.label }}</span>
-          <p class="mega-menu-desc">{{ item.megaMenu.description }}</p>
+          <p class="mega-menu-desc" [innerHTML]="item.megaMenu.description"></p>
         </div>
         <div class="mega-menu-columns">
           @for (col of item.megaMenu.columns; track col.heading) {

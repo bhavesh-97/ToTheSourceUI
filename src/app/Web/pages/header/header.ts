@@ -21,6 +21,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PopoverModule } from 'primeng/popover';
 import { HeaderMenuService } from '../../services/header-menu.service';
+import { SafeHtml } from '@angular/platform-browser';
 
 export interface MegaMenuColumn {
   heading?: string;
@@ -38,7 +39,7 @@ export interface NavItem {
   label: string;
   route?: string;
   megaMenu?: {
-    description: string;
+    description: SafeHtml | string;
     columns: MegaMenuColumn[];
   };
 }

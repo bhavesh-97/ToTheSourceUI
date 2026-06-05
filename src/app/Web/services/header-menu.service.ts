@@ -6,12 +6,13 @@ import { environment } from '../../../environments/environment';
 import { JsonResponseModel } from '../../models/JsonResponseModel';
 import { ENCRYPTION_CONTEXT } from '../../interceptors/encryption-interceptor';
 import { MegaMenuItem } from '../pages/header/header';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface NavItem {
   label: string;
   route?: string;
   megaMenu?: {
-    description: string;
+    description: SafeHtml | string;
     columns: {
       heading?: string;
       items: MegaMenuItem[];
@@ -36,7 +37,9 @@ interface RawMenuItem {
 export class HeaderMenuService {
   private http = inject(HttpClient);
   private baseUrl = environment.WebUrl;
-
+  private sanitizer =  inject(DomSanitizer);
+  safeContent: SafeHtml = '';
+  
   getHeaderMenu(encryptPayload = false): Observable<NavItem[]> {
     return this.http
       .get<JsonResponseModel>(`${this.baseUrl}/Home/WebMenu`,{ context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) })
@@ -56,13 +59,13 @@ export class HeaderMenuService {
       const children = item.children || [];
       const hasChildren = children.length > 0;
       const hasLink = !!item.link;
-
+      this.safeContent = this.sanitizer.bypassSecurityTrustHtml(item.description ?? '');
       return {
         label: item.title ?? '',
         route: hasLink ? item.link! : undefined,
         megaMenu: hasChildren
           ? {
-              description: item.description || `${item.title} — explore our solutions and services.`,
+              description: this.safeContent || `${item.title} — explore our solutions and services.`,
               columns: this.buildColumns(children),
             }
           : undefined,
