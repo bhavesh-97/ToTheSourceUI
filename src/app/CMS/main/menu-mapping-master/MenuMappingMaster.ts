@@ -9,6 +9,7 @@ export class MMenuMappingMaster {
   menuTypeID: number = 0;
   menuTypeCode: string = "";
   menuTypeName: string = "";
+  description: string = "";
   menuRank: number = 0;
   parentID: number = 0;
   parentMenuName: string = "";

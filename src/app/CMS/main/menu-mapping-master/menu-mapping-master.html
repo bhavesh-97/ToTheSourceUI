@@ -24,10 +24,10 @@
                         <p-select [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Status" 
                                   [showClear]="true" class="w-10rem" [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
                         </p-select>
-                        <p-select [options]="siteAres" optionLabel="AreaName" optionValue="siteAreaID" placeholder="Site Area" [showClear]="true" 
+                        <p-select [options]="siteAres" optionLabel="areaName" optionValue="siteAreaID" placeholder="Site Area" [showClear]="true" 
                                   class="w-10rem" [(ngModel)]="selectedSiteArea" (onChange)="onSiteAreaFilterChange($event)">
                         </p-select>
-                        <p-select [options]="menuTypes" optionLabel="MenuTypeName" optionValue="menuTypeID" placeholder="Menu Type" [showClear]="true" 
+                        <p-select [options]="menuTypes" optionLabel="menuTypeName" optionValue="menuTypeID" placeholder="Menu Type" [showClear]="true" 
                                   class="w-10rem" [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
                         </p-select>
                         <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"(click)="clearFilters()" 
@@ -81,10 +81,10 @@
                 <div class="flex align-items-center gap-2">
                     <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
                     
-                    <i [class]="rowData.Icon" class="text-primary flex-shrink-0"></i>
+                    <i [class]="rowData.icon" class="text-primary flex-shrink-0"></i>
                     
-                    <span class="font-medium" [pTooltip]="rowData.MenuName" tooltipPosition="top">
-                        {{ rowData.MenuName }}
+                    <span class="font-medium" [pTooltip]="rowData.menuName" tooltipPosition="top">
+                        {{ rowData.menuName }}
                     </span>
 
                     <p-tag *ngIf="isRootMenu(rowData)" 
@@ -101,8 +101,8 @@
 
             <td class="col-url">
                 <span class="text-color-secondary" 
-                      pTooltip="{{ rowData.AreaName}}" tooltipPosition="top">
-                    {{ rowData.AreaName || '#' }}
+                      pTooltip="{{ rowData.areaName}}" tooltipPosition="top">
+                    {{ rowData.areaName || '#' }}
                 </span>
             </td>
 
@@ -118,8 +118,8 @@
             <td class="col-parent">
                 <span *ngIf="rowData.parentID === 0" class="text-color-secondary">—</span>
                 <span *ngIf="rowData.parentID > 0" 
-                      pTooltip="{{ rowData.ParentMenuName || getParentName(rowData.parentID) }}">
-                    {{ rowData.ParentMenuName || getParentName(rowData.parentID) }}
+                      pTooltip="{{ rowData.parentMenuName || getParentName(rowData.parentID) }}">
+                    {{ rowData.parentMenuName || getParentName(rowData.parentID) }}
                 </span>
             </td>
 
@@ -194,18 +194,18 @@
                 </div>  
                 <div class="col-8">
                     <p-select #inputField [options]="siteAres"  
-                              formControlName="siteAreaID" optionLabel="AreaName" optionValue="siteAreaID" 
-                              placeholder="Select Site Area" [filter]="true" filterBy="AreaName" 
+                              formControlName="siteAreaID" optionLabel="areaName" optionValue="siteAreaID" 
+                              placeholder="Select Site Area" [filter]="true" filterBy="areaName" 
                               [showClear]="true" class="w-100">
 
                         <ng-template let-selectedMenu pTemplate="selectedItem">
                             <div *ngIf="selectedMenu" class="flex align-items-center gap-2">
-                                <span class="font-medium">{{ selectedMenu.AreaName }}</span>
+                                <span class="font-medium">{{ selectedMenu.areaName }}</span>
                             </div>
                         </ng-template>
                         <ng-template let-menu pTemplate="item">
                             <div class="flex align-items-center gap-3">
-                                <span class="font-medium">{{ menu.AreaName }}</span>
+                                <span class="font-medium">{{ menu.areaName }}</span>
                             </div>
                         </ng-template>
                     </p-select>
@@ -222,21 +222,21 @@
                 </div>  
                 <div class="col-8">
                     <p-select #inputField [options]="menuResources" 
-                              formControlName="menuID" optionLabel="MenuName" optionValue="menuID" 
-                              placeholder="Select Menu Resource" [filter]="true" filterBy="MenuName" 
+                              formControlName="menuID" optionLabel="menuName" optionValue="menuID" 
+                              placeholder="Select Menu Resource" [filter]="true" filterBy="menuName" 
                               [showClear]="true" class="w-100"
                               (onShow)="preventParentScroll()">
 
                         <ng-template let-selectedMenu pTemplate="selectedItem">
                             <div *ngIf="selectedMenu" class="flex align-items-center gap-2">
-                                <i [class]="selectedMenu.Icon || 'pi pi-file'" style="margin-right: 10px;"></i>
-                                <span class="font-medium">{{ selectedMenu.MenuName }}</span>
+                                <i [class]="selectedMenu.icon || 'pi pi-file'" style="margin-right: 10px;"></i>
+                                <span class="font-medium">{{ selectedMenu.menuName }}</span>
                             </div>
                         </ng-template>
                         <ng-template let-menu pTemplate="item">
                             <div class="flex align-items-center gap-3">
-                                <i [class]="menu.Icon || 'pi pi-file'" class="text-xl" style="margin-right: 10px;"></i>
-                                <span class="font-medium">{{ menu.MenuName }}</span>
+                                <i [class]="menu.icon || 'pi pi-file'" class="text-xl" style="margin-right: 10px;"></i>
+                                <span class="font-medium">{{ menu.menuName }}</span>
                             </div>
                         </ng-template>
                     </p-select>
@@ -252,18 +252,19 @@
                   </label>
                 </div>  
                 <div class="col-8">
-                    <p-select #inputField [options]="menuTypes" formControlName="menuTypeID" optionLabel="MenuTypeName" 
+                    <p-select #inputField [options]="menuTypes" formControlName="menuTypeID" optionLabel="menuTypeName" 
                                 optionValue="menuTypeID" placeholder="Select Menu Type" class="w-100">
                         <ng-template let-item pTemplate="selectedItem">
                             <div *ngIf="item" class="flex align-items-center gap-2">
-                                <i [class]="item.MenuTypeIcon"></i>
-                                <span>{{ item.MenuTypeName }}</span>
+                                <i [class]="item.menuTypeIcon"></i>
+                                <i [class]="item.menuTypeIcon"></i>
+                                <span>{{ item.menuTypeName }}</span>
                             </div>
                         </ng-template>
                         <ng-template let-item pTemplate="item">
                             <div class="flex align-items-center gap-2">
-                                <i [class]="item.MenuTypeIcon"></i>
-                                <span>{{ item.MenuTypeName }}</span>
+                                <i [class]="item.menuTypeIcon"></i>
+                                <span>{{ item.menuTypeName }}</span>
                             </div>
                         </ng-template>
                     </p-select>

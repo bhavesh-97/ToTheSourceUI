@@ -5,5 +5,6 @@ export class MMenuResourceMaster {
   menuName: string = "";
   menuURL: string = "";
   icon: string = "";
+  description: string = "";
   mCommonEntitiesMaster: MCommonEntitiesMaster = new MCommonEntitiesMaster();
 }

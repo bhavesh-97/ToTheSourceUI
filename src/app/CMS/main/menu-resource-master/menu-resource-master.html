@@ -1,7 +1,7 @@
 <div class="card">
   <p-table #dt 
            [value]="MenuResource" 
-           dataKey="MenuID" 
+           dataKey="menuID" 
            [rows]="10" 
            [rowsPerPageOptions]="[10, 25, 50]" 
            [loading]="loading" 
@@ -108,8 +108,8 @@
         </td>
         <td>
           <p-tag 
-            [value]="menu.mCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
-            [severity]="menu.mCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
+            [value]="menu.mCommonEntitiesMaster.isActive ? 'Active' : 'Inactive'"
+            [severity]="menu.mCommonEntitiesMaster.isActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -145,17 +145,17 @@
   </p-table>
 </div>
 <p-dialog [(visible)]="displayDialog" [header]="MenuResourceDialogHeader" [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '500px' }"[resizable]="true">
-  <form [formGroup]="MenuResourceForm" id="MenuResourceForm" (ngSubmit)="saveMenuResource()"> 
+          [style]="{width:'90%', maxWidth:'800px', height:'85vh'}" [resizable]="true">
+  <form [formGroup]="MenuResourceForm" id="MenuResourceForm" (ngSubmit)="saveMenuResource()" class="p-fluid"> 
     <div class="container-fluid">
-      <input pInputText #inputField formControlName="MenuID"  hidden/>
+      <input pInputText #inputField formControlName="menuID"  hidden/>
         <div class="row mb-3 align-items-center">
-          <div class="col-8">
+          <div class="col-12">
             <label class="form-label fw-medium mb-0">
               Menu Resource Name <span class="text-danger">*</span>
             </label>
           </div>
-          <div class="col-8">
+          <div class="col-12">
             <input pInputText
                  #inputField
                  formControlName="menuName"
@@ -169,12 +169,12 @@
                 </div>
             </div>
           </div>
-          <div class="col-8 mt-3 ">
+          <div class="col-12 mt-3 ">
           <label class="form-label fw-medium mb-0">
             Menu URL<span class="text-danger">*</span>
           </label>
           </div>
-          <div class="col-8">
+          <div class="col-12">
           <input pInputText
               #inputField
               formControlName="menuURL"
@@ -196,12 +196,12 @@
             </div>
           </div>
         </div>
-         <div class="col-8">
+         <div class="col-12">
           <label class="form-label fw-medium mb-0">
             Menu icon <span class="text-danger">*</span>
           </label>
         </div>
-        <div class="col-8">
+        <div class="col-12 mb-3">
          <p-iconfield iconPosition="left" class="w-100">
             <p-inputicon>
                 <i  class="text-xl"
@@ -223,17 +223,35 @@
               </div>
           </div>
         </div>
+  
         <div class="row mb-3 align-items-center">
-        <div class="col-8">
-          <label class="form-label fw-medium mb-0">Status</label>
+              <div class="col-12">
+                  <label class="form-label fw-medium mb-0">Status</label>
+              </div>
+              <div class="col-12 d-flex align-items-center gap-3" formGroupName="mCommonEntitiesMaster">
+                    <p-toggleswitch  #inputField formControlName="isActive"></p-toggleswitch>
+                    <span>{{ MenuResourceForm.get('mCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}</span>
+              </div>
         </div>
-        <div class="col-8 d-flex align-items-center gap-3" formGroupName="mCommonEntitiesMaster">
-            <p-toggleswitch  #inputField formControlName="IsActive"></p-toggleswitch>
-            <span>{{ MenuResourceForm.get('mCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
-        </div>
-
-        </div>
-
+         <div class="row mb-3 align-items-center">
+            <div class="col-12">
+                  <label class="form-label fw-medium mb-0">Description</label>
+            </div>
+            <div class="col-12 rounded-lg align-items-center">
+             <app-text-editor
+               #inputField
+               formControlName="description"
+               [width]="'100%'"
+               [height]="'100%'"
+               [minHeight]="'400px'"
+               [maxHeight]="'600px'"
+               [align]="'center'"
+               [allowResize]="true"
+               [allowFullscreen]="true"
+               [autoSave]="true">
+             </app-text-editor>
+           </div> 
+        </div> 
     </div>
   </form>
   <ng-template pTemplate="footer">

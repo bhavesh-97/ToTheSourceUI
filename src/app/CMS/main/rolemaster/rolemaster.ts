@@ -68,7 +68,7 @@ export class Rolemaster implements OnInit {
     { name: 'RoleID', isMandatory: false, events: [] },
     { name: 'RoleName', isMandatory: true,validationMessage: 'Please enter a valid Role Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
     { name: 'RoleLevel', isMandatory: true,validationMessage: 'Please enter a valid Role Level.', min:1, max:10, events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly },{ type: 'focusout', validationRule: ValidationRules.NumberOnly }] },
-    { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'MCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor(){

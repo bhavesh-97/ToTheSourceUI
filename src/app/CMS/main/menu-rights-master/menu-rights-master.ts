@@ -554,7 +554,7 @@ export class MenuRightsMaster implements OnInit {
   //         MCommonEntitiesMaster: {
   //           CreatedBy: this.getCurrentUserId(), 
   //           UpdatedBy: this.getCurrentUserId(),
-  //           IsActive: false
+  //           isActive: false
   //         },
   //         RoleID: this.selectedRoleId || 0,
   //         AdminID: this.selectedAdminId || 0

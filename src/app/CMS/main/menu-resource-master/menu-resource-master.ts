@@ -21,6 +21,7 @@ import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
 import { ValidationRules } from '../../../shared/utilities/validation-rules.enum';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { FormUtils } from '../../../shared/utilities/form-utils';
+import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/text-editor';
 @Component({
   selector: 'app-menu-resource-master',
   imports: [   
@@ -35,6 +36,7 @@ import { FormUtils } from '../../../shared/utilities/form-utils';
     InputIconModule,
     ToggleSwitchModule,
     InputTextModule,
+    TextEditorComponent,
     DialogModule,
     ConfirmDialogModule,
     TooltipModule],
@@ -65,7 +67,8 @@ export class MenuResourceMaster {
     { name: 'menuName', isMandatory: true,validationMessage: 'Please enter a valid Menu Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
     { name: 'menuURL', isMandatory: true,validationMessage: 'Please enter a valid Menu URL.', events: [] },
     { name: 'icon', isMandatory: true,validationMessage: 'Please enter a valid Menu icon.', events: [] },
-    { name: 'mCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'description', isMandatory: false,validationMessage: 'Please enter a valid Menu description.', events: [] },
+    { name: 'mCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor(){
@@ -82,7 +85,8 @@ export class MenuResourceMaster {
        this.MenuResourceMasterService.GetAllMenuResourceDetails().subscribe({
           next: (res) => {
             if (!res.isError) {
-              var response = JSON.parse(res.result);
+              debugger;
+              var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
               this.loading = false;
               this.MenuResource = response;
               this.totalRecords = this.MenuResource.length;
@@ -108,8 +112,9 @@ export class MenuResourceMaster {
       menuName: '',
       menuURL: '',
       icon: '',
+      description: '',
       mCommonEntitiesMaster:{
-        IsActive: true
+        isActive: true
       }
     });
     this.MenuResourceDialogHeader = 'Create New Menu';
@@ -122,8 +127,9 @@ export class MenuResourceMaster {
       menuName: menuresource.menuName,
       menuURL:menuresource.menuURL,
       icon:menuresource.icon,
+      description: menuresource.description,
        mCommonEntitiesMaster:{
-        IsActive: menuresource.mCommonEntitiesMaster.isActive
+        isActive: menuresource.mCommonEntitiesMaster.isActive
       }
     });    
     this.MenuResourceDialogHeader = 'Edit Menu';
