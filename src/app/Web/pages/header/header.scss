@@ -255,16 +255,18 @@ $mega-menu-width:  720px;
 
 .mega-menu-header {
   flex: 0 0 320px;
-  padding: 40px 32px;
+  padding: 28px;
   background: $color-off-white;
-  border-bottom: none;
   border-right: 1px solid $color-border-dark;
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
+
+  justify-content: flex-start; // move content to top
+  align-items: flex-start;
+
   height: auto;
 }
-
 .mega-menu-category {
   font-size: 28px;
   font-weight: 700;
@@ -272,6 +274,7 @@ $mega-menu-width:  720px;
   text-transform: none;
   color: $color-dark;
   margin-bottom: 16px;
+  
 }
 
 .mega-menu-desc {
