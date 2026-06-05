@@ -53,7 +53,6 @@ export class TemplatePlaceholder {
     this.templateService.GetTemplateByTemplateType(this.templateType)
       .subscribe({
         next: (response: any) => {
-          debugger;
           let templateContent = '';
           if (response && response.result) {
             if (response.result.templateContent !== undefined) {

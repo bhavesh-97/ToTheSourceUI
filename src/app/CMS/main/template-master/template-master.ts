@@ -134,7 +134,6 @@ export class TemplateMaster implements OnInit {
          });
    }
    openDialog(isNew: boolean, tpl?: Template) {
-     // debugger;
      this.isNew = isNew;
      if (isNew) {
        this.templateForm.reset( {
@@ -195,7 +194,6 @@ export class TemplateMaster implements OnInit {
   }
 
   async SaveTemplate() {
-    // debugger;
      if (this.templateForm.invalid) {
 
     this.templateForm.markAllAsTouched();
@@ -231,7 +229,6 @@ export class TemplateMaster implements OnInit {
          this.TemplateMasterService.SaveTemplate(tempModel).subscribe({
             next: (res) => {
                 if (!res.isError) {
-                  // debugger;
                   // var response = JSON.parse(res.result);
                   const response = res.result;
                   this.templateForm.reset();

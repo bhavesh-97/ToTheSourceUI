@@ -161,7 +161,6 @@ export class MenuMappingMaster implements OnInit {
     this.loading = true;
     this.menuMappingService.GetAllMenuMappingDetails().subscribe({
       next: (res) => {
-        debugger;
         if (!res.isError) {
           let flatData: MMenuMappingMaster[];
           if (typeof res.result === 'string') {
@@ -169,7 +168,6 @@ export class MenuMappingMaster implements OnInit {
           } else {
             flatData = res.result as MMenuMappingMaster[];
           }
-          debugger;
           const treeData = this.buildTree(flatData);
           this.menuMappings = treeData;
           this.filteredMenuMappings = [...treeData];
@@ -195,7 +193,6 @@ export class MenuMappingMaster implements OnInit {
   loadMenuResources() {
     this.menuresourceService.GetMenuResourceDetails().subscribe({
       next: (res) => {
-        debugger;
         let menuData: any[] = [];
         if (!res.isError) {
           const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;

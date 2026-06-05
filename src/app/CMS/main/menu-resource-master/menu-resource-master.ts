@@ -85,7 +85,6 @@ export class MenuResourceMaster {
        this.MenuResourceMasterService.GetAllMenuResourceDetails().subscribe({
           next: (res) => {
             if (!res.isError) {
-              debugger;
               var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
               this.loading = false;
               this.MenuResource = response;

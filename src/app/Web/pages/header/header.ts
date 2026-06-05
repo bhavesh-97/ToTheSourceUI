@@ -178,7 +178,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     private el: ElementRef
   ) {
      this.headerMenuService.getHeaderMenu().subscribe(items => {
-      debugger;
         this.navItems = items;
       });
     this.isBrowser = isPlatformBrowser(platformId);

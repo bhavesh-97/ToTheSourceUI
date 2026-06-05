@@ -45,7 +45,6 @@ export class HeaderMenuService {
       .get<JsonResponseModel>(`${this.baseUrl}/Home/WebMenu`,{ context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) })
       .pipe(
         map((res) => {
-          debugger;
           if (!res.isError && res.result) {
             return this.mapToNavItems(res.result as RawMenuItem[]);
           }
