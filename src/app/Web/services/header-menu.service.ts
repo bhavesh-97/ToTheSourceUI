@@ -72,17 +72,44 @@ export class HeaderMenuService {
     });
   }
 
-  private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
-    if (!children || children.length === 0) return [];
+  // private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
+  //   if (!children || children.length === 0) return [];
 
+  //   const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
+  //   if (hasGrandchildren) {
+  //     return children.map((child) => ({
+  //       heading: child.heading,
+  //       items: this.mapMenuItems(child.children || []),
+  //     }));
+  //   }
+
+  //   return [
+  //     {
+  //       heading: children[0]?.heading || undefined,
+  //       items: this.mapMenuItems(children),
+  //     },
+  //   ];
+  // }
+
+private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
+    if (!children || children.length === 0) return [];
     const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
+    
     if (hasGrandchildren) {
       return children.map((child) => ({
-        heading: child.heading,
-        items: this.mapMenuItems(child.children || []),
+        heading: child.heading || undefined,
+        items: [
+          {
+            label: child.title ?? '',
+            icon: child.icon ?? undefined,
+            route: child.link ?? undefined,
+            children: (child.children || []).length > 0 
+              ? this.mapMenuItems(child.children) 
+              : undefined
+          }
+        ],
       }));
     }
-
     return [
       {
         heading: children[0]?.heading || undefined,
@@ -90,7 +117,6 @@ export class HeaderMenuService {
       },
     ];
   }
-
   private mapMenuItems(items: RawMenuItem[]): MegaMenuItem[] {
     return (items || []).map((item) => ({
       label: item.title ?? '',
