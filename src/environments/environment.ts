@@ -3,7 +3,7 @@ export const environment = {
   production: false,
   environmentName: 'Localhost',
   CMSUrl: 'https://localhost:7242/CMS', 
-  WebUrl: 'https://localhost:7242/Web', 
+  WebUrl: 'https://localhost:7242', 
 };
 
 
