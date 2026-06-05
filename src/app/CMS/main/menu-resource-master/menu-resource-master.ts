@@ -61,11 +61,11 @@ export class MenuResourceMaster {
   MenuResourceForm!: FormGroup; 
 
   private formFields: FormFieldConfig[] = [
-    { name: 'MenuID', isMandatory: false, events: [] },
-    { name: 'MenuName', isMandatory: true,validationMessage: 'Please enter a valid Menu Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
-    { name: 'MenuURL', isMandatory: true,validationMessage: 'Please enter a valid Menu URL.', events: [] },
-    { name: 'Icon', isMandatory: true,validationMessage: 'Please enter a valid Menu Icon.', events: [] },
-    { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'menuID', isMandatory: false, events: [] },
+    { name: 'menuName', isMandatory: true,validationMessage: 'Please enter a valid Menu Name.', events: [{ type: 'keypress', validationRule: ValidationRules.LettersWithWhiteSpace }] },
+    { name: 'menuURL', isMandatory: true,validationMessage: 'Please enter a valid Menu URL.', events: [] },
+    { name: 'icon', isMandatory: true,validationMessage: 'Please enter a valid Menu icon.', events: [] },
+    { name: 'mCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor(){
@@ -104,11 +104,11 @@ export class MenuResourceMaster {
 
   openNew() {
     this.MenuResourceForm.reset({
-      MenuID: 0,
-      MenuName: '',
-      MenuURL: '',
-      Icon: '',
-      MCommonEntitiesMaster:{
+      menuID: 0,
+      menuName: '',
+      menuURL: '',
+      icon: '',
+      mCommonEntitiesMaster:{
         IsActive: true
       }
     });
@@ -118,12 +118,12 @@ export class MenuResourceMaster {
 
   editMenu(menuresource: MMenuResourceMaster) {
     this.MenuResourceForm.patchValue({
-      MenuID: menuresource.MenuID,
-      MenuName: menuresource.MenuName,
-      MenuURL:menuresource.MenuURL,
-      Icon:menuresource.Icon,
-       MCommonEntitiesMaster:{
-        IsActive: menuresource.MCommonEntitiesMaster.isActive
+      menuID: menuresource.menuID,
+      menuName: menuresource.menuName,
+      menuURL:menuresource.menuURL,
+      icon:menuresource.icon,
+       mCommonEntitiesMaster:{
+        IsActive: menuresource.mCommonEntitiesMaster.isActive
       }
     });    
     this.MenuResourceDialogHeader = 'Edit Menu';
@@ -133,7 +133,7 @@ export class MenuResourceMaster {
   deleteMenu(menuresource: MMenuResourceMaster) {
     this.confirmationService.confirm({
       key: 'MenuResourceDialog',
-      message: `Are you sure you want to delete <b>${menuresource.MenuName}</b>? This action cannot be undone.`,
+      message: `Are you sure you want to delete <b>${menuresource.menuName}</b>? This action cannot be undone.`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {

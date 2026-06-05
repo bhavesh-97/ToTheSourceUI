@@ -6,7 +6,7 @@
            [rowsPerPageOptions]="[10, 25, 50]" 
            [loading]="loading" 
            [paginator]="true" 
-           [globalFilterFields]="['MenuName']" 
+           [globalFilterFields]="['menuName']" 
            [showGridlines]="true"
            styleClass="p-datatable-sm">
 
@@ -39,19 +39,19 @@
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Menu Name
-            <p-columnFilter type="text" field="MenuName" display="menu"></p-columnFilter>
+            <p-columnFilter type="text" field="menuName" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
             Menu URL
-            <p-columnFilter type="text" field="MenuURL" display="menu"></p-columnFilter>
+            <p-columnFilter type="text" field="menuURL" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 16rem">
           <div class="flex align-items-center justify-content-between">
-            Menu Icon
-            <p-columnFilter type="text" field="Icon" display="menu"></p-columnFilter>
+            Menu icon
+            <p-columnFilter type="text" field="icon" display="menu"></p-columnFilter>
           </div>
         </th>
         <th style="min-width: 10rem">
@@ -86,30 +86,30 @@
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ menu.MenuName }}</span>
+            <span class="font-medium">{{ menu.menuName }}</span>
           </div>
         </td>
         <td>
           <div class="flex align-items-center gap-3">
-            <span class="font-medium">{{ menu.MenuURL }}</span>
+            <span class="font-medium">{{ menu.menuURL }}</span>
           </div>
         </td>
         <td>
             <div class="flex align-items-center gap-3">
                 <i
-                  [ngClass]="menu.Icon"
+                  [ngClass]="menu.icon"
                   class="text-lg"
                   aria-hidden="true"
                 ></i>
                 <span class="font-medium">
-                    {{ menu.Icon }}
+                    {{ menu.icon }}
                 </span>
             </div>
         </td>
         <td>
           <p-tag 
-            [value]="menu.MCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
-            [severity]="menu.MCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
+            [value]="menu.mCommonEntitiesMaster.IsActive ? 'Active' : 'Inactive'"
+            [severity]="menu.mCommonEntitiesMaster.IsActive ? 'success' : 'danger'"
             class="text-sm">
           </p-tag>
         </td>
@@ -158,14 +158,14 @@
           <div class="col-8">
             <input pInputText
                  #inputField
-                 formControlName="MenuName"
+                 formControlName="menuName"
                  class="form-control input100"
-                 [class.is-invalid]="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched"
+                 [class.is-invalid]="MenuResourceForm.get('menuName')?.invalid && MenuResourceForm.get('menuName')?.touched"
                  placeholder="e.g. Admin Master" />
-            <div *ngIf="MenuResourceForm.get('MenuName')?.invalid && MenuResourceForm.get('MenuName')?.touched" class="invalid-feedback">
-              <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['required']">menu resource name is required</div>
-                <div *ngIf="MenuResourceForm.get('MenuName')?.errors?.['minlength']">
-                  menu resource name must be at least {{MenuResourceForm.get('MenuName')?.errors?.['minlength']?.requiredLength}} characters
+            <div *ngIf="MenuResourceForm.get('menuName')?.invalid && MenuResourceForm.get('menuName')?.touched" class="invalid-feedback">
+              <div *ngIf="MenuResourceForm.get('menuName')?.errors?.['required']">menu resource name is required</div>
+                <div *ngIf="MenuResourceForm.get('menuName')?.errors?.['minlength']">
+                  menu resource name must be at least {{MenuResourceForm.get('menuName')?.errors?.['minlength']?.requiredLength}} characters
                 </div>
             </div>
           </div>
@@ -177,49 +177,49 @@
           <div class="col-8">
           <input pInputText
               #inputField
-              formControlName="MenuURL"
+              formControlName="menuURL"
               class="form-control input100"
-              [class.is-invalid]="MenuResourceForm.get('MenuURL')?.invalid && MenuResourceForm.get('MenuURL')?.touched"
+              [class.is-invalid]="MenuResourceForm.get('menuURL')?.invalid && MenuResourceForm.get('menuURL')?.touched"
               placeholder="e.g. /main/users/list" />
 
-            <div *ngIf="MenuResourceForm.get('MenuURL')?.invalid && MenuResourceForm.get('MenuURL')?.touched"class="invalid-feedback">
-                <div *ngIf="MenuResourceForm.get('MenuURL')?.errors?.['required']">
+            <div *ngIf="MenuResourceForm.get('menuURL')?.invalid && MenuResourceForm.get('menuURL')?.touched"class="invalid-feedback">
+                <div *ngIf="MenuResourceForm.get('menuURL')?.errors?.['required']">
                     menu url level is required
                 </div>
-                <div *ngIf="MenuResourceForm.get('MenuURL')?.errors?.['min']">
-                    menu url must be at least {{ MenuResourceForm.get('MenuURL')?.errors?.['min']?.min }}
+                <div *ngIf="MenuResourceForm.get('menuURL')?.errors?.['min']">
+                    menu url must be at least {{ MenuResourceForm.get('menuURL')?.errors?.['min']?.min }}
                 </div>
   
-                <div *ngIf="MenuResourceForm.get('MenuURL')?.errors?.['max']">
-                    menu url cannot exceed {{ MenuResourceForm.get('MenuURL')?.errors?.['max']?.max }}
+                <div *ngIf="MenuResourceForm.get('menuURL')?.errors?.['max']">
+                    menu url cannot exceed {{ MenuResourceForm.get('menuURL')?.errors?.['max']?.max }}
                 </div>
             </div>
           </div>
         </div>
          <div class="col-8">
           <label class="form-label fw-medium mb-0">
-            Menu Icon <span class="text-danger">*</span>
+            Menu icon <span class="text-danger">*</span>
           </label>
         </div>
         <div class="col-8">
          <p-iconfield iconPosition="left" class="w-100">
             <p-inputicon>
                 <i  class="text-xl"
-                    [ngClass]="MenuResourceForm.get('Icon')?.value || 'pi pi-question-circle'"></i>
+                    [ngClass]="MenuResourceForm.get('icon')?.value || 'pi pi-question-circle'"></i>
             </p-inputicon>
             <input
                 pInputText
                 #inputField
-                formControlName="Icon"
+                formControlName="icon"
                 class="w-100"
                 placeholder="e.g. pi pi-home or fa fa-minus-square"
-                [class.is-invalid]="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched"
+                [class.is-invalid]="MenuResourceForm.get('icon')?.invalid && MenuResourceForm.get('icon')?.touched"
               />
           </p-iconfield>
-          <div *ngIf="MenuResourceForm.get('Icon')?.invalid && MenuResourceForm.get('Icon')?.touched" class="invalid-feedback">
-            <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['required']">menu icon is required</div>
-              <div *ngIf="MenuResourceForm.get('Icon')?.errors?.['minlength']">
-                menu icon must be at least {{MenuResourceForm.get('Icon')?.errors?.['minlength']?.requiredLength}} characters
+          <div *ngIf="MenuResourceForm.get('icon')?.invalid && MenuResourceForm.get('icon')?.touched" class="invalid-feedback">
+            <div *ngIf="MenuResourceForm.get('icon')?.errors?.['required']">menu icon is required</div>
+              <div *ngIf="MenuResourceForm.get('icon')?.errors?.['minlength']">
+                menu icon must be at least {{MenuResourceForm.get('icon')?.errors?.['minlength']?.requiredLength}} characters
               </div>
           </div>
         </div>
@@ -227,9 +227,9 @@
         <div class="col-8">
           <label class="form-label fw-medium mb-0">Status</label>
         </div>
-        <div class="col-8 d-flex align-items-center gap-3" formGroupName="MCommonEntitiesMaster">
+        <div class="col-8 d-flex align-items-center gap-3" formGroupName="mCommonEntitiesMaster">
             <p-toggleswitch  #inputField formControlName="IsActive"></p-toggleswitch>
-            <span>{{ MenuResourceForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
+            <span>{{ MenuResourceForm.get('mCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
 
         </div>

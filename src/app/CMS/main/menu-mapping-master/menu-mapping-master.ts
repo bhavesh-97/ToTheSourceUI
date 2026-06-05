@@ -105,21 +105,21 @@ export class MenuMappingMaster implements OnInit {
     { label: 'Inactive', value: false }
   ];
   private formFields: FormFieldConfig[] = [
-    { name: 'MappingID', isMandatory: false, events: [] },
-    { name: 'MenuID', isMandatory: true, validationMessage: 'Please Select Menu',events: [] },
-    { name: 'MenuTypeID', isMandatory: true, validationMessage: 'Please Select Menu Type',events: [] },
-    { name: 'SiteAreaID', isMandatory: true, validationMessage: 'Please Select Site Area',events: [] },
-    { name: 'MenuRank', isMandatory: true, min:1, max:99 ,validationMessage: 'Please enter a valid Menu Rank.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly}, { type: 'focusout', validationRule: ValidationRules.NumberOnly }]},
-    { name: 'ParentID', isMandatory: false, validationMessage: 'Please Select Parent Menu',events: [] },
-    { name: 'MCommonEntitiesMaster.IsActive', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'mappingID', isMandatory: false, events: [] },
+    { name: 'menuID', isMandatory: true, validationMessage: 'Please Select Menu',events: [] },
+    { name: 'menuTypeID', isMandatory: true, validationMessage: 'Please Select Menu Type',events: [] },
+    { name: 'siteAreaID', isMandatory: true, validationMessage: 'Please Select Site Area',events: [] },
+    { name: 'menuRank', isMandatory: true, min:1, max:99 ,validationMessage: 'Please enter a valid Menu Rank.', events: [{ type: 'keypress', validationRule: ValidationRules.NumberOnly}, { type: 'focusout', validationRule: ValidationRules.NumberOnly }]},
+    { name: 'parentID', isMandatory: false, validationMessage: 'Please Select Parent Menu',events: [] },
+    { name: 'mCommonEntitiesMaster.isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
 
   constructor() {
     this.menuMappingForm = this.FormUtils.createFormGroup(this.formFields, this.fb);
-    this.menuMappingForm.get('MenuID')?.valueChanges.subscribe(menuId => {
-      this.onMenuSelected(menuId);
+    this.menuMappingForm.get('menuID')?.valueChanges.subscribe(menuID => {
+      this.onMenuSelected(menuID);
     });
-    this.menuMappingForm.get('MenuTypeID')?.valueChanges.subscribe(menuType => {
+    this.menuMappingForm.get('menuTypeID')?.valueChanges.subscribe(menuType => {
       this.onMenuTypeChanged(menuType);
     });
   }
@@ -168,6 +168,7 @@ export class MenuMappingMaster implements OnInit {
           } else {
             flatData = res.result as MMenuMappingMaster[];
           }
+          debugger;
           const treeData = this.buildTree(flatData);
           this.menuMappings = treeData;
           this.filteredMenuMappings = [...treeData];
@@ -193,6 +194,7 @@ export class MenuMappingMaster implements OnInit {
   loadMenuResources() {
     this.menuresourceService.GetMenuResourceDetails().subscribe({
       next: (res) => {
+        debugger;
         let menuData: any[] = [];
         if (!res.isError) {
           const rawResult = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
@@ -262,13 +264,13 @@ export class MenuMappingMaster implements OnInit {
     });
   }
   onMenuResourceChange(event: any) {
-    const menuId = event.value;
-    const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
+    const menuID = event.value;
+    const selectedMenu = this.menuResources.find(m => m.menuID === menuID);
 
     if (selectedMenu) {
       this.menuMappingForm.patchValue({
-        Icon: selectedMenu.Icon,
-        MenuName: selectedMenu.MenuName 
+        icon: selectedMenu.icon,
+        menuName: selectedMenu.menuName 
       });
     }
   }
@@ -298,8 +300,8 @@ export class MenuMappingMaster implements OnInit {
     const roots: TreeNode<MMenuMappingMaster>[] = [];
     const map = new Map<number, TreeNode<MMenuMappingMaster>>();
     flatData.forEach(item => {
-      map.set(item.MenuID, {
-        key: item.MenuID.toString(),
+      map.set(item.menuID, {
+        key: item.menuID.toString(),
         data: item,
         children: [],
         expanded: false
@@ -307,11 +309,11 @@ export class MenuMappingMaster implements OnInit {
     });
 
     flatData.forEach(item => {
-      const node = map.get(item.MenuID)!;
-      if (item.ParentID === 0 || item.ParentID === null) {
+      const node = map.get(item.menuID)!;
+      if (item.parentID === 0 || item.parentID === null) {
         roots.push(node);
       } else {
-        const parentNode = map.get(item.ParentID);
+        const parentNode = map.get(item.parentID);
         if (parentNode) {
           parentNode.children!.push(node);
         } else {
@@ -326,7 +328,7 @@ export class MenuMappingMaster implements OnInit {
           return;
         }
 
-        nodes.sort((a, b) => a.data!.MenuRank - b.data!.MenuRank);
+        nodes.sort((a, b) => a.data!.menuRank - b.data!.menuRank);
   
         for (const node of nodes) {
             if (node.children?.length) {
@@ -339,7 +341,7 @@ export class MenuMappingMaster implements OnInit {
   }
 
   isRootMenu(menu: MMenuMappingMaster): boolean {
-    return menu.ParentID === 0 || menu.ParentID === null;
+    return menu.parentID === 0 || menu.parentID === null;
   }
 
   buildParentMenuOptions() {
@@ -350,9 +352,9 @@ export class MenuMappingMaster implements OnInit {
     const traverse = (nodes: TreeNode<MMenuMappingMaster>[], level = 0) => {
       nodes.forEach(node => {
         options.push({
-          // label: `${'—'.repeat(level * 2)} ${node.data!.MenuName}`,
-          label: node.data!.MenuName,
-          value: node.data!.MenuID, 
+          // label: `${'—'.repeat(level * 2)} ${node.data!.menuName}`,
+          label: node.data!.menuName,
+          value: node.data!.menuID, 
           data: node.data!
         });
 
@@ -369,10 +371,10 @@ export class MenuMappingMaster implements OnInit {
   calculateStats() {
     this.totalMenus = this.countNodes(this.menuMappings);
     this.activeMenuCount = this.countNodesByCondition(this.menuMappings, 
-      node => node.data!.MCommonEntitiesMaster.isActive
+      node => node.data!.mCommonEntitiesMaster.isActive
     );
     this.mainMenuCount = this.countNodesByCondition(this.menuMappings,
-      node => node.data!.MenuTypeID === 1
+      node => node.data!.menuTypeID === 1
     );
     const calculateMaxLevel = (nodes: TreeNode<MMenuMappingMaster>[], currentLevel: number): number => {
       let maxLevel = currentLevel;
@@ -414,16 +416,16 @@ export class MenuMappingMaster implements OnInit {
   openNew() {
     this.selectedNode = null;
     this.menuMappingForm.reset({
-      MappingID: 0,
-      MenuID: null,
-      MenuName: '',
-      MenuURL: '',
-      Icon: '',
-      MenuTypeID: 1,
-      ParentID: 0,
-      MenuRank: 1,
-      MCommonEntitiesMaster: {
-        IsActive: false
+      mappingID: 0,
+      menuID: null,
+      menuName: '',
+      menuURL: '',
+      icon: '',
+      menuTypeID: 1,
+      parentID: 0,
+      menuRank: 1,
+      mCommonEntitiesMaster: {
+        isActive: false
       }
     });
     this.dialogHeader = 'Create New Menu Mapping';
@@ -433,7 +435,7 @@ export class MenuMappingMaster implements OnInit {
   openNewChild(row: any) {
     const parentNode = this.resolveTreeNode(row);
     if (!parentNode) return;
-    if(!parentNode.data!.MCommonEntitiesMaster.isActive){
+    if(!parentNode.data!.mCommonEntitiesMaster.isActive){
         this.messageService.showMessage(
           'Parent menu must be active to add sub-items.',
           'Error',
@@ -444,21 +446,21 @@ export class MenuMappingMaster implements OnInit {
     this.selectedNode = parentNode;
 
     this.menuMappingForm.reset({
-      MappingID: 0,
-      MenuID: null,
-      MenuName: '',
-      MenuURL: '',
-      Icon: '',
-      MenuTypeID: 2, // child menu
-      SiteAreaID: parentNode.data!.SiteAreaID,
-      ParentID: parentNode.data!.MenuID, 
-      MenuRank: (parentNode.children?.length || 0) + 1,
-      MCommonEntitiesMaster: {
-        IsActive: false
+      mappingID: 0,
+      menuID: null,
+      menuName: '',
+      menuURL: '',
+      icon: '',
+      menuTypeID: 2, // child menu
+      siteAreaID: parentNode.data!.siteAreaID,
+      parentID: parentNode.data!.menuID, 
+      menuRank: (parentNode.children?.length || 0) + 1,
+      mCommonEntitiesMaster: {
+        isActive: false
       }
     });
 
-    this.dialogHeader = `Add Child to "${parentNode.data!.MenuName}"`;
+    this.dialogHeader = `Add Child to "${parentNode.data!.menuName}"`;
     this.displayDialog = true;
   }
 
@@ -468,20 +470,20 @@ export class MenuMappingMaster implements OnInit {
     const menuData = node.data!;
     this.selectedNode = node;
     this.menuMappingForm.patchValue({
-      MappingID: menuData.MappingID,
-      MenuID: menuData.MenuID,
-      MenuName: menuData.MenuName,
-      MenuURL: menuData.MenuURL,
-      Icon: menuData.Icon,
-      SiteAreaID: menuData.SiteAreaID,
-      MenuTypeID: menuData.MenuTypeID,
-      ParentID: menuData.ParentID,
-      MenuRank: menuData.MenuRank,
-      MCommonEntitiesMaster: {
-        IsActive: menuData.MCommonEntitiesMaster.isActive
+      mappingID: menuData.mappingID,
+      menuID: menuData.menuID,
+      menuName: menuData.menuName,
+      menuURL: menuData.menuURL,
+      icon: menuData.icon,
+      siteAreaID: menuData.siteAreaID,
+      menuTypeID: menuData.menuTypeID,
+      parentID: menuData.parentID,
+      menuRank: menuData.menuRank,
+      mCommonEntitiesMaster: {
+        isActive: menuData.mCommonEntitiesMaster.isActive
       }
     });
-    this.dialogHeader = `Edit "${menuData.MenuName}"`;
+    this.dialogHeader = `Edit "${menuData.menuName}"`;
     this.displayDialog = true;
   }
 
@@ -490,7 +492,7 @@ export class MenuMappingMaster implements OnInit {
     if (!node) return;
     const menuData = node.data!;
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete <strong>"${menuData.MenuName}"</strong>?`,
+      message: `Are you sure you want to delete <strong>"${menuData.menuName}"</strong>?`,
       header: 'Confirm Deletion',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
@@ -528,14 +530,14 @@ export class MenuMappingMaster implements OnInit {
       return null;
   }
 
-  onMenuSelected(menuId: number) {
+  onMenuSelected(menuID: number) {
     if (Array.isArray(this.menuResources)) { 
-        const selectedMenu = this.menuResources.find(m => m.MenuID === menuId);
+        const selectedMenu = this.menuResources.find(m => m.menuID === menuID);
         if (selectedMenu) {
             this.menuMappingForm.patchValue({
-                  MenuName: selectedMenu.MenuName,
-                  MenuURL: selectedMenu.MenuURL,
-                  Icon: selectedMenu.Icon
+                  menuName: selectedMenu.menuName,
+                  menuURL: selectedMenu.menuURL,
+                  icon: selectedMenu.icon
                 }, { emitEvent: false });
             }
     } else {
@@ -545,7 +547,7 @@ export class MenuMappingMaster implements OnInit {
 
   onMenuTypeChanged(menuType: number) {
     if (menuType === 1) {
-      this.menuMappingForm.patchValue({ ParentID: 0 });
+      this.menuMappingForm.patchValue({ parentID: 0 });
     }
   }
 
@@ -584,13 +586,13 @@ export class MenuMappingMaster implements OnInit {
   }
 
   getMenuTypeLabel(type: number): string {
-    const menuType = this.menuTypes.find(t => t.MenuTypeID === type);
-    return menuType ? menuType.MenuTypeName : 'Unknown';
+    const menuType = this.menuTypes.find(t => t.menuTypeID === type);
+    return menuType ? menuType.menuTypeName : 'Unknown';
   }
 
   getMenuTypeIcon(type: number): string {
-    const menuType = this.menuTypes.find(t => t.MenuTypeID === type);
-    return menuType ? menuType.MenuTypeIcon : 'pi pi-question';
+    const menuType = this.menuTypes.find(t => t.menuTypeID === type);
+    return menuType ? menuType.menuTypeIcon : 'pi pi-question';
   }
 
   getMenuTypeSeverity(type: number): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
@@ -610,22 +612,22 @@ export class MenuMappingMaster implements OnInit {
     return isActive ? 'Active' : 'Inactive';
   }
 
-  getParentName(parentId: number): string {
-    if (parentId === 0) return 'Root';
-    const parent = this.parentMenuOptions.find(p => p.value === parentId);
-    return parent && parent.data ? parent.data.MenuName : 'Unknown';
+  getParentName(parentID: number): string {
+    if (parentID === 0) return 'Root';
+    const parent = this.parentMenuOptions.find(p => p.value === parentID);
+    return parent && parent.data ? parent.data.menuName : 'Unknown';
   }
 
-  getParentIcon(parentId: number): string {
-    if (parentId === 0) return 'pi pi-home';
-    const parent = this.parentMenuOptions.find(p => p.value === parentId);
-    return parent && parent.data ? parent.data.Icon : 'pi pi-folder';
+  getParentIcon(parentID: number): string {
+    if (parentID === 0) return 'pi pi-home';
+    const parent = this.parentMenuOptions.find(p => p.value === parentID);
+    return parent && parent.data ? parent.data.icon : 'pi pi-folder';
   }
 
   filterMenuResources(event: any) {
     const query = (event.query || '').toLowerCase();
     this.filteredMenuResources = this.menuResources.filter(menu =>
-      menu.MenuName.toLowerCase().includes(query)
+      menu.menuName.toLowerCase().includes(query)
     );
   }
 
@@ -652,7 +654,7 @@ export class MenuMappingMaster implements OnInit {
   }
   private filterTreeBySiteArea(nodes: TreeNode<MMenuMappingMaster>[], siteArea: number): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
-      if (node.data!.SiteAreaID === siteArea) {
+      if (node.data!.siteAreaID === siteArea) {
         result.push(node);
       } else if (node.children && node.children.length > 0) {
         const filteredChildren = this.filterTreeBySiteArea(node.children, siteArea);
@@ -669,7 +671,7 @@ export class MenuMappingMaster implements OnInit {
 
   private filterTreeByType(nodes: TreeNode<MMenuMappingMaster>[], menuType: number): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
-      if (node.data!.MenuTypeID === menuType) {
+      if (node.data!.menuTypeID === menuType) {
         result.push(node);
       } else if (node.children && node.children.length > 0) {
         const filteredChildren = this.filterTreeByType(node.children, menuType);
@@ -686,7 +688,7 @@ export class MenuMappingMaster implements OnInit {
 
   private filterTreeByStatus(nodes: TreeNode<MMenuMappingMaster>[], status: boolean): TreeNode<MMenuMappingMaster>[] {
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
-      if (node.data!.MCommonEntitiesMaster.isActive === status) {
+      if (node.data!.mCommonEntitiesMaster.isActive === status) {
         // Include node and all its children
         result.push(node);
       } else if (node.children && node.children.length > 0) {
@@ -709,8 +711,8 @@ export class MenuMappingMaster implements OnInit {
     
     return nodes.reduce((result: TreeNode<MMenuMappingMaster>[], node) => {
       const matches = 
-        node.data!.MenuName.toLowerCase().includes(lowerSearch) ||
-        (node.data!.MenuURL || '').toLowerCase().includes(lowerSearch);
+        node.data!.menuName.toLowerCase().includes(lowerSearch) ||
+        (node.data!.menuURL || '').toLowerCase().includes(lowerSearch);
       
       let filteredChildren: TreeNode<MMenuMappingMaster>[] = [];
       if (node.children && node.children.length > 0) {
@@ -806,12 +808,12 @@ export class MenuMappingMaster implements OnInit {
     csvContent += headers.join(',') + '\n';
     const addNodeToCSV = (node: TreeNode<MMenuMappingMaster>, level: number) => {
       const row = [
-        `"${node.data!.MenuName}"`,
-        `"${node.data!.MenuURL || ''}"`,
-        `"${this.getMenuTypeLabel(node.data!.MenuTypeID)}"`,
-        node.data!.MenuRank,
-        `"${node.data!.ParentMenuName || 'Root'}"`,
-        `"${this.getStatusLabel(node.data!.MCommonEntitiesMaster.isActive)}"`,
+        `"${node.data!.menuName}"`,
+        `"${node.data!.menuURL || ''}"`,
+        `"${this.getMenuTypeLabel(node.data!.menuTypeID)}"`,
+        node.data!.menuRank,
+        `"${node.data!.parentMenuName || 'Root'}"`,
+        `"${this.getStatusLabel(node.data!.mCommonEntitiesMaster.isActive)}"`,
         level
       ];
       csvContent += row.join(',') + '\n';
@@ -832,15 +834,15 @@ export class MenuMappingMaster implements OnInit {
   }
 
   getSelectedMenuIcon(): string {
-    const menuId = this.menuMappingForm.get('MenuID')?.value;
-    const menu = this.menuResources.find(m => m.MenuID === menuId);
-    return menu?.Icon || 'pi pi-file';
+    const menuID = this.menuMappingForm.get('menuID')?.value;
+    const menu = this.menuResources.find(m => m.menuID === menuID);
+    return menu?.icon || 'pi pi-file';
   }
 
-  getSelectedMenuName(): string {
-    const menuId = this.menuMappingForm.get('MenuID')?.value;
-    const menu = this.menuResources.find(m => m.MenuID === menuId);
-    return menu?.MenuName || 'Select Menu';
+  getSelectedmenuName(): string {
+    const menuID = this.menuMappingForm.get('menuID')?.value;
+    const menu = this.menuResources.find(m => m.menuID === menuID);
+    return menu?.menuName || 'Select Menu';
   }
   toggleRow(node: TreeNode<MMenuMappingMaster>) {
     node.expanded = !node.expanded;

@@ -24,10 +24,10 @@
                         <p-select [options]="statusOptions" optionLabel="label" optionValue="value" placeholder="Status" 
                                   [showClear]="true" class="w-10rem" [(ngModel)]="selectedStatus" (onChange)="onStatusFilterChange($event)">
                         </p-select>
-                        <p-select [options]="siteAres" optionLabel="AreaName" optionValue="SiteAreaID" placeholder="Site Area" [showClear]="true" 
+                        <p-select [options]="siteAres" optionLabel="AreaName" optionValue="siteAreaID" placeholder="Site Area" [showClear]="true" 
                                   class="w-10rem" [(ngModel)]="selectedSiteArea" (onChange)="onSiteAreaFilterChange($event)">
                         </p-select>
-                        <p-select [options]="menuTypes" optionLabel="MenuTypeName" optionValue="MenuTypeID" placeholder="Menu Type" [showClear]="true" 
+                        <p-select [options]="menuTypes" optionLabel="MenuTypeName" optionValue="menuTypeID" placeholder="Menu Type" [showClear]="true" 
                                   class="w-10rem" [(ngModel)]="selectedMenuType" (onChange)="onMenuTypeFilterChange($event)">
                         </p-select>
                         <p-button icon="pi pi-filter-slash" severity="secondary" pTooltip="Clear Filters"(click)="clearFilters()" 
@@ -107,25 +107,25 @@
             </td>
 
             <td class="col-type">
-                <i [class]="getMenuTypeIcon(rowData.MenuTypeID) + ' mr-1'"></i>
-                {{ getMenuTypeLabel(rowData.MenuTypeID) }}
+                <i [class]="getMenuTypeIcon(rowData.menuTypeID) + ' mr-1'"></i>
+                {{ getMenuTypeLabel(rowData.menuTypeID) }}
             </td>
 
             <td class="col-rank">
-                <p-badge [value]="rowData.MenuRank" severity="contrast" />
+                <p-badge [value]="rowData.menuRank" severity="contrast" />
             </td>
 
             <td class="col-parent">
-                <span *ngIf="rowData.ParentID === 0" class="text-color-secondary">—</span>
-                <span *ngIf="rowData.ParentID > 0" 
-                      pTooltip="{{ rowData.ParentMenuName || getParentName(rowData.ParentID) }}">
-                    {{ rowData.ParentMenuName || getParentName(rowData.ParentID) }}
+                <span *ngIf="rowData.parentID === 0" class="text-color-secondary">—</span>
+                <span *ngIf="rowData.parentID > 0" 
+                      pTooltip="{{ rowData.ParentMenuName || getParentName(rowData.parentID) }}">
+                    {{ rowData.ParentMenuName || getParentName(rowData.parentID) }}
                 </span>
             </td>
 
             <td class="col-status">
-                <p-tag [value]="getStatusLabel(rowData.MCommonEntitiesMaster.IsActive)"
-                    [severity]="getStatusSeverity(rowData.MCommonEntitiesMaster.IsActive)" />
+                <p-tag [value]="getStatusLabel(rowData.mCommonEntitiesMaster.isActive)"
+                    [severity]="getStatusSeverity(rowData.mCommonEntitiesMaster.isActive)" />
             </td>
 
             <td class="col-actions">
@@ -183,18 +183,18 @@
           [style]="{ width: '90vw', maxWidth: '750px' }" [draggable]="false" [resizable]="false">
     
     <form [formGroup]="menuMappingForm" id="menuMappingForm" (ngSubmit)="saveMapping()" class="p-fluid">
-        <input pInputText #inputField formControlName="MappingID"  hidden/>
+        <input pInputText #inputField formControlName="mappingID"  hidden/>
         <div class="container-fluid">
             
             <div class="row mb-3 align-items-center">
                 <div class="col-8">
-                    <label for="MenuID" class="font-bold block mb-2">
+                    <label for="menuID" class="font-bold block mb-2">
                         Application Site Area <span class="text-red-500">*</span>
                     </label>
                 </div>  
                 <div class="col-8">
                     <p-select #inputField [options]="siteAres"  
-                              formControlName="SiteAreaID" optionLabel="AreaName" optionValue="SiteAreaID" 
+                              formControlName="siteAreaID" optionLabel="AreaName" optionValue="siteAreaID" 
                               placeholder="Select Site Area" [filter]="true" filterBy="AreaName" 
                               [showClear]="true" class="w-100">
 
@@ -209,20 +209,20 @@
                             </div>
                         </ng-template>
                     </p-select>
-                    <div *ngIf="menuMappingForm.get('MenuID')?.invalid && menuMappingForm.get('MenuID')?.touched" class="invalid-feedback">
+                    <div *ngIf="menuMappingForm.get('menuID')?.invalid && menuMappingForm.get('menuID')?.touched" class="invalid-feedback">
                         <small class="p-error block">Please select a Site Area</small>
                     </div>
                 </div>
             </div>
             <div class="row mb-3 align-items-center">
                 <div class="col-8">
-                    <label for="MenuID" class="font-bold block mb-2">
+                    <label for="menuID" class="font-bold block mb-2">
                         Menu Resource <span class="text-red-500">*</span>
                     </label>
                 </div>  
                 <div class="col-8">
                     <p-select #inputField [options]="menuResources" 
-                              formControlName="MenuID" optionLabel="MenuName" optionValue="MenuID" 
+                              formControlName="menuID" optionLabel="MenuName" optionValue="menuID" 
                               placeholder="Select Menu Resource" [filter]="true" filterBy="MenuName" 
                               [showClear]="true" class="w-100"
                               (onShow)="preventParentScroll()">
@@ -240,20 +240,20 @@
                             </div>
                         </ng-template>
                     </p-select>
-                    <div *ngIf="menuMappingForm.get('MenuID')?.invalid && menuMappingForm.get('MenuID')?.touched" class="invalid-feedback">
+                    <div *ngIf="menuMappingForm.get('menuID')?.invalid && menuMappingForm.get('menuID')?.touched" class="invalid-feedback">
                         <small class="p-error block">Please select a menu resource</small>
                     </div>
                 </div>
             </div>
             <div class="row mb-3 align-items-center">
                 <div class="col-8">
-                  <label for="MenuTypeID" class="font-bold block mb-2">
+                  <label for="menuTypeID" class="font-bold block mb-2">
                       Menu Type <span class="text-red-500">*</span>
                   </label>
                 </div>  
                 <div class="col-8">
-                    <p-select #inputField [options]="menuTypes" formControlName="MenuTypeID" optionLabel="MenuTypeName" 
-                                optionValue="MenuTypeID" placeholder="Select Menu Type" class="w-100">
+                    <p-select #inputField [options]="menuTypes" formControlName="menuTypeID" optionLabel="MenuTypeName" 
+                                optionValue="menuTypeID" placeholder="Select Menu Type" class="w-100">
                         <ng-template let-item pTemplate="selectedItem">
                             <div *ngIf="item" class="flex align-items-center gap-2">
                                 <i [class]="item.MenuTypeIcon"></i>
@@ -267,19 +267,19 @@
                             </div>
                         </ng-template>
                     </p-select>
-                    <div *ngIf="menuMappingForm.get('MenuTypeID')?.invalid && menuMappingForm.get('MenuTypeID')?.touched" class="invalid-feedback">
+                    <div *ngIf="menuMappingForm.get('menuTypeID')?.invalid && menuMappingForm.get('menuTypeID')?.touched" class="invalid-feedback">
                         <small class="p-error block">Please select a menu type</small>
                     </div>
                 </div>
             </div>
             <div class="row mb-3 align-items-center">
                 <div class="col-8">
-                  <label for="MenuRank" class="font-bold block mb-2">
+                  <label for="menuRank" class="font-bold block mb-2">
                        Display Order <span class="text-red-500">*</span>
                   </label>
                 </div>
                 <div class="col-8">
-                    <p-inputNumber #inputField formControlName="MenuRank" [showButtons]="true" buttonLayout="horizontal"
+                    <p-inputNumber #inputField formControlName="menuRank" [showButtons]="true" buttonLayout="horizontal"
                                  [min]="1" [max]="999" spinnerMode="horizontal" class="w-100">
                         <ng-template pTemplate="incrementbuttonicon">
                             <i class="pi pi-plus"></i>
@@ -288,19 +288,19 @@
                             <i class="pi pi-minus"></i>
                         </ng-template>
                     </p-inputNumber>
-                    <small *ngIf="menuMappingForm.get('MenuRank')?.invalid && menuMappingForm.get('MenuRank')?.touched" 
+                    <small *ngIf="menuMappingForm.get('menuRank')?.invalid && menuMappingForm.get('menuRank')?.touched" 
                            class="p-error block">Please enter a valid display order (1-999)</small>
                     <small class="text-color-secondary block">Lower numbers appear first</small>
                 </div>
             </div>
-            <div class="row mb-3 align-items-center" *ngIf="menuMappingForm.get('MenuTypeID')?.value !== 1">
+            <div class="row mb-3 align-items-center" *ngIf="menuMappingForm.get('menuTypeID')?.value !== 1">
                 <div class="col-8">
-                  <label for="MenuRank" class="font-bold block mb-2">
+                  <label for="menuRank" class="font-bold block mb-2">
                        Parent Menu <span class="text-red-500">*</span>
                   </label>
                 </div>
                 <div class="col-8">
-                    <p-select #inputField [options]="parentMenuOptions" formControlName="ParentID" optionLabel="label"  
+                    <p-select #inputField [options]="parentMenuOptions" formControlName="parentID" optionLabel="label"  
                                class="mt-2 input100" optionValue="value" placeholder="Select Parent Menu" class="w-100"
                                (onShow)="preventParentScroll()"  [autofocus]="true">
                                
@@ -313,7 +313,7 @@
                     </p-select>
                     <small class="text-color-secondary block">Select "Root" for top-level menu</small>
                     
-                    <p-message severity="info" *ngIf="menuMappingForm.get('MenuTypeID')?.value === 1 && menuMappingForm.get('ParentID')?.value !== 0"
+                    <p-message severity="info" *ngIf="menuMappingForm.get('menuTypeID')?.value === 1 && menuMappingForm.get('parentID')?.value !== 0"
                                text="Parent Menu should typically be 'Root' for Main Menu types." class="mt-2" />
                 </div>
             </div>
@@ -321,9 +321,9 @@
             <div class="col-8">
                 <label class="form-label fw-medium mb-0">Status</label>
             </div>
-            <div class="col-8 d-flex align-items-center gap-3" formGroupName="MCommonEntitiesMaster">
-                <p-toggleswitch #inputField formControlName="IsActive"></p-toggleswitch>
-                <span>{{ menuMappingForm.get('MCommonEntitiesMaster.IsActive')?.value ? 'Active' : 'Inactive' }}</span>
+            <div class="col-8 d-flex align-items-center gap-3" formGroupName="mCommonEntitiesMaster">
+                <p-toggleswitch #inputField formControlName="isActive"></p-toggleswitch>
+                <span>{{ menuMappingForm.get('mCommonEntitiesMaster.isActive')?.value ? 'Active' : 'Inactive' }}</span>
             </div>
 
             </div>
