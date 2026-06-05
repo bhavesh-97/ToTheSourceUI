@@ -78,7 +78,7 @@
         <div class="mega-menu-columns">
           @for (col of item.megaMenu.columns; track col.heading) {
              <div class="mega-menu-col"
-                  [class.mega-menu-col--wide]="item.megaMenu.columns.length === 1 && isSingleColumnOverflow(col.items)">
+                  [class.mega-menu-col--wide]="isSingleColumnOverflow(col.items)">
               @if (col.heading) {
                 <span class="col-heading">{{ col.heading }}</span>
               }
