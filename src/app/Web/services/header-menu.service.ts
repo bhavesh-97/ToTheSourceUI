@@ -92,40 +92,36 @@ export class HeaderMenuService {
   // }
 
 private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
-    if (!children || children.length === 0) return [];
-    const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
-    
-    if (hasGrandchildren) {
-      return children.map((child) => ({
-        heading: child.heading || undefined,
-        items: [
-          {
-            label: child.title ?? '',
-            icon: child.icon ?? undefined,
-            route: child.link ?? undefined,
-            children: (child.children || []).length > 0 
-              ? this.mapMenuItems(child.children) 
-              : undefined
-          }
-        ],
-      }));
-    }
+  if (!children || children.length === 0) return [];
+  
+  const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
+  
+  if (hasGrandchildren) {
+    // Group items by their structural layout headings, or group them cleanly 
+    // into a single operational array list so they line up vertically like Image 1
     return [
       {
         heading: children[0]?.heading || undefined,
         items: this.mapMenuItems(children),
-      },
+      }
     ];
   }
-  private mapMenuItems(items: RawMenuItem[]): MegaMenuItem[] {
-    return (items || []).map((item) => ({
-      label: item.title ?? '',
-      icon: item.icon ?? undefined,
-      route: item.link ?? undefined,
-      children:
-        (item.children || []).length > 0
-          ? this.mapMenuItems(item.children!)
-          : undefined,
-    }));
-  }
+
+  return [
+    {
+      heading: children[0]?.heading || undefined,
+      items: this.mapMenuItems(children),
+    },
+  ];
+}
+private mapMenuItems(items: RawMenuItem[]): MegaMenuItem[] {
+  return (items || []).map((item) => ({
+    label: item.title ?? '',
+    icon: item.icon ?? undefined,
+    route: item.link ?? undefined,
+    children: (item.children || []).length > 0
+      ? this.mapMenuItems(item.children)
+      : undefined,
+  }));
+}
 }

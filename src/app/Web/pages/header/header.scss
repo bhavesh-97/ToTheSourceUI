@@ -286,11 +286,12 @@ $mega-menu-width:  720px;
 }
 .mega-menu-columns {
   flex: 1;
-  display: flex;
-  padding: 40px 40px 40px 48px;
-  gap: 60px;
+  padding: 40px;
+  gap: 40px;
   background: $color-white;
   height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); // Clean column handling
 }
 
 .mega-menu-col {
@@ -317,17 +318,35 @@ $mega-menu-width:  720px;
     }
   }
 
-  .mega-item-link--child {
-    padding: 5px 0 5px 12px;
-    font-size: 12px;
+.mega-item-link {
+  &--child {
+    padding: 6px 0 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba($color-dark, 0.8);
+    
+    &:hover {
+      color: $color-accent;
+    }
+  }
 
+  &--deep-child {
+    padding: 4px 0 4px 10px;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: rgba($color-dark, 0.6);
+    
+    &:hover {
+      color: $color-accent;
+    }
+    
     .item-icon {
       width: 18px;
       height: 18px;
       i { font-size: 10px; }
     }
   }
-
+}
   .mega-sub-list {
     padding-left: 4px;
     margin-left: 2px;
@@ -354,6 +373,7 @@ $mega-menu-width:  720px;
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  width: 100%;
     &.two-column {
     display: grid;
     grid-template-columns: repeat(2, minmax(220px, 1fr));
@@ -444,10 +464,21 @@ $mega-menu-width:  720px;
 
 .mega-sub-list {
   list-style: none;
-  margin: 0;
-  padding: 0 0 0 8px;
+  margin: 4px 0 8px 0;
+  padding: 0 0 0 16px;
   border-left: 1px solid rgba($color-dark, 0.08);
-  margin-left: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mega-deep-sub-list {
+  list-style: none;
+  margin: 2px 0 4px 0;
+  padding: 0 0 0 14px;
+  border-left: 1px dashed rgba($color-dark, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .header.scrolled ~ .mega-menu-panel {
   top: 64px !important;

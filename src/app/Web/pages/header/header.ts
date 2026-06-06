@@ -67,112 +67,14 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   activeMenu = signal<string | null>(null);
   mobileExpandedMenu = signal<string | null>(null);
   isBrowser: boolean;
+  expandedSubMenus: { [key: string]: boolean } = {};
 
   private scrollTl?: gsap.core.Timeline;
   private megaMenuTl?: gsap.core.Timeline;
   private mobileMenuTl?: gsap.core.Timeline;
   private activeMenuTimeout?: ReturnType<typeof setTimeout>;
   private headerMenuService = inject(HeaderMenuService);
-
-  navItems: NavItem[] = [
-    {
-      label: 'About Us',
-      route: '/about-us',
-    },
-    {
-      label: 'Industries',
-      route: '/industries',
-      megaMenu: {
-        description:
-          'Explore the diverse industries we support with tailored solutions designed to meet unique business challenges.',
-        columns: [
-          {
-            heading: 'Sector',
-            items: [
-              { label: 'Agriculture', icon: 'pi pi-leaf', route: '/industries/agriculture' },
-              { label: 'Traffic & Highway', icon: 'pi pi-car', route: '/industries/traffic' },
-              { label: 'Public Transport', icon: 'pi pi-map', route: '/industries/transport' },
-              { label: 'Urban Solutions', icon: 'pi pi-building', route: '/industries/urban' },
-            ],
-          },
-          {
-            heading: 'More',
-            items: [
-              { label: 'Logistics', icon: 'pi pi-box', route: '/industries/logistics' },
-              { label: 'Resources', icon: 'pi pi-database', route: '/industries/resources' },
-              { label: 'Utilities', icon: 'pi pi-bolt', route: '/industries/utilities' },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      label: 'Technology',
-      route: '/technology',
-      megaMenu: {
-        description:
-          'Empowering innovation with smart tech solutions that drive digital transformation and keep businesses ahead.',
-        columns: [
-          {
-            heading: 'Core Tech',
-            items: [
-              { label: 'Advance Analytics', icon: 'pi pi-chart-line', route: '/technology/analytics' },
-              { label: 'AI / ML', icon: 'pi pi-microchip-ai', route: '/technology/ai-ml' },
-              { label: 'Automatic Payments', icon: 'pi pi-credit-card', route: '/technology/payments' },
-              { label: 'Blockchain', icon: 'pi pi-lock', route: '/technology/blockchain' },
-              { label: 'Cloud Technology', icon: 'pi pi-cloud', route: '/technology/cloud' },
-            ],
-          },
-          {
-            heading: 'Engineering',
-            items: [
-              { label: 'Edge Computing', icon: 'pi pi-server', route: '/technology/edge' },
-              { label: 'Geospatial Engineering', icon: 'pi pi-map-marker', route: '/technology/geo' },
-              { label: 'IoT & M2M', icon: 'pi pi-wifi', route: '/technology/iot' },
-              { label: 'User Experience', icon: 'pi pi-palette', route: '/technology/ux' },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      label: 'Products',
-      megaMenu: {
-        description:
-          'Built to solve real-world problems with precision and purpose — innovation, usability, and scalability at the core.',
-        columns: [
-          {
-            heading: 'Mobility',
-            items: [
-              { label: 'Locomate – AVLS', icon: 'pi pi-truck', route: '/locomate-avls' },
-              { label: 'Locomate – DMS', icon: 'pi pi-display', route: '/locomate-dms' },
-              { label: 'Locomate – PIS', icon: 'pi pi-info-circle', route: '/locomate-pis' },
-              { label: 'SyncNex', icon: 'pi pi-arrows-h', route: '/syncnex' },
-              { label: 'RapidGo', icon: 'pi pi-send', route: '/rapidgo' },
-            ],
-          },
-          {
-            heading: 'Smart City',
-            items: [
-              { label: 'Outline', icon: 'pi pi-pencil', route: '/outline' },
-              { label: 'Spectator', icon: 'pi pi-eye', route: '/spectator' },
-              { label: 'IION', icon: 'pi pi-sitemap', route: '/iion' },
-              { label: 'Ecokeeper', icon: 'pi pi-sun', route: '/ecokeeper' },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      label: 'Insights',
-      route: '/insights',
-    },
-    {
-      label: 'Careers',
-      route: '/careers',
-    },
-  ];
-
+  navItems: NavItem[] = [];
   constructor(
     @Inject(PLATFORM_ID) platformId: Object,
     private el: ElementRef
