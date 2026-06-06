@@ -5,33 +5,8 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { JsonResponseModel } from '../../models/JsonResponseModel';
 import { ENCRYPTION_CONTEXT } from '../../interceptors/encryption-interceptor';
-import { MegaMenuItem } from '../pages/header/header';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
-export interface NavItem {
-  label: string;
-  route?: string;
-  megaMenu?: {
-    description: SafeHtml | string;
-    columns: {
-      heading?: string;
-      items: MegaMenuItem[];
-    }[];
-  };
-}
-
-interface RawMenuItem {
-  mappingID: number;
-  menuID: number;
-  title: string;
-  heading: string;
-  description?: string | null;
-  isParentMenu: boolean;
-  parentMenuID: number;
-  link?: string | null;
-  icon?: string | null;
-  children: RawMenuItem[];
-}
+import { MegaMenuItem, RawMenuItem } from '../pages/header/MenuModel';
 
 @Injectable({ providedIn: 'root' })
 export class HeaderMenuService {
@@ -72,56 +47,47 @@ export class HeaderMenuService {
     });
   }
 
-  // private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
-  //   if (!children || children.length === 0) return [];
-
-  //   const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
-  //   if (hasGrandchildren) {
-  //     return children.map((child) => ({
-  //       heading: child.heading,
-  //       items: this.mapMenuItems(child.children || []),
-  //     }));
-  //   }
-
-  //   return [
-  //     {
-  //       heading: children[0]?.heading || undefined,
-  //       items: this.mapMenuItems(children),
-  //     },
-  //   ];
-  // }
-
-private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
-  if (!children || children.length === 0) return [];
-  
-  const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
-  
-  if (hasGrandchildren) {
-    // Group items by their structural layout headings, or group them cleanly 
-    // into a single operational array list so they line up vertically like Image 1
-    return [
-      {
-        heading: children[0]?.heading || undefined,
-        items: this.mapMenuItems(children),
-      }
-    ];
+  private buildColumns(children: RawMenuItem[]): { heading?: string; items: MegaMenuItem[] }[] {
+          if (!children || children.length === 0) return [];
+        
+        const hasGrandchildren = children.some((c) => (c.children || []).length > 0);
+        
+        if (hasGrandchildren) {
+            return [
+            {
+              heading: children[0]?.heading || undefined,
+              items: this.mapMenuItems(children),
+            }
+          ];
+        }
+      
+        return [
+          {
+            heading: children[0]?.heading || undefined,
+            items: this.mapMenuItems(children),
+          },
+        ];
   }
+  private mapMenuItems(items: RawMenuItem[]): MegaMenuItem[] {
+        return (items || []).map((item) => ({
+          label: item.title ?? '',
+          icon: item.icon ?? undefined,
+          route: item.link ?? undefined,
+          children: (item.children || []).length > 0
+            ? this.mapMenuItems(item.children)
+            : undefined,
+        }));
+  }
+}
 
-  return [
-    {
-      heading: children[0]?.heading || undefined,
-      items: this.mapMenuItems(children),
-    },
-  ];
-}
-private mapMenuItems(items: RawMenuItem[]): MegaMenuItem[] {
-  return (items || []).map((item) => ({
-    label: item.title ?? '',
-    icon: item.icon ?? undefined,
-    route: item.link ?? undefined,
-    children: (item.children || []).length > 0
-      ? this.mapMenuItems(item.children)
-      : undefined,
-  }));
-}
+export interface NavItem {
+  label: string;
+  route?: string;
+  megaMenu?: {
+    description: SafeHtml | string;
+    columns: {
+      heading?: string;
+      items: MegaMenuItem[];
+    }[];
+  };
 }

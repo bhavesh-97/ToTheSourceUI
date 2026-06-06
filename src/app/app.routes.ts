@@ -14,8 +14,8 @@ export const routes: Routes = [
   //   redirectTo: 'Web',
   //   pathMatch: 'full'
   // },
-  // {
-  //   path: '**',
-  //   redirectTo: 'Web'
-  // }
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];

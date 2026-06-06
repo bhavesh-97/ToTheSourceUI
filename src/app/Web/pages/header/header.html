@@ -75,65 +75,63 @@
           <span class="mega-menu-category">{{ item.label }}</span>
           <p class="mega-menu-desc" [innerHTML]="item.megaMenu.description"></p>
         </div>
-        <div class="mega-menu-columns">
-  @for (col of item.megaMenu.columns; track col.heading) {
-     <div class="mega-menu-col" [class.mega-menu-col--wide]="isSingleColumnOverflow(col.items)">
-      @if (col.heading) {
+          <div class="mega-menu-columns">
+            @for (col of item.megaMenu.columns; track col.heading) {
+              <div class="mega-menu-col" [class.mega-menu-col--wide]="isSingleColumnOverflow(col.items)">
+                @if (col.heading) {
         <span class="col-heading">{{ col.heading }}</span>
-      }
-      <div class="mega-items-wrapper">
-        <ul class="mega-items-list" role="list">
-          @for (menuItem of col.items; track $index) {
-          <li class="mega-menu-item">
-            <a class="mega-item-link" [routerLink]="menuItem.route" (click).="activeMenu.set(null)">
-              @if (menuItem.icon) {
-                <span class="item-icon"><i [class]="menuItem.icon"></i></span>
-              }
-              <span class="item-label">{{ menuItem.label }}</span>
-              @if (menuItem.children?.length) {
-                <span class="item-arrow"><i class="pi pi-chevron-down"></i></span>
-              }
-            </a>
-
-            @if (menuItem.children?.length) {
-              <ul class="mega-sub-list" role="list">
-                @for (subItem of menuItem.children; track $index) {
-                  <li class="mega-menu-item">
-                    <a class="mega-item-link mega-item-link--child" [routerLink]="subItem.route" (click)="activeMenu.set(null)">
-                      @if (subItem.icon) {
-                        <span class="item-icon"><i [class]="subItem.icon"></i></span>
-                      }
-                      <span class="item-label">{{ subItem.label }}</span>
-                      @if (subItem.children?.length) {
-                        <span class="item-arrow"><i class="pi pi-chevron-down"></i></span>
-                      }
-                    </a>
-
-                    @if (subItem.children?.length) {
-                      <ul class="mega-deep-sub-list" role="list">
-                        @for (deepItem of subItem.children; track $index) {
-                          <li class="mega-menu-item">
-                            <a class="mega-item-link mega-item-link--deep-child" [routerLink]="deepItem.route" (click)="activeMenu.set(null)">
-                              @if (deepItem.icon) {
-                                <span class="item-icon"><i class="{{ deepItem.icon }}"></i></span>
-                              }
-                              <span class="item-label">{{ deepItem.label }}</span>
-                            </a>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </li>
                 }
-              </ul>
+                <div class="mega-items-wrapper">
+                  <ul class="mega-items-list" role="list">
+                    @for (menuItem of col.items; track $index) {
+                    <li class="mega-menu-item">
+                      
+                      <a class="mega-item-link" 
+                        (click)="handleMenuItemClick($event, menuItem)">
+                        @if (menuItem.icon) {
+                          <span class="item-icon"><i [class]="menuItem.icon"></i></span>
+                        }
+                        <span class="item-label">{{ menuItem.label }}</span>
+                      </a>
+          
+                      @if (menuItem.children?.length) {
+                        <ul class="mega-sub-list" role="list">
+                          @for (subItem of menuItem.children; track $index) {
+                            <li class="mega-menu-item">
+                              <a class="mega-item-link mega-item-link--child" 
+                                (click)="handleMenuItemClick($event, subItem)">
+                                @if (subItem.icon) {
+                                  <span class="item-icon"><i [class]="subItem.icon"></i></span>
+                                }
+                                <span class="item-label">{{ subItem.label }}</span>
+                              </a>
+          
+                              @if (subItem.children?.length) {
+                                <ul class="mega-deep-sub-list" role="list">
+                                  @for (deepItem of subItem.children; track $index) {
+                                    <li class="mega-menu-item">
+                                      <a class="mega-item-link mega-item-link--deep-child" 
+                                        (click)="handleMenuItemClick($event, deepItem)">
+                                        @if (deepItem.icon) {
+                                          <span class="item-icon"><i class="{{ deepItem.icon }}"></i></span>
+                                        }
+                                        <span class="item-label">{{ deepItem.label }}</span>
+                                      </a>
+                                    </li>
+                                  }
+                                </ul>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </li>
+                    }
+                  </ul>
+                </div>
+              </div>
             }
-          </li>
-          }
-        </ul>
-      </div>
-    </div>
-  }
-</div>
+          </div>
       </div>
     </div>
   }

@@ -287,13 +287,28 @@ $mega-menu-width:  720px;
 .mega-menu-columns {
   flex: 1;
   padding: 40px;
-  gap: 40px;
+  gap: 48px;
   background: $color-white;
   height: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); // Clean column handling
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
+.item-arrow-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.5;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 
+  i { font-size: 11px; }
+
+  &.is-rotated {
+    transform: rotate(180deg);
+    opacity: 0.9;
+    color: $color-accent;
+  }
+}
 .mega-menu-col {
   flex: 1;
   min-width: 0;
@@ -319,32 +334,36 @@ $mega-menu-width:  720px;
   }
 
 .mega-item-link {
-  &--child {
-    padding: 6px 0 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    color: rgba($color-dark, 0.8);
-    
-    &:hover {
-      color: $color-accent;
-    }
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  text-decoration: none;
+  color: $color-dark;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateX(6px);
+    color: $color-accent !important;
   }
 
+  // Child Menu Links Typography Scale Update
+  &--child {
+    padding: 8px 0 8px 16px;
+    font-size: 15px;     /* Scaled sub-menu items */
+    font-weight: 550;    /* Medium bold text weight */
+    color: rgba($color-dark, 0.85);
+  }
+
+  // Deep Grandchild Menu Links Typography Scale Update
   &--deep-child {
-    padding: 4px 0 4px 10px;
-    font-size: 12.5px;
-    font-weight: 400;
-    color: rgba($color-dark, 0.6);
-    
-    &:hover {
-      color: $color-accent;
-    }
-    
-    .item-icon {
-      width: 18px;
-      height: 18px;
-      i { font-size: 10px; }
-    }
+    padding: 6px 0 6px 20px;
+    font-size: 14px;     /* Deep child size proportion */
+    font-weight: 500;    /* Regular clear structural reading weight */
+    color: rgba($color-dark, 0.65);
   }
 }
   .mega-sub-list {
@@ -461,24 +480,54 @@ $mega-menu-width:  720px;
     }
   }
 }
-
+// First Level Nested Children List
 .mega-sub-list {
   list-style: none;
-  margin: 4px 0 8px 0;
+  margin: 4px 0 12px 0;
   padding: 0 0 0 16px;
-  border-left: 1px solid rgba($color-dark, 0.08);
+  border-left: 1.5px solid rgba($color-dark, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+
+  .mega-item-link--child {
+    padding: 6px 0;
+    font-size: 15px;
+    font-weight: 550;
+    color: rgba($color-dark, 0.7); // Subtly lighter when resting
+    
+    &:hover {
+      color: $color-accent;
+    }
+  }
 }
+
+// Second Level Deep Grandchildren List
 .mega-deep-sub-list {
   list-style: none;
-  margin: 2px 0 4px 0;
+  margin: 4px 0 4px 0;
   padding: 0 0 0 14px;
-  border-left: 1px dashed rgba($color-dark, 0.06);
+  border-left: 1px dashed rgba($color-dark, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+
+  .mega-item-link--deep-child {
+    padding: 4px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba($color-dark, 0.5);
+    
+    &:hover {
+      color: $color-accent-2; // Accent color swap for deep items
+    }
+
+    .item-icon {
+      width: 20px;
+      height: 20px;
+      i { font-size: 11px; }
+    }
+  }
 }
 .header.scrolled ~ .mega-menu-panel {
   top: 64px !important;
