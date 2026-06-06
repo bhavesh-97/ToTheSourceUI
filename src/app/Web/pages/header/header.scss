@@ -355,19 +355,16 @@ $mega-menu-width:  720px;
     color: $color-accent !important;
   }
 
-  // Child Menu Links Typography Scale Update
   &--child {
     padding: 8px 0 8px 16px;
-    font-size: 15px;     /* Scaled sub-menu items */
-    font-weight: 550;    /* Medium bold text weight */
+    font-size: 15px; 
+    font-weight: 550;
     color: rgba($color-dark, 0.85);
   }
-
-  // Deep Grandchild Menu Links Typography Scale Update
   &--deep-child {
     padding: 6px 0 6px 20px;
-    font-size: 14px;     /* Deep child size proportion */
-    font-weight: 500;    /* Regular clear structural reading weight */
+    font-size: 14px;    
+    font-weight: 500;   
     color: rgba($color-dark, 0.65);
   }
 }
@@ -485,7 +482,6 @@ $mega-menu-width:  720px;
     }
   }
 }
-// First Level Nested Children List
 .mega-sub-list {
   list-style: none;
   margin: 4px 0 12px 0;
@@ -499,15 +495,13 @@ $mega-menu-width:  720px;
     padding: 6px 0;
     font-size: 15px;
     font-weight: 550;
-    color: rgba($color-dark, 0.7); // Subtly lighter when resting
+    color: rgba($color-dark, 0.7); 
     
     &:hover {
       color: $color-accent;
     }
   }
 }
-
-// Second Level Deep Grandchildren List
 .mega-deep-sub-list {
   list-style: none;
   margin: 4px 0 4px 0;
@@ -524,7 +518,7 @@ $mega-menu-width:  720px;
     color: rgba($color-dark, 0.5);
     
     &:hover {
-      color: $color-accent-2; // Accent color swap for deep items
+      color: $color-accent-2; 
     }
 
     .item-icon {
@@ -682,7 +676,6 @@ $mega-menu-width:  720px;
   i { font-size: 13px; color: rgba($color-white, 0.3); }
 }
 
-// Mobile sub-menu accordion
 .mobile-sub-list {
   list-style: none;
   margin: 0 0 8px 0;
