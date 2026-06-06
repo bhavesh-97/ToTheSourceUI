@@ -1,0 +1,97 @@
+{
+  "id": "landing-v1",
+  "name": "Landing Page v1",
+  "type": "website",
+  "category": "landing",
+  "status": "published",
+  "version": 1,
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+    "pages": {
+      "landing": {
+        "label": "Landing",
+        "rules": [
+          {
+            "id": "hero-tagline",
+            "label": "Hero Tagline",
+            "selector": ".hero-tagline",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 20 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.6,
+            "delay": 0.3
+          },
+          {
+            "id": "hero-title-lines",
+            "label": "Hero Title Lines",
+            "selector": ".title-line",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 60 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.8,
+            "stagger": 0.2,
+            "ease": "back.out(1.7)",
+            "delay": 0.5
+          },
+          {
+            "id": "hero-subtitle",
+            "label": "Hero Subtitle",
+            "selector": ".hero-subtitle",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 25 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.6,
+            "delay": 1.2
+          },
+          {
+            "id": "hero-buttons",
+            "label": "Hero Buttons",
+            "selector": ".hero-actions .btn",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 20 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.5,
+            "stagger": 0.12,
+            "delay": 1.5
+          },
+          {
+            "id": "service-cards",
+            "label": "Service Cards Stagger",
+            "selector": ".service-card",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 50 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.7,
+            "stagger": 0.15,
+            "scrollEnabled": true,
+            "scrollTrigger": {
+              "trigger": ".services",
+              "start": "top 80%"
+            }
+          },
+          {
+            "id": "cta-content",
+            "label": "CTA Content Fade",
+            "selector": ".cta-content",
+            "type": "fromTo",
+            "from": { "opacity": 0, "y": 40 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 0.8,
+            "scrollEnabled": true,
+            "scrollTrigger": {
+              "trigger": ".cta",
+              "start": "top 80%"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
