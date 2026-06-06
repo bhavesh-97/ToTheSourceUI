@@ -13,7 +13,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { GsapMasterService } from './gsap-master.service';
@@ -37,12 +38,12 @@ import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TableModule, ButtonModule, CheckboxModule, DialogModule,
     InputTextModule, SelectModule, MultiSelectModule, TextareaModule, TooltipModule, ToastModule, TabsModule, TagModule,
-    IconField,
+    ConfirmDialogModule, IconField,
     InputIcon
   ],
   templateUrl: './gsap-master.html',
   styleUrl: './gsap-master.css',
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewContainer', { static: false }) previewContainer!: ElementRef<HTMLDivElement>;
@@ -53,6 +54,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   private NotificationService = inject(NotificationService);
   private fb = inject(FormBuilder);
   private FormUtils = inject(FormUtils);
+  private confirmationService = inject(ConfirmationService);
   private changeSubject = new Subject<void>();
   private destroy$ = new Subject<void>();
   pages: PageConfig[] = [];
@@ -363,13 +365,42 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   deletePage(index: number) {
-    this.pages.splice(index, 1);
-    if (this.selectedPage === this.pages[index]) {
-      this.selectedPage = null;
-    }
+    const page = this.pages[index];
+    if (!page) return;
+    this.confirmationService.confirm({
+      key: 'deletePageDialog',
+      message: `Are you sure you want to delete <b>${page.title || page.pageKey}</b>? This action cannot be undone.`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        const rawId = page.PageId || (page as any).pageId;
+        const pageId = rawId ? parseInt(String(rawId), 10) : null;
+        if (!pageId || isNaN(pageId)) {
+          this.NotificationService.showMessage('Invalid page ID', 'Error', PopupMessageType.Error);
+          return;
+        }
+        try {
+          const response = await firstValueFrom(this.gsapConfigService.DeletePage(pageId));
+          if (response?.isError) {
+            this.NotificationService.showMessage(response.strMessage || 'Failed to delete page', 'Error', PopupMessageType.Error);
+            return;
+          }
+          this.pages.splice(index, 1);
+          if (this.selectedPage === page) {
+            this.selectedPage = null;
+            this.config = this.getDefaultGsapConfig();
+          }
+          this.NotificationService.showMessage(response.strMessage || 'Page deleted successfully', 'Success', PopupMessageType.Success);
+        } catch (err: any) {
+          console.error('Failed to delete page:', err);
+          this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to delete page', 'Error', PopupMessageType.Error);
+        }
+      }
+    });
   }
 
-  addPage() {
+  async addPage() {
+    debugger;
     const formValidation = this.FormUtils.validateFormFields(
       [{ name: 'newPageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] }],
       this.pageForm, this.inputElements.toArray(), this.renderer);
@@ -380,15 +411,36 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     }
     const pageTitle = this.pageForm.get('newPageTitle')?.value || '';
     if (pageTitle.trim()) {
-      const newPage: PageConfig = {
-        PageId: `page-${Date.now()}`,
-        title: pageTitle,
-        pageKey: pageTitle.toLowerCase().replace(/\s+/g, '-')
-      };
-      this.pages.push(newPage);
-      this.selectPage(newPage);
-      this.pageForm.patchValue({ newPageTitle: '' });
-      this.showAddPageDialog = false;
+      const pageKey = pageTitle.toLowerCase().replace(/\s+/g, '-');
+        const pageData: MGsapPage = {
+          pageId: 0,
+          label: pageTitle,
+          pageKey: pageKey,
+          mCommonEntitiesMaster:{
+                    isActive: true
+            }
+        };
+
+      try {
+        const response = await firstValueFrom(this.gsapConfigService.SavePage(pageData));
+        if (response?.isError) {
+          this.NotificationService.showMessage(response.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
+          return;
+        }
+        const pageId = response.result?.pageId || response.result?.PageId || `page-${Date.now()}`;
+        const newPage: PageConfig = {
+          PageId: pageId,
+          title: pageTitle,
+          pageKey: pageKey
+        };
+        this.pages.push(newPage);
+        this.selectPage(newPage);
+        this.pageForm.patchValue({ newPageTitle: '' });
+        this.showAddPageDialog = false;
+      } catch (err: any) {
+        console.error('Failed to save page:', err);
+        this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
+      }
     }
   }
 

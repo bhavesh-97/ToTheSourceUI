@@ -1,3 +1,5 @@
+import { MCommonEntitiesMaster } from "../../../models/MCommonEntitiesMaster";
+
 export interface GsapGlobalDefaults {
   defaultsId?: number;
   pageId: number;
@@ -157,14 +159,9 @@ export interface MGsapConfig {
 
 export interface MGsapPage {
   pageId: number;
-  configId: string;
   pageKey: string;
   label: string;
-  status: string;
-  sortOrder: number;
-  plugins?: string[];  // Selected GSAP plugins
-  createdAt?: string;
-  updatedAt?: string;
+  mCommonEntitiesMaster : MCommonEntitiesMaster;
 }
 
 export interface MGsapRule {
@@ -211,7 +208,7 @@ export interface MGsapRuleWithDetails {
 }
 
 export interface PageConfig {
-  PageId: string;
+  PageId: Number;
   title: string;
   pageKey: string;
   description?: string;

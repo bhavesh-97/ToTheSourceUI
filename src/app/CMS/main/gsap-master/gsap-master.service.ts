@@ -11,7 +11,7 @@ import { delay, Observable, of, from, map } from 'rxjs';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { GsapConfigLoaderService } from '../../../services/gsap-config-loader.service';
 import { environment } from '../../../../environments/environment';
-import { GsapConfig, GsapPage, GsapRule, CssStyleValue, GsapCallback } from './gsap-interface';
+import { GsapConfig, GsapPage, GsapRule, CssStyleValue, GsapCallback, MGsapPage } from './gsap-interface';
 import { ENCRYPTION_CONTEXT } from '../../../interceptors/encryption-interceptor';
 import { JsonResponseModel } from '../../../models/JsonResponseModel';
 
@@ -756,13 +756,6 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
     );
   }
 
-  GetPages(configId: string, encryptPayload = false): Observable<JsonResponseModel> {
-    return this.http.get<JsonResponseModel>(
-      `${this.baseUrl}/GsapConfig/pages/${configId}`,
-      { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
-    );
-  }
-
   GetPage(pageId: string, encryptPayload = false): Observable<JsonResponseModel> {
     return this.http.get<JsonResponseModel>(
       `${this.baseUrl}/GsapConfig/page/${pageId}`,
@@ -821,8 +814,8 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
   }
 
   SavePage(page: any, encryptPayload = false): Observable<JsonResponseModel> {
-    return this.http.put<JsonResponseModel>(
-      `${this.baseUrl}/GsapConfig/page`,
+    return this.http.post<JsonResponseModel>(
+      `${this.baseUrl}/GsapConfig/SavePage`,
       page,
       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
     );
@@ -851,7 +844,7 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
     );
   }
 
-  DeletePage(pageId: string, encryptPayload = false): Observable<JsonResponseModel> {
+  DeletePage(pageId: any, encryptPayload = false): Observable<JsonResponseModel> {
     return this.http.delete<JsonResponseModel>(
       `${this.baseUrl}/GsapConfig/page/${pageId}`,
       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
