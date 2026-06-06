@@ -9,13 +9,6 @@ export const routes: Routes = [
     path: 'CMS',
     loadChildren: () => import('./CMS/CMS.routes').then(m => m.CMSRoutes)
   },
-  // {
-  //   path: '',
-  //   redirectTo: 'Web',
-  //   pathMatch: 'full'
-  // },
-  {
-    path: '**',
-    redirectTo: ''
-  }
+   { path: '**', loadComponent: () => import('../app/Web/pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
+    
 ];

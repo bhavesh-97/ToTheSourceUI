@@ -17,7 +17,6 @@ export const WebRoutes: Routes = [
       { path: 'stats', loadComponent: () => import('./pages/stats/stats.component').then(m => m.StatsComponent) },
       { path: 'animations', loadComponent: () => import('./pages/animations/animations.component').then(m => m.AnimationsComponent) },
       { path: 'templates', loadComponent: () => import('./pages/templates/templates.component').then(m => m.TemplatesComponent) },
-      { path: '**', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
-    ]
+     ]
   }
 ];
