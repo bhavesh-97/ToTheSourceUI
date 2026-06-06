@@ -1,6 +1,6 @@
 import {Component,OnInit,OnDestroy,AfterViewInit,ElementRef,ViewChild,PLATFORM_ID,Inject,signal,inject,} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { BadgeModule } from 'primeng/badge';
@@ -39,7 +39,6 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
   private megaMenuTl?: gsap.core.Timeline;
   private activeMenuTimeout?: ReturnType<typeof setTimeout>;
   private headerMenuService = inject(HeaderMenuService);
-  private router = inject(Router);
   navItems: NavItem[] = [];
 
   constructor(
@@ -350,13 +349,13 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     handleMenuItemClick(event: Event, item: any): void {
     const route = item.route;
     const isDummyRoute = !route || route === '#' || route.trim() === '';
-    event.preventDefault();
-  
-    if (isDummyRoute) return;
-  
+    if (isDummyRoute) {
+      event.preventDefault();
+      return;
+    }
     const normalizedRoute = route.startsWith('/') ? route : '/' + route;
-    this.router.navigateByUrl(normalizedRoute);
-    setTimeout(() => this.activeMenu.set(null), 100);
+    event.preventDefault();
+    window.location.href = normalizedRoute;
   }
    ngOnDestroy(): void {
      ScrollTrigger.getAll().forEach((t) => t.kill());
