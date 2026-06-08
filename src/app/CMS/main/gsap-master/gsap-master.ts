@@ -81,6 +81,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   saving: boolean = false;
 
   pageForm!: FormGroup;
+  newpageForm!: FormGroup;
   ruleForm!: FormGroup;
   callbackForm!: FormGroup;
   timelineStepForms: FormGroup[] = [];
@@ -92,9 +93,12 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     { name: 'stagger', isMandatory: false, min: 0, validationMessage: 'Stagger must be >= 0', events: [] },
     { name: 'registerPlugins', isMandatory: false, validationMessage: '', events: [] },
     { name: 'autoInit', isMandatory: false, validationMessage: '', events: [] },
-    { name: 'newPageTitle', isMandatory: false, validationMessage: 'Page title is required', events: [] },
   ];
 
+  private newpageFormFields: FormFieldConfig[] = [
+    { name: 'PageId', isMandatory: false, validationMessage: 'Name is required', events: [] },
+    { name: 'PageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] },
+  ];
   private ruleFormFields: FormFieldConfig[] = [
     { name: 'label', isMandatory: true, validationMessage: 'Label is required', events: [] },
     { name: 'type', isMandatory: true, validationMessage: 'Type is required', events: [] },
@@ -153,6 +157,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.inputElements?.length) {
       this.FormUtils.registerFormFieldEventListeners(this.pageFormFields, this.inputElements.toArray(), this.renderer, this.pageForm);
+      this.FormUtils.registerFormFieldEventListeners(this.newpageFormFields, this.inputElements.toArray(), this.renderer, this.pageForm);
       this.FormUtils.registerFormFieldEventListeners(this.ruleFormFields, this.inputElements.toArray(), this.renderer, this.ruleForm);
       this.FormUtils.registerFormFieldEventListeners(this.callbackFormFields, this.inputElements.toArray(), this.renderer, this.callbackForm);
     }
@@ -160,6 +165,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
 
   private initForms(): void {
     this.pageForm = this.FormUtils.createFormGroup(this.pageFormFields, this.fb);
+    this.newpageForm = this.FormUtils.createFormGroup(this.newpageFormFields, this.fb);
     this.ruleForm = this.FormUtils.createFormGroup(this.ruleFormFields, this.fb);
     this.callbackForm = this.FormUtils.createFormGroup(this.callbackFormFields, this.fb);
     this.timelineStepForms = [];
@@ -399,17 +405,20 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  openAddPageDialog() {
+    this.newpageForm.patchValue({ PageId: 0, PageTitle: '' });
+    this.showAddPageDialog = true;
+  }
+
   async addPage() {
     debugger;
-    const formValidation = this.FormUtils.validateFormFields(
-      [{ name: 'newPageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] }],
-      this.pageForm, this.inputElements.toArray(), this.renderer);
+    const formValidation = this.FormUtils.validateFormFields(this.newpageFormFields,this.newpageForm, this.inputElements.toArray(), this.renderer);
 
     if (formValidation.isError) {
       this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
       return;
     }
-    const pageTitle = this.pageForm.get('newPageTitle')?.value || '';
+    const pageTitle = this.newpageForm.get('PageTitle')?.value || '';
     if (pageTitle.trim()) {
       const pageKey = pageTitle.toLowerCase().replace(/\s+/g, '-');
         const pageData: MGsapPage = {
@@ -427,15 +436,17 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
           this.NotificationService.showMessage(response.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
           return;
         }
-        const pageId = response.result?.pageId || response.result?.PageId || `page-${Date.now()}`;
+        const pageId = response.result?.pageId || response.result?.PageId;
         const newPage: PageConfig = {
           PageId: pageId,
           title: pageTitle,
+          label: pageTitle,
           pageKey: pageKey
         };
+        await this.loadPages();
         this.pages.push(newPage);
         this.selectPage(newPage);
-        this.pageForm.patchValue({ newPageTitle: '' });
+        this.newpageForm.patchValue({ PageId: pageId, PageTitle: pageTitle });
         this.showAddPageDialog = false;
       } catch (err: any) {
         console.error('Failed to save page:', err);

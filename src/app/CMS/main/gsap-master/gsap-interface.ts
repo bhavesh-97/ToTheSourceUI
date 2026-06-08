@@ -210,6 +210,7 @@ export interface MGsapRuleWithDetails {
 export interface PageConfig {
   PageId: Number;
   title: string;
+  label: string;
   pageKey: string;
   description?: string;
   gsapConfig?: GsapConfig; 

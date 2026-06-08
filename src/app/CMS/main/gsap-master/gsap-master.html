@@ -8,7 +8,7 @@
           <p class="lead text-muted mb-0">Create, edit, and preview GSAP animations with powerful auto-applied configs.</p>
         </div>
         <div style="margin-left:auto;">
-            <button pButton label="Add New Page" icon="pi pi-plus" class="p-button-sm mt-2 mt-md-0" (click)="showAddPageDialog = true"></button>
+            <button pButton label="Add New Page" icon="pi pi-plus" class="p-button-sm mt-2 mt-md-0" (click)="openAddPageDialog()"></button>
         </div> 
       </div>
       <div class="mb-3">
@@ -66,7 +66,7 @@
       </div>
 
       <!-- Add Page Dialog -->
-      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="pageForm" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
+      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="newpageForm" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
         <div class="w-full p-4 md:p-6">
           <div class="mb-2">
             <input pInputText #inputField formControlName="PageId" hidden/>
