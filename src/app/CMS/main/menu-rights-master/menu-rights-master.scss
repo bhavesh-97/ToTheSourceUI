@@ -1,4 +1,4 @@
-@import '../../../shared/styles/datatable.scss';
+@use '../../../shared/styles/datatable';
 
 :host ::ng-deep .p-treetable table {
     table-layout: auto;

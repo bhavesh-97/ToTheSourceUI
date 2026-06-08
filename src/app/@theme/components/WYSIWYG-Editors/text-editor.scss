@@ -1,3 +1,4 @@
+@use "sass:color";
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 // Variables
 $primary-color: #3b82f6;
@@ -1906,18 +1907,20 @@ $transition: all 0.3s ease;
       font-size: 12px;
     }
   }
-  
   // Dark mode styles
   .dark & {
     .dropdown-menu {
-      background: lighten($dark-bg, 5%);
-      border-color: lighten($dark-bg, 10%);
+      // background: lighten($dark-bg, 5%);s
+      // border-color: lighten($dark-bg, 10%);
       
+      background: color.adjust($dark-bg, $lightness: 5%);
+      border-color: color.adjust($dark-bg, $lightness: 10%);
       .dropdown-item {
         color: $dark-text;
         
         &:hover {
-          background: lighten($dark-bg, 10%);
+          // background: lighten($dark-bg, 10%);
+          background: color.adjust($dark-bg, $lightness: 10%);
         }
       }
     }
