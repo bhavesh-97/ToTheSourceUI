@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { GsapConfig, GsapGlobal, GsapGlobalDefaults, GsapGlobalMeta, GsapPage, GsapRule } from '../CMS/main/gsap-master/gsap-interface';
+import { GsapConfig, GsapGlobal, GsapGlobalDefaults, GsapGlobalMeta, GsapPage, GsapRule, GsapScrollTrigger } from '../CMS/main/gsap-master/gsap-interface';
 
 function parseJson(val: any): Record<string, any> {
   if (!val) return {};
@@ -128,6 +128,7 @@ export class GsapConfigLoaderService {
       yoyo: Boolean(r.yoyo) || false,
       paused: Boolean(r.paused) || false,
       scrollEnabled: Boolean(r.scrollEnabled) || false,
+      scrollTrigger: r.scrollTrigger ? (parseJson(r.scrollTrigger) as GsapScrollTrigger) : undefined,
       status: String(r.status) === '1' ? 'Published' : (r.status || 'Published'),
       type: String(r.type) || 'tween',
       pageId: Number(r.pageId) || 0,

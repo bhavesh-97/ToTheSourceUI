@@ -271,7 +271,8 @@ export interface PageConfig {
   label: string;
   pageKey: string;
   description?: string;
-  gsapConfig?: GsapConfig; 
+  gsapConfig?: GsapConfig;
+  mCommonEntitiesMaster?: { isActive: boolean };
 }
 
 export interface PluginFieldMap {

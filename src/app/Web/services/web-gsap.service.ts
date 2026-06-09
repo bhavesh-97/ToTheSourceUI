@@ -8,6 +8,7 @@ import { GsapRule, CssStyleValue, GsapConfig } from '../../CMS/main/gsap-master/
   providedIn: 'root'
 })
 export class WebGsapService {
+  private registered = false;
   private currentPage = signal<string>('');
   private configLoaded = signal<boolean>(false);
   private config: GsapConfig | null = null;
@@ -55,6 +56,9 @@ export class WebGsapService {
       yoyo: r.yoyo || r.Yoyo || false,
       paused: r.paused || r.Paused || false,
       scrollEnabled: r.scrollEnabled || r.ScrollEnabled || false,
+      scrollTrigger: r.scrollTrigger
+        ? (typeof r.scrollTrigger === 'object' ? r.scrollTrigger : this.parseScrollTrigger(r.scrollTrigger))
+        : undefined,
       status: r.status || r.Status || 'Published',
       type: r.type || r.Type || 'fromTo',
       pageId: r.pageId || r.PageId || '',
@@ -115,9 +119,23 @@ export class WebGsapService {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
+  private parseScrollTrigger(input: any): any {
+    if (!input) return undefined;
+    if (typeof input === 'object') return input;
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      if (trimmed.startsWith('{')) {
+        try { return JSON.parse(trimmed); } catch { return undefined; }
+      }
+    }
+    return undefined;
+  }
+
   applyAnimations(pageKey: string, container: HTMLElement) {
-  //  console.log('[GSAP] applyAnimations called for:', pageKey);
-  //  console.log('[GSAP] Container:', container);
+    if (!this.registered) {
+      gsap.registerPlugin(ScrollTrigger);
+      this.registered = true;
+    }
     this.loadPageAnimations(pageKey).then(rules => {
       // console.log('[GSAP] Rules loaded for', pageKey, ':', rules);
       // console.log('[GSAP] Rules count:', rules.length);
@@ -157,15 +175,22 @@ private executeRules(rules: GsapRule[], container: HTMLElement) {
       });
 
       if (rule.scrollEnabled) {
+        const st = rule.scrollTrigger || {} as any;
+        const triggerEl = st.trigger ? (typeof st.trigger === 'string' ? document.querySelector(st.trigger) || container : container) : container;
         gsap.fromTo(elements, from, {
           ...to,
           duration: rule.duration || 1,
           ease: rule.ease || 'power2.out',
           stagger: stagger,
           scrollTrigger: {
-            trigger: container,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse'
+            trigger: triggerEl,
+            start: st.start || 'top 85%',
+            end: st.end || 'bottom 20%',
+            scrub: st.scrub ?? false,
+            pin: st.pin ?? false,
+            markers: st.markers ?? false,
+            toggleActions: st.toggleActions || 'play none none reverse',
+            once: st.once ?? false,
           }
         });
       } else {

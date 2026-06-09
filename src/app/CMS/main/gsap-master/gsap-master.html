@@ -49,6 +49,7 @@
               <tr>
                 <th>Sr No.</th>
                 <th>Title</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </ng-template>
@@ -57,8 +58,12 @@
                 <td class="align-middle">{{ dt.first + i + 1 }}</td>
                 <td class="align-middle">{{ page.label }}</td>
                 <td class="align-middle">
-                  <button pButton icon="pi pi-eye" (click)="selectPage(page)" class="p-button-text p-button-sm mr-1 mr-md-2"></button>
-                  <button pButton icon="pi pi-trash" (click)="deletePage(i)" class="p-button-danger p-button-text p-button-sm"></button>
+                  <p-tag [value]="page.mCommonEntitiesMaster?.isActive ? 'Active' : 'Inactive'" [severity]="getSeverity(page.mCommonEntitiesMaster?.isActive)"></p-tag>
+                </td>
+                <td class="align-middle">
+                  <button pButton icon="pi pi-eye" (click)="selectPage(page)" class="p-button-text p-button-sm mr-1 mr-md-2" pTooltip="View Config"></button>
+                  <button pButton icon="pi pi-pencil" (click)="editPage(page)" class="p-button-text p-button-sm mr-1 mr-md-2" pTooltip="Edit Page"></button>
+                  <button pButton icon="pi pi-trash" (click)="deletePage(i)" class="p-button-danger p-button-text p-button-sm" pTooltip="Delete"></button>
                 </td>
               </tr>
             </ng-template>
@@ -66,20 +71,23 @@
         </div>
       </div>
 
-      <!-- Add Page Dialog -->
-      <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="newpageForm" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
-        <div class="w-full p-4 md:p-6">
+      <!-- Add/Edit Page Dialog -->
+      <p-dialog [(visible)]="showAddPageDialog" modal="true" [header]="editingPage ? 'Edit Page' : 'Add New Page'" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
+        <div class="w-full p-4 md:p-6" [formGroup]="newpageForm">
           <div class="mb-2">
-            <input pInputText #inputField formControlName="PageId" hidden/>
             <input pInputText #inputField formControlName="PageId" hidden/>
             <label class="form-label">Title</label>
             <input type="text" #inputField class="form-control" formControlName="PageTitle" placeholder="e.g., Landing Page">
           </div>
+          <div class="col-8 d-flex align-items-center gap-3">
+            <p-toggleswitch formControlName="isActive"></p-toggleswitch>
+            <span>{{ newpageForm.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
+          </div>
         </div>
         <ng-template pTemplate="footer">
            <div class="flex flex-col sm:flex-row justify-end gap-2">
-              <button pButton label="Add" icon="pi pi-check" (click)="addPage()"></button>
-              <button pButton label="Cancel" icon="pi pi-times" (click)="showAddPageDialog = false" class="p-button-text"></button>
+              <button pButton [label]="editingPage ? 'Save' : 'Add'" icon="pi pi-check" (click)="addPage()"></button>
+              <button pButton label="Cancel" icon="pi pi-times" (click)="showAddPageDialog = false; editingPage = null" class="p-button-text"></button>
           </div>
         </ng-template>
       </p-dialog>
@@ -90,6 +98,24 @@
           <div class="alert alert-info small mb-3">
             <strong><i class="pi pi-info-circle"></i> Paste your GSAP config JSON below.</strong>
             Supports all formats: <code>landing-gsap-master-config.json</code>, <code>landing-gsap-config.json</code>, <code>landing-config.json</code>, <code>templates.json</code>, or any valid GSAP config.
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-bold">Target Page Title <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="importPageTitle"
+              (ngModelChange)="onImportPageTitleChange($event)"
+              placeholder="Enter the exact page title (e.g. Landing, Home, About)"
+              [class.is-invalid]="importPageTitleError"
+              [class.is-valid]="importSelectedPage && !importPageTitleError"
+            />
+            <div *ngIf="importPageTitleError" class="invalid-feedback d-block">
+              <i class="pi pi-exclamation-triangle me-1"></i>{{ importPageTitleError }}
+            </div>
+            <div *ngIf="importSelectedPage && !importPageTitleError" class="text-success small mt-1">
+              <i class="pi pi-check-circle me-1"></i>Page found: <strong>{{ importSelectedPage.label || importSelectedPage.title }}</strong>
+            </div>
           </div>
           <div class="mb-2">
             <label class="form-label fw-bold">Paste JSON</label>
@@ -112,8 +138,8 @@
         <ng-template pTemplate="footer">
           <div class="d-flex justify-content-end gap-2 flex-wrap">
             <button pButton label="Validate" icon="pi pi-check" class="p-button-outlined" (click)="validateImportJson()"></button>
-            <button pButton label="Replace Config" icon="pi pi-refresh" class="p-button-warning" [disabled]="!importValidated" (click)="applyImportReplace()"></button>
-            <button pButton label="Merge as New Rules" icon="pi pi-plus" class="p-button-info" [disabled]="!importValidated" (click)="applyImportMerge()"></button>
+            <button pButton label="Replace Config" icon="pi pi-refresh" class="p-button-warning" [disabled]="!importValidated || !importSelectedPage" (click)="applyImportReplace()"></button>
+            <button pButton label="Merge as New Rules" icon="pi pi-plus" class="p-button-info" [disabled]="!importValidated || !importSelectedPage" (click)="applyImportMerge()"></button>
             <button pButton label="Cancel" icon="pi pi-times" (click)="showImportDialog = false" class="p-button-text"></button>
           </div>
         </ng-template>
@@ -315,10 +341,10 @@
                <p-select [options]="statusOptions" #inputField formControlName="status" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
              </div>
             <div class="col-12">
-                <label class="form-label">Selector (CSS class or ID)</label>
+                        <label class="form-label">Selector (CSS class or ID)</label>
                 <input type="text" #inputField class="form-control" formControlName="selector" (input)="onFormChange()">
                 <small class="text-muted" *ngIf="ruleForm.get('selector')?.value && getSelectorWarning(ruleForm.get('selector')?.value)">
-                  ⚠ {{ getSelectorWarning(ruleForm.get('selector')?.value) }}
+                  {{ getSelectorWarning(ruleForm.get('selector')?.value) }}
                 </small>
               </div>
               <div class="col-12 col-sm-4">

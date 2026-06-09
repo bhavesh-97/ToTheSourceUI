@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -38,8 +39,7 @@ import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, RouterModule, TableModule, ButtonModule, CheckboxModule, DialogModule,
     InputTextModule, SelectModule, MultiSelectModule, TextareaModule, TooltipModule, ToastModule, TabsModule, TagModule,
-    ConfirmDialogModule, IconField,
-    InputIcon
+    ConfirmDialogModule, IconField, InputIcon, ToggleSwitchModule
   ],
   templateUrl: './gsap-master.html',
   styleUrl: './gsap-master.css',
@@ -59,6 +59,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   pages: PageConfig[] = [];
   selectedPage: any | null = null;
+  editingPage: any | null = null;
   config: GsapConfig = this.getDefaultGsapConfig();
   configJson = '';
   activeTab = 0;
@@ -85,6 +86,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   importJsonError = '';
   importValidated = false;
   importParsedConfig: any = null;
+  importPageTitle = '';
+  importPageTitleError = '';
+  importSelectedPage: any = null;
 
   pageForm!: FormGroup;
   newpageForm!: FormGroup;
@@ -104,6 +108,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   private newpageFormFields: FormFieldConfig[] = [
     { name: 'PageId', isMandatory: false, validationMessage: 'Name is required', events: [] },
     { name: 'PageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] },
+    { name: 'isActive', isMandatory: false, validationMessage: '', events: [] },
   ];
     private ruleFormFields: FormFieldConfig[] = [
     { name: 'label', isMandatory: true, validationMessage: 'Label is required', events: [] },
@@ -358,6 +363,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
           styles: this.parseCssInput(r?.styles || r?.Styles),
           paused: r?.paused || r?.Paused || false,
           scrollEnabled: r?.scrollEnabled || r?.ScrollEnabled || false,
+          scrollTrigger: r?.scrollTrigger
+            ? this.parseScrollTrigger(r.scrollTrigger)
+            : undefined,
           status: this.getDropdownValue(r?.status || r?.Status, this.statusOptions),
           sortOrder: r?.sortOrder || r?.SortOrder || 0
         })),
@@ -421,7 +429,18 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openAddPageDialog() {
-    this.newpageForm.patchValue({ PageId: 0, PageTitle: '' });
+    this.editingPage = null;
+    this.newpageForm.patchValue({ PageId: 0, PageTitle: '', isActive: true });
+    this.showAddPageDialog = true;
+  }
+
+  editPage(page: any) {
+    this.editingPage = page;
+    this.newpageForm.patchValue({
+      PageId: page.PageId || page.pageId || 0,
+      PageTitle: page.title || page.label || '',
+      isActive: page.mCommonEntitiesMaster?.isActive ?? true
+    });
     this.showAddPageDialog = true;
   }
 
@@ -431,48 +450,50 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
 
     if (formValidation.isError) {
       this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
-      this.showAddPageDialog = false;
       return;
     }
     const pageTitle = this.newpageForm.get('PageTitle')?.value || '';
-    if (pageTitle.trim()) {
-      const pageKey = pageTitle.toLowerCase().replace(/\s+/g, '-');
-        const pageData: MGsapPage = {
-          pageId: 0,
-          label: pageTitle,
-          pageKey: pageKey,
-          mCommonEntitiesMaster:{
-                    isActive: true
-            }
-        };
+    if (!pageTitle.trim()) return;
 
-      try {
-        const response = await firstValueFrom(this.gsapConfigService.SavePage(pageData));
-        if (response?.isError) {
-          this.NotificationService.showMessage(response.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
-          return;
-        }
-        const pageId = response.result?.pageId || response.result?.PageId;
+    const isActive = this.newpageForm.get('isActive')?.value ?? true;
+    const pageKey = pageTitle.toLowerCase().replace(/\s+/g, '-');
+    const pageId = this.editingPage ? (this.editingPage.PageId || this.editingPage.pageId || 0) : 0;
+
+    const pageData: MGsapPage = {
+      pageId: pageId,
+      label: pageTitle,
+      pageKey: pageKey,
+      mCommonEntitiesMaster: { isActive: isActive }
+    };
+
+    try {
+      const response = await firstValueFrom(this.gsapConfigService.SavePage(pageData));
+      if (response?.isError) {
+        this.NotificationService.showMessage(response.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
+        return;
+      }
+      const newPageId = response.result?.pageId || response.result?.PageId;
+      if (!this.editingPage) {
         const newPage: PageConfig = {
-          PageId: pageId,
+          PageId: newPageId,
           title: pageTitle,
           label: pageTitle,
-          pageKey: pageKey
+          pageKey: pageKey,
+          mCommonEntitiesMaster: { isActive: isActive }
         };
-        debugger;
         await this.loadPages();
         this.pages.push(newPage);
-        this.selectedPage = this.config;
-        this.selectedPage.rules.pageId = newPage?.PageId;
-        this.selectedPage.rules.label = newPage?.label;
-        // this.selectPage(newPage);
-        this.newpageForm.patchValue({ PageId: pageId, PageTitle: pageTitle });
-        this.showAddPageDialog = false;
-      } catch (err: any) {
-        console.error('Failed to save page:', err);
-        this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
-        this.showAddPageDialog = false;
+      } else {
+        await this.loadPages();
       }
+      this.showAddPageDialog = false;
+      this.editingPage = null;
+      this.NotificationService.showMessage('Page saved successfully', 'Success', PopupMessageType.Success);
+    } catch (err: any) {
+      console.error('Failed to save page:', err);
+      this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
+      this.showAddPageDialog = false;
+      this.editingPage = null;
     }
   }
 
@@ -547,6 +568,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         yoyo: r?.yoyo ?? false,
         paused: r?.paused ?? false,
         scrollEnabled: r?.scrollEnabled ?? false,
+        scrollTrigger: r?.scrollTrigger
+          ? (typeof r?.scrollTrigger === 'object' ? JSON.stringify(r.scrollTrigger) : String(r.scrollTrigger))
+          : '{}',
         status: r?.status,
         sortOrder: r?.sortOrder ?? 0,
         from: r?.from ? (typeof r?.from === 'object' ? JSON.stringify(r?.from) : String(r?.from)) : '{}',
@@ -927,6 +951,10 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     this.ruleForm.reset();
     this.editMode = 'rule';
     this.showEditDialog = true;
+  }
+
+  getSeverity(isActive: boolean): Severity {
+    return isActive ? 'success' : 'danger';
   }
 
   getStatusSeverity(status: string): Severity {
@@ -1482,7 +1510,30 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     this.importJsonError = '';
     this.importValidated = false;
     this.importParsedConfig = null;
+    this.importPageTitle = '';
+    this.importPageTitleError = '';
+    this.importSelectedPage = null;
     this.showImportDialog = true;
+  }
+
+  onImportPageTitleChange(value: string) {
+    this.importPageTitle = value;
+    this.importPageTitleError = '';
+    this.importSelectedPage = null;
+
+    if (!value?.trim()) return;
+
+    const match = this.pages?.find((p: any) => {
+      const pLabel = (p.label || p.title || p.pageKey || '').toLowerCase();
+      return pLabel === value.trim().toLowerCase();
+    });
+
+    if (match) {
+      this.importSelectedPage = match;
+      this.importPageTitleError = '';
+    } else {
+      this.importPageTitleError = 'Page not found. Add the page first, then re-import.';
+    }
   }
 
   onImportJsonInput(value: string) {
@@ -1578,8 +1629,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         if (err) return err;
       }
     } else {
+      const gsapSafeOnKeys = ['once', 'onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onToggle', 'onUpdate', 'onStart', 'onComplete', 'onRepeat', 'onReverseComplete', 'onInterrupt'];
       for (const key of Object.keys(obj)) {
-        if (/^on\w+$/i.test(key)) {
+        if (/^on\w+$/i.test(key) && !gsapSafeOnKeys.includes(key)) {
           return `XSS detected: event handler attribute "${path ? path + '.' : ''}${key}" is not allowed`;
         }
         const err = this.checkXssInJson(obj[key], path ? `${path}.${key}` : key);
@@ -1604,8 +1656,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const sanitized: any = {};
+    const gsapSafeOnKeys = ['once', 'onEnter', 'onLeave', 'onEnterBack', 'onLeaveBack', 'onToggle', 'onUpdate', 'onStart', 'onComplete', 'onRepeat', 'onReverseComplete', 'onInterrupt'];
     for (const [key, value] of Object.entries(obj)) {
-      if (/^on\w+$/i.test(key)) continue;
+      if (/^on\w+$/i.test(key) && !gsapSafeOnKeys.includes(key)) continue;
       const cleaned = this.sanitizeImportData(value);
       if (cleaned !== undefined && cleaned !== null) {
         const cleanKey = key.replace(/[^a-zA-Z0-9_\-$]/g, '_');
@@ -1630,7 +1683,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       'duration', 'ease', 'stagger', 'delay', 'repeat', 'yoyo', 'yoyoEase', 'repeatDelay',
       'paused', 'scrollEnabled', 'scrollTrigger', 'status', 'type', 'sortOrder',
       'version', 'timelineSteps', 'media', 'overwrite', 'immediateRender', 'lazy',
-      'keyframes', 'callbacks',
+      'keyframes', 'callbacks', 'once',
     ];
     const knownGsapProps = [
       'opacity', 'x', 'y', 'xPercent', 'yPercent', 'z', 'zIndex', 'rotation', 'rotationX',
@@ -1699,7 +1752,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       if (!r.selector || typeof r.selector !== 'string') {
         return { isValid: false, message: `Rule #${i + 1}: selector is required and must be a string` };
       }
-      if (r.type && !validTypes.includes(r.type.toLowerCase())) {
+      if (r.type && !validTypes.some(t => t.toLowerCase() === r.type.toLowerCase())) {
         return { isValid: false, message: `Rule #${i + 1}: unknown type "${r.type}". Valid: ${validTypes.join(', ')}` };
       }
       if (r.duration !== undefined && (typeof r.duration !== 'number' || r.duration < 0)) {
@@ -1728,28 +1781,28 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private ensureImportedPageRef() {
-    const ruleCount = this.config?.rules?.length || 0;
-    if (!this.selectedPage) {
-      this.selectedPage = {
-        PageId: 0,
-        title: 'Imported Config',
-        label: 'Imported Config',
-        pageKey: 'imported-config',
-        description: `Imported ${ruleCount} rule(s)`
-      };
-    }
-  }
-
-  private afterImportApply() {
-    this.ensureImportedPageRef();
+  private async afterImportApply(action: 'replace' | 'merge', ruleCount: number) {
     this.showImportDialog = false;
-    if (this.hasExistingData()) {
+
+    if (ruleCount === 0) {
       this.NotificationService.showMessage(
-        'Config imported. Click "Save to DB" to persist changes.',
-        'Import Successful', PopupMessageType.Success
+        'No rules found in import — nothing to save.',
+        'Nothing to Import', PopupMessageType.Warning
       );
+      return;
     }
+
+    if (!this.importSelectedPage) {
+      this.NotificationService.showMessage(
+        'No target page selected — enter a page title that matches an existing page.',
+        'Page Required', PopupMessageType.Warning
+      );
+      return;
+    }
+
+    this.selectedPage = this.importSelectedPage;
+    this.selectedPage.gsapConfig = this.config;
+    await this.saveConfig();
   }
 
   applyImportReplace() {
@@ -1765,7 +1818,6 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       if (!normalized) return;
 
       const ruleCount = normalized.rules?.length || 0;
-      const cbCount = normalized.callbacks?.length || 0;
 
       this.config = normalized;
       this.pageForm.patchValue({
@@ -1776,11 +1828,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         autoInit: this.config.global?.autoInit ?? true
       });
 
-      this.afterImportApply();
-      this.NotificationService.showMessage(
-        `Replaced config with ${ruleCount} rule(s), ${cbCount} callback(s). Save to DB to persist.`,
-        'Import Applied', PopupMessageType.Success
-      );
+      this.afterImportApply('replace', ruleCount);
     };
 
     if (this.hasExistingData()) {
@@ -1809,6 +1857,12 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       if (!normalized?.rules) return;
 
       const mergeCount = normalized.rules.length;
+
+      if (mergeCount === 0) {
+        this.afterImportApply('merge', 0);
+        return;
+      }
+
       const beforeCount = this.config.rules?.length || 0;
 
       this.config.rules = [...(this.config.rules || []), ...normalized.rules];
@@ -1824,11 +1878,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         this.pageForm.patchValue({ registerPlugins: merged });
       }
 
-      this.afterImportApply();
-      this.NotificationService.showMessage(
-        `Merged ${mergeCount} rule(s) (was ${beforeCount}, now ${this.config.rules.length}). Save to DB to persist.`,
-        'Merge Successful', PopupMessageType.Success
-      );
+      this.afterImportApply('merge', mergeCount);
     };
 
     if (this.hasExistingData()) {
@@ -1875,6 +1925,20 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       rules: [],
       callbacks: []
     };
+  }
+
+  private parseScrollTrigger(input: any): any {
+    if (!input) return undefined;
+    if (typeof input === 'object') return input;
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      if (trimmed.startsWith('{')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch { return { trigger: '', start: 'top 85%' }; }
+      }
+    }
+    return undefined;
   }
 
   private getDefaultGsapRule(): GsapRule {
