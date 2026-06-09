@@ -1,12 +1,13 @@
-$color-dark:       #0a0c14;
-$color-dark-mid:   #111420;
+$color-dark:       #08080f;
+$color-dark-mid:   #0c0c18;
+$color-dark-card:  #11111e;
 $color-accent:     #00c896;
 $color-accent-2:   #00a3d4;
 $color-white:      #ffffff;
-$color-off-white:  #f8f9fa;
-$color-muted:      rgba(255, 255, 255, 0.6);
-$color-border:     rgba(255, 255, 255, 0.12);
-$color-border-dark: rgba(0, 0, 0, 0.06);
+$color-off-white:  #0f0f1a;
+$color-muted:      rgba(255, 255, 255, 0.5);
+$color-border:     rgba(255, 255, 255, 0.06);
+$color-border-dark: rgba(255, 255, 255, 0.03);
 $font-primary:     'Inter', 'DM Sans', 'Helvetica Neue', sans-serif;
 $font-secondary:   'Grotesk', 'Helvetica Neue', sans-serif;
 $transition-fast:  0.15s ease;
@@ -213,13 +214,15 @@ $mega-menu-width:  720px;
   position: fixed !important;
   top: $header-height !important;
   left: 50% !important;
-  // right: 0 !important;
   width: auto !important;
   min-width: 600px;
   max-width: min(80vw, 1200px);
   transform: translateX(-50%) translateY(-10px);
-  background: $color-white;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  background: $color-dark;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid $color-border;
+  border-radius: 16px;
+  overflow: hidden;
   z-index: 100;
   opacity: 0;
   visibility: hidden;
@@ -252,12 +255,12 @@ $mega-menu-width:  720px;
   flex: 0 0 320px;
   padding: 28px;
   background: $color-off-white;
-  border-right: 1px solid $color-border-dark;
+  border-right: 1px solid $color-border;
 
   display: flex;
   flex-direction: column;
 
-  justify-content: flex-start; // move content to top
+  justify-content: flex-start;
   align-items: flex-start;
 
   height: auto;
@@ -267,7 +270,7 @@ $mega-menu-width:  720px;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-transform: none;
-  color: $color-dark;
+  color: #fff;
   margin-bottom: 16px;
   
 }
@@ -275,7 +278,7 @@ $mega-menu-width:  720px;
 .mega-menu-desc {
   margin: 0;
   font-size: 14px;
-  color: rgba($color-dark, 0.6);
+  color: rgba(255,255,255,0.45);
   line-height: 1.6;
   max-width: 100%;
 }
@@ -283,7 +286,7 @@ $mega-menu-width:  720px;
   flex: 1;
   padding: 40px;
   gap: 48px;
-  background: $color-white;
+  background: $color-dark-mid;
   height: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -339,7 +342,7 @@ $mega-menu-width:  720px;
   gap: 14px;
   padding: 12px 0;
   text-decoration: none;
-  color: $color-dark;
+  color: rgba(255,255,255,0.75);
   font-size: 16px;
   font-weight: 600;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -354,13 +357,13 @@ $mega-menu-width:  720px;
     padding: 8px 0 8px 16px;
     font-size: 15px; 
     font-weight: 550;
-    color: rgba($color-dark, 0.85);
+    color: rgba(255,255,255,0.55);
   }
   &--deep-child {
     padding: 6px 0 6px 20px;
     font-size: 14px;    
     font-weight: 500;   
-    color: rgba($color-dark, 0.65);
+    color: rgba(255,255,255,0.4);
   }
 }
   .mega-sub-list {
@@ -411,7 +414,7 @@ $mega-menu-width:  720px;
   padding: 10px 0;
   border-radius: 0;
   text-decoration: none;
-  color: $color-dark;
+  color: rgba(255,255,255,0.7);
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -481,7 +484,7 @@ $mega-menu-width:  720px;
   list-style: none;
   margin: 4px 0 12px 0;
   padding: 0 0 0 16px;
-  border-left: 1.5px solid rgba($color-dark, 0.08);
+  border-left: 1.5px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -490,7 +493,7 @@ $mega-menu-width:  720px;
     padding: 6px 0;
     font-size: 15px;
     font-weight: 550;
-    color: rgba($color-dark, 0.7); 
+    color: rgba(255,255,255,0.55); 
     
     &:hover {
       color: $color-accent;
@@ -501,7 +504,7 @@ $mega-menu-width:  720px;
   list-style: none;
   margin: 4px 0 4px 0;
   padding: 0 0 0 14px;
-  border-left: 1px dashed rgba($color-dark, 0.12);
+  border-left: 1px dashed rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -510,7 +513,7 @@ $mega-menu-width:  720px;
     padding: 4px 0;
     font-size: 14px;
     font-weight: 500;
-    color: rgba($color-dark, 0.5);
+    color: rgba(255,255,255,0.4);
     
     &:hover {
       color: $color-accent-2; 
