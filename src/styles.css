@@ -1,3 +1,23 @@
+/* Custom scrollbar - CMS theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #eef2f6;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4b5fd;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7c4dff;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c4b5fd #eef2f6;
+}
+
 .toast-animate {
   animation: toastEnter 0.5s ease-out, toastExit 0.5s ease-in 4.5s forwards;
   position: relative;  

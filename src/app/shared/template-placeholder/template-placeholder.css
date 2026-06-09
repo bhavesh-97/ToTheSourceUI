@@ -21,6 +21,11 @@
 
 .template-content {
   min-height: 20px;
+  overflow: visible;
+}
+
+.template-content > *:last-child {
+  margin-bottom: 0;
 }
 
 .placeholder-text {

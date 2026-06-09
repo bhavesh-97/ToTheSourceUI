@@ -1,0 +1,14 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1 0 auto;
+  overflow: visible;
+}
+
+app-template-placeholder {
+  display: contents;
+}

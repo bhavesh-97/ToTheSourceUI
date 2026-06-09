@@ -71,9 +71,6 @@ $mega-menu-width:  720px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
     border-bottom: 1px solid var(--border-color-dark, rgba(0, 0, 0, 0.1));
     
-    .logo-white  { display: block; }
-    .logo-default{ display: none; }
-    
     .nav-link { color: var(--text-color-dark, rgba(255, 255, 255, 0.5)); }
     .nav-link:hover,
     .nav-link.active,
@@ -87,7 +84,6 @@ $mega-menu-width:  720px;
   }
   
   &.scrolled {
-    /* Override when scrolled regardless of theme */
     background: rgba($color-dark, 0.96);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -95,8 +91,7 @@ $mega-menu-width:  720px;
     padding-top: 12px;
     padding-bottom: 12px;
     
-    .logo-white  { display: block; }
-    .logo-default{ display: none; }
+    .logo-default{ display: block; }
     
     .nav-link { color: var(--text-color-scrolled, rgba(255, 255, 255, 0.5)); }
     .nav-link:hover,
@@ -769,9 +764,6 @@ $mega-menu-width:  720px;
     background: rgba($color-dark, 0.92) !important;
     backdrop-filter: blur(20px);
     padding: 14px $header-pad-x;
-
-    .logo-white  { display: block !important; }
-    .logo-default{ display: none !important; }
   }
    .mega-menu-panel {
     display: none !important;
