@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PageDataService} from '../../services/page-data.service';
 import { WebGsapService } from '../../services/web-gsap.service';
+import { TemplatePlaceholder } from "../../../shared/template-placeholder/template-placeholder";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TemplatePlaceholder],
   template: `
-    <section class="hero-section" #heroSection>
+    <app-template-placeholder templateType="HomeLayout" templateCode="Landing" [gsapPageKey]="'home'"></app-template-placeholder>
+    <!-- <section class="hero-section" #heroSection>
       <div class="hero-bg"></div>
       <div class="hero-content">
         <h1 class="hero-title">{{ heroTitle }}</h1>
@@ -42,7 +44,8 @@ import { WebGsapService } from '../../services/web-gsap.service';
         <p>Let's build something amazing together.</p>
         <a routerLink="/Web/contact" class="cta-button">Contact Today</a>
       </div>
-    </section>
+    </section> -->
+    
   `,
   styles: [`
     .hero-section {

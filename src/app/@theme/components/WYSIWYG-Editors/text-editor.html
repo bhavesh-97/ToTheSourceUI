@@ -133,6 +133,10 @@
            <button class="toolbar-btn" pTooltip="Insert Image" (click)="showImage = true" type="button">
              <i class="fa fa-image"></i>
            </button>
+           <button class="toolbar-btn" pTooltip="GSAP Animation ({{gsapPageId ? 'Linked' : 'None'}})" (click)="openGsapDialog()" type="button"
+                   [class.active]="gsapPageId > 0">
+             <i class="fa fa-magic"></i>
+           </button>
            <button class="toolbar-btn" pTooltip="Insert Table" (click)="showTableConfig = true" type="button">
              <i class="fa fa-table"></i>
            </button>
@@ -761,6 +765,32 @@
         <button pButton label="Cancel" icon="fa fa-times" (click)="showMediaDialog=false" class="p-button-secondary" type="button"></button>
       </div>
     </div>
+  </p-dialog>
+
+  <!-- GSAP Page Selection Dialog -->
+  <p-dialog header="Link GSAP Animation Page" [(visible)]="showGsapDialog" [modal]="true" [style]="{width: '450px'}" [contentStyle]="{'min-height': '300px'}">
+    <div class="dialog-content">
+      <div class="mb-3">
+        <label class="form-label fw-medium">Select GSAP Page</label>
+        <p-select #inputField
+                  [options]="gsapPages"
+                  optionLabel="label"
+                  optionValue="pageId"
+                  [(ngModel)]="gsapPageId"
+                  (onChange)="gsapPageIdChange.emit($event.value)"
+                  [showClear]="true"
+                  placeholder="Choose a GSAP animation page..."
+                  class="w-100"
+                  styleClass="w-100">
+        </p-select>
+      </div>
+      <div *ngIf="gsapPageId" class="text-muted" style="font-size: 13px;">
+        <i class="fa fa-check-circle text-success"></i> GSAP animation linked
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton label="Done" icon="fa fa-check" (click)="showGsapDialog = false" class="p-button-success" type="button"></button>
+    </ng-template>
   </p-dialog>
   
   <!-- Templates Dialog -->

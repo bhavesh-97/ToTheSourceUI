@@ -17,19 +17,19 @@ export class GsapConfigLoaderService {
 
   async load(configName: string = 'default'): Promise<GsapConfig> {
     if (this.configCache.has(configName)) {
-      //console.log('[GSAP Loader] Cache hit:', configName);
+      // console.log('[GSAP Loader] Cache hit:', configName);
       return this.configCache.get(configName)!;
     }
     
- //   console.log('[GSAP Loader] Cache miss, loading from API:', configName);
+    // console.log('[GSAP Loader] Cache miss, loading from API:', configName);
     const result = await this.loadFromApi(configName);
     
-   // console.log('[GSAP Loader] Cache miss, loading from API: result', result);
     if (result) {
       this.configCache.set(configName, result);
       // console.log('[GSAP Loader] Loaded & cached:', configName, '| Pages:', Object.keys(result?.pages || {}).join(', '));
       return result;
     }
+    // console.log('[GSAP Loader] API returned no result, using default config');
     return this.getDefaultConfig();
   }
 
@@ -57,15 +57,18 @@ export class GsapConfigLoaderService {
   async loadFromApi(configName: string = 'default'): Promise<GsapConfig | null> {
     try {
       const apiUrl = `${environment.CMSUrl}/GsapConfig/name/${configName}`;
+      // console.log('[GSAP Loader] API call:', apiUrl);
       const response = await firstValueFrom(this.http.get<any>(apiUrl));
       
-      // console.log('[GSAP Loader] Cache miss, loading from API response:', response);
+      // console.log('[GSAP Loader] API response:', response);
       if (response && !response.isError && response.result) {
+        // console.log('[GSAP Loader] API result pages:', Object.keys(response.result?.pages || {}));
         return this.convertApiToGsapConfig(response.result);
       }
+      // console.log('[GSAP Loader] API returned error or no result');
       return null;
     } catch (err) {
-      // console.error('Failed to load GSAP config from API:', err);
+      console.error('[GSAP Loader] Failed to load GSAP config from API:', err);
       return null;
     }
   }

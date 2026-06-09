@@ -30,6 +30,8 @@ import { TextEditorService } from './text-editor.service';
 import { TextFormattingService } from './text-formatting.service';
 import { TextHistoryService } from './text-history.service';
 import { TextAutosaveService } from './text-autosave.service';
+import { GsapMasterService } from '../../../CMS/main/gsap-master/gsap-master.service';
+import { MGsapPage } from '../../../CMS/main/gsap-master/gsap-interface';
 import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorConfig, EditorPreset, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, ToolbarPreset, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
 import { AnalyticsService } from '../../../@core/utils';
 import { NotificationService } from '../../../services/notification.service';
@@ -60,7 +62,6 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
     RadioButtonModule,
     DrawerModule,
     ToggleSwitchModule,
-    ResizableModule,
     FileSizePipe
 ],
   providers: [
@@ -127,6 +128,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       @Input() bottom: string = 'auto';
       @Input() left: string = 'auto';
       @Input() right: string = 'auto';
+      @Input() gsapPageId: number = 0;
     //#endregion
     //#region Configuration Outputs
       @Output() clickOutside = new EventEmitter<void>();
@@ -147,6 +149,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       @Output() selectionChanged = new EventEmitter<Selection>();
       @Output() formattingChanged = new EventEmitter<FormattingState>();
       @Output() historyChanged = new EventEmitter<EditorState[]>();
+      @Output() gsapPageIdChange = new EventEmitter<number>();
     //#endregion
     //#region State Variables
       currentHistoryIndex: number = -1;
@@ -173,6 +176,8 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       showPreviewDialog = false;
       showTemplateDialog = false;
       showMediaDialog = false;
+      showGsapDialog = false;
+      gsapPages: MGsapPage[] = [];
       showAIDialog = false;
       showExportDialog = false;
       showImportDialog = false;
@@ -2298,6 +2303,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       private textFormattingService = inject(TextFormattingService);
       private textHistoryService = inject(TextHistoryService);
       private textAutosaveService = inject(TextAutosaveService);
+      private gsapMasterService = inject(GsapMasterService);
     //#endregion
       constructor( @Inject(DOCUMENT) public doc: Document) {
                 this.initializeFeatureFlags();
@@ -4854,6 +4860,18 @@ public aiImproveWriting() {
         this.sourceEditor.nativeElement.style.display = 'none';
       }
     }
+  }
+
+  openGsapDialog() {
+    this.gsapMasterService.GetAllConfigs().subscribe({
+      next: (res) => {
+        if (!res.isError) {
+          const data = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+          this.gsapPages = data || [];
+        }
+      }
+    });
+    this.showGsapDialog = true;
   }
 
   // Enhanced Update Methods

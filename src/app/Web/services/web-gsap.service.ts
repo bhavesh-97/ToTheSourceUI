@@ -21,7 +21,7 @@ export class WebGsapService {
 
   async loadPageAnimations(pageKey: string): Promise<GsapRule[]> {
     if (!this.config) {
-      this.config = await this.configLoader.load();
+      this.config = await this.configLoader.load(pageKey);
     }
 
     const pageKeyLower = pageKey.toLowerCase();
@@ -73,13 +73,14 @@ export class WebGsapService {
 
   private parseCssInput(input: string): Record<string, any> {
     if (!input) return {};
-    const trimmed = input.trim();
+    let trimmed = input.trim();
 
     if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
       try {
         const parsed = JSON.parse(trimmed);
         if (typeof parsed === 'object' && parsed !== null) return parsed;
       } catch (e) {}
+      trimmed = trimmed.replace(/^\{/, '').replace(/\}$/, '').trim();
     }
 
     const cssRules: Record<string, any> = {};
@@ -116,7 +117,7 @@ export class WebGsapService {
 
   applyAnimations(pageKey: string, container: HTMLElement) {
   //  console.log('[GSAP] applyAnimations called for:', pageKey);
-   // console.log('[GSAP] Container:', container);
+  //  console.log('[GSAP] Container:', container);
     this.loadPageAnimations(pageKey).then(rules => {
       // console.log('[GSAP] Rules loaded for', pageKey, ':', rules);
       // console.log('[GSAP] Rules count:', rules.length);
@@ -143,6 +144,7 @@ private executeRules(rules: GsapRule[], container: HTMLElement) {
       const to = this.parseFromTo(rule.to as CssStyleValue);
       const styles = this.parseFromTo(rule.styles as CssStyleValue);
       const stagger = typeof rule.stagger === 'number' ? rule.stagger : 0;
+      // console.log('[GSAP] from:', JSON.stringify(from), 'to:', JSON.stringify(to));
 
       elements.forEach(el => {
         if (Object.keys(styles).length > 0) {
