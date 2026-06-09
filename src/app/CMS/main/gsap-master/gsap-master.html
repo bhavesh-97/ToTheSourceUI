@@ -7,7 +7,8 @@
           <h2 class="mb-0">GSAP Configuration Manager</h2>
           <p class="lead text-muted mb-0">Create, edit, and preview GSAP animations with powerful auto-applied configs.</p>
         </div>
-        <div style="margin-left:auto;">
+        <div style="margin-left:auto; display: flex; gap: 8px;">
+            <button pButton label="Import from Assets" icon="pi pi-file-import" class="p-button-sm p-button-outlined mt-2 mt-md-0" (click)="openImportDialog()"></button>
             <button pButton label="Add New Page" icon="pi pi-plus" class="p-button-sm mt-2 mt-md-0" (click)="openAddPageDialog()"></button>
         </div> 
       </div>
@@ -83,12 +84,47 @@
         </ng-template>
       </p-dialog>
 
+      <!-- Import JSON Dialog -->
+      <p-dialog [(visible)]="showImportDialog" modal="true" header="Import GSAP Config (JSON)" [style]="{width: '90vw', maxWidth: '900px'}" [breakpoints]="{ '768px': '95vw' }" [draggable]="false">
+        <div class="p-3">
+          <div class="alert alert-info small mb-3">
+            <strong><i class="pi pi-info-circle"></i> Paste your GSAP config JSON below.</strong>
+            Supports all formats: <code>landing-gsap-master-config.json</code>, <code>landing-gsap-config.json</code>, <code>landing-config.json</code>, <code>templates.json</code>, or any valid GSAP config.
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-bold">Paste JSON</label>
+            <textarea
+              class="form-control font-monospace"
+              rows="10"
+              [ngModel]="importJsonText"
+              (ngModelChange)="onImportJsonInput($event)"
+              placeholder='Paste your JSON here... e.g. {"global": {...}, "rules": [...]}'
+              [class.is-invalid]="importJsonError"
+            ></textarea>
+            <div *ngIf="importJsonError" class="invalid-feedback d-block">
+              <i class="pi pi-exclamation-triangle me-1"></i>{{ importJsonError }}
+            </div>
+            <div *ngIf="importValidated" class="text-success small mt-1">
+              <i class="pi pi-check-circle me-1"></i>JSON validated successfully. GSAP compatible.
+            </div>
+          </div>
+        </div>
+        <ng-template pTemplate="footer">
+          <div class="d-flex justify-content-end gap-2 flex-wrap">
+            <button pButton label="Validate" icon="pi pi-check" class="p-button-outlined" (click)="validateImportJson()"></button>
+            <button pButton label="Replace Config" icon="pi pi-refresh" class="p-button-warning" [disabled]="!importValidated" (click)="applyImportReplace()"></button>
+            <button pButton label="Merge as New Rules" icon="pi pi-plus" class="p-button-info" [disabled]="!importValidated" (click)="applyImportMerge()"></button>
+            <button pButton label="Cancel" icon="pi pi-times" (click)="showImportDialog = false" class="p-button-text"></button>
+          </div>
+        </ng-template>
+      </p-dialog>
+
       <!-- Tabs Editor -->
-      <div *ngIf="config && selectedPage" class="row">
+      <div *ngIf="config && (selectedPage || config.rules?.length)" class="row">
         <div class="col-12 col-md-12">
           <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-              <h5 class="mb-0">Config Editor for {{ selectedPage.label }}</h5>
+              <h5 class="mb-0">Config Editor{{ selectedPage ? ' for ' + selectedPage.label : ' (Imported)' }}</h5>
               <button pButton label="Save to DB" icon="pi pi-save" class="p-button-success p-button-sm mt-1 mt-md-0" (click)="saveConfig()"></button>
             </div>
             <div class="card-body p-0">
@@ -285,6 +321,74 @@
                   ⚠ {{ getSelectorWarning(ruleForm.get('selector')?.value) }}
                 </small>
               </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label">Duration</label>
+                <input type="number" #inputField class="form-control" formControlName="duration" step="0.1" (input)="onFormChange()">
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label">Ease</label>
+                <p-select [options]="easeOptions" #inputField formControlName="ease" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label">Delay</label>
+                <input type="number" #inputField class="form-control" formControlName="delay" step="0.1" (input)="onFormChange()">
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label">Stagger</label>
+                <input type="number" #inputField class="form-control" formControlName="stagger" step="0.1" (input)="onFormChange()">
+              </div>
+              <div class="col-12 col-sm-4">
+                <label class="form-label">Repeat</label>
+                <input type="number" #inputField class="form-control" formControlName="repeat" min="0" (input)="onFormChange()">
+              </div>
+              <div class="col-12 col-sm-4 d-flex align-items-center pt-4">
+                <p-checkbox #inputField formControlName="yoyo" [binary]="true" (onChange)="onFormChange()" inputId="ruleYoyo"></p-checkbox>
+                <label for="ruleYoyo" class="ms-2">Yoyo</label>
+              </div>
+              <div class="col-12 col-sm-4" *ngIf="ruleForm.get('repeat')?.value > 0">
+                <label class="form-label">Repeat Delay</label>
+                <input type="number" #inputField class="form-control" formControlName="repeatDelay" step="0.1" (input)="onFormChange()">
+              </div>
+              <!-- ScrollTrigger Section -->
+              <div class="col-12">
+                <div class="form-check">
+                  <p-checkbox #inputField formControlName="scrollEnabled" [binary]="true" (onChange)="onFormChange()" inputId="ruleScrollEnabled"></p-checkbox>
+                  <label for="ruleScrollEnabled" class="ms-2 fw-bold">Enable ScrollTrigger</label>
+                </div>
+              </div>
+              <div class="col-12" *ngIf="ruleForm.get('scrollEnabled')?.value">
+                <div class="card p-3 bg-light">
+                  <h6 class="mb-3">ScrollTrigger Settings</h6>
+                  <div class="row g-2">
+                    <div class="col-12 col-sm-6">
+                      <label class="form-label small">Start</label>
+                      <input type="text" #inputField class="form-control form-control-sm" formControlName="scrollTrigger_start" placeholder="top 85%">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <label class="form-label small">End</label>
+                      <input type="text" #inputField class="form-control form-control-sm" formControlName="scrollTrigger_end" placeholder="bottom 20%">
+                    </div>
+                    <div class="col-12 col-sm-4">
+                      <label class="form-label small">Scrub</label>
+                      <p-select #inputField [options]="[{label: 'False', value: false}, {label: 'True', value: true}, {label: '0.5', value: 0.5}, {label: '1', value: 1}, {label: '2', value: 2}]" formControlName="scrollTrigger_scrub" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+                    </div>
+                    <div class="col-12 col-sm-4">
+                      <label class="form-label small">Toggle Actions</label>
+                      <p-select #inputField [options]="[{label: 'play none none reverse', value: 'play none none reverse'}, {label: 'play pause resume reverse', value: 'play pause resume reverse'}, {label: 'play pause resume reset', value: 'play pause resume reset'}, {label: 'none none none none', value: 'none none none none'}]" formControlName="scrollTrigger_toggleActions" optionLabel="label" optionValue="value" [style]="{'width': '100%'}" (onChange)="onFormChange()"></p-select>
+                    </div>
+                    <div class="col-12 col-sm-4 d-flex align-items-center pt-4 gap-3">
+                      <div>
+                        <p-checkbox #inputField formControlName="scrollTrigger_markers" [binary]="true" inputId="stMarkers"></p-checkbox>
+                        <label for="stMarkers" class="ms-1 small">Markers</label>
+                      </div>
+                      <div>
+                        <p-checkbox #inputField formControlName="scrollTrigger_pin" [binary]="true" inputId="stPin"></p-checkbox>
+                        <label for="stPin" class="ms-1 small">Pin</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div class="col-12">
                 <label class="form-label">Styles</label>
                 <textarea class="form-control" rows="2" #inputField formControlName="editingRuleStylesJson" (input)="onFormChange()" placeholder='{"background-color": "#1e1e1e"} or .master { background-color: #252526; }'></textarea>
@@ -357,3 +461,4 @@
   </div>
 </div>
 <p-confirmDialog key="deletePageDialog" [draggable]="false"></p-confirmDialog>
+<p-confirmDialog key="importConfirmDialog" [draggable]="false"></p-confirmDialog>

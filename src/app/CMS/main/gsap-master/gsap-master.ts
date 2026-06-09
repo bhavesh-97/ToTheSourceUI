@@ -26,7 +26,7 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
 import { NotificationService } from '../../../services/notification.service';
 import { IconField } from "primeng/iconfield";
 import { InputIcon } from "primeng/inputicon";
-import { PageConfig, GsapConfig, GsapRule, GsapTimelineStep, Severity, MGsapPage, SaveGsapCallback, SaveGsapConfigRequest, SaveGsapGlobalDefaults, SaveGsapPlugin, SaveGsapRule } from './gsap-interface';
+import { PageConfig, GsapConfig, GsapRule, GsapTimelineStep, Severity, MGsapPage, SaveGsapCallback, SaveGsapConfigRequest, SaveGsapGlobalDefaults, SaveGsapPlugin, SaveGsapRule, GsapAssetConfig, GsapScrollTrigger } from './gsap-interface';
 import { LookupService } from '../../../services/lookup.service';
 import { FormUtils } from '../../../shared/utilities/form-utils';
 import { FormFieldConfig } from '../../../Interfaces/FormFieldConfig';
@@ -80,6 +80,12 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   loading: boolean = false;
   saving: boolean = false;
 
+  showImportDialog = false;
+  importJsonText = '';
+  importJsonError = '';
+  importValidated = false;
+  importParsedConfig: any = null;
+
   pageForm!: FormGroup;
   newpageForm!: FormGroup;
   ruleForm!: FormGroup;
@@ -99,7 +105,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     { name: 'PageId', isMandatory: false, validationMessage: 'Name is required', events: [] },
     { name: 'PageTitle', isMandatory: true, validationMessage: 'Page title is required', events: [] },
   ];
-  private ruleFormFields: FormFieldConfig[] = [
+    private ruleFormFields: FormFieldConfig[] = [
     { name: 'label', isMandatory: true, validationMessage: 'Label is required', events: [] },
     { name: 'type', isMandatory: true, validationMessage: 'Type is required', events: [] },
     { name: 'status', isMandatory: true, validationMessage: 'Status is required', events: [] },
@@ -108,6 +114,16 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     { name: 'ease', isMandatory: false, validationMessage: '', events: [] },
     { name: 'stagger', isMandatory: false, min: 0, validationMessage: 'Stagger must be >= 0', events: [] },
     { name: 'delay', isMandatory: false, min: 0, validationMessage: 'Delay must be >= 0', events: [] },
+    { name: 'repeat', isMandatory: false, min: 0, validationMessage: 'Repeat must be >= 0', events: [] },
+    { name: 'yoyo', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'repeatDelay', isMandatory: false, min: 0, validationMessage: 'Repeat delay must be >= 0', events: [] },
+    { name: 'scrollEnabled', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_start', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_end', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_scrub', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_toggleActions', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_markers', isMandatory: false, validationMessage: '', events: [] },
+    { name: 'scrollTrigger_pin', isMandatory: false, validationMessage: '', events: [] },
     { name: 'editingRuleStylesJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
     { name: 'editingRuleFromJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
     { name: 'editingRuleToJson', isMandatory: false, validationMessage: 'Invalid JSON format', events: [] },
@@ -993,6 +1009,8 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     const typeValue = this.getDropdownValue(this.editingRule.type, this.animationTypes);
     const statusValue = this.getDropdownValue(this.editingRule.status, this.statusOptions);
 
+    const st = this.editingRule.scrollTrigger || {} as any;
+
     this.ruleForm.patchValue({
       label: this.editingRule.label || '',
       type: typeValue,
@@ -1002,6 +1020,16 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       ease: this.editingRule.ease || 'power2.out',
       stagger: this.editingRule.stagger ?? 0,
       delay: this.editingRule.delay ?? 0,
+      repeat: this.editingRule.repeat ?? 0,
+      yoyo: this.editingRule.yoyo ?? false,
+      repeatDelay: this.editingRule.repeatDelay ?? 0,
+      scrollEnabled: this.editingRule.scrollEnabled ?? !!st,
+      scrollTrigger_start: st.start || 'top 85%',
+      scrollTrigger_end: st.end || 'bottom 20%',
+      scrollTrigger_scrub: st.scrub ?? false,
+      scrollTrigger_toggleActions: st.toggleActions || 'play none none reverse',
+      scrollTrigger_markers: st.markers ?? false,
+      scrollTrigger_pin: st.pin ?? false,
       editingRuleStylesJson: this.editingRuleStylesJson,
       editingRuleFromJson: this.editingRuleFromJson,
       editingRuleToJson: this.editingRuleToJson,
@@ -1206,11 +1234,34 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
 
+      const scrollEnabled = this.ruleForm.get('scrollEnabled')?.value ?? false;
+      const scrollTriggerObj: GsapScrollTrigger | undefined = scrollEnabled ? {
+        enabled: true,
+        trigger: this.ruleForm.get('selector')?.value || '',
+        start: this.ruleForm.get('scrollTrigger_start')?.value || 'top 85%',
+        end: this.ruleForm.get('scrollTrigger_end')?.value || 'bottom 20%',
+        scrub: typeof this.ruleForm.get('scrollTrigger_scrub')?.value === 'string'
+          ? parseFloat(this.ruleForm.get('scrollTrigger_scrub')?.value) || false
+          : this.ruleForm.get('scrollTrigger_scrub')?.value ?? false,
+        toggleActions: this.ruleForm.get('scrollTrigger_toggleActions')?.value || 'play none none reverse',
+        markers: this.ruleForm.get('scrollTrigger_markers')?.value ?? false,
+        pin: this.ruleForm.get('scrollTrigger_pin')?.value ?? false,
+      } : undefined;
+
       const ruleData: any = {
         label: this.ruleForm.get('label')?.value,
         type: this.ruleForm.get('type')?.value,
         status: this.ruleForm.get('status')?.value,
         selector: this.ruleForm.get('selector')?.value,
+        duration: this.ruleForm.get('duration')?.value ?? 1,
+        ease: this.ruleForm.get('ease')?.value || 'power2.out',
+        stagger: this.ruleForm.get('stagger')?.value ?? 0,
+        delay: this.ruleForm.get('delay')?.value ?? 0,
+        repeat: this.ruleForm.get('repeat')?.value ?? 0,
+        yoyo: this.ruleForm.get('yoyo')?.value ?? false,
+        repeatDelay: this.ruleForm.get('repeatDelay')?.value ?? 0,
+        scrollEnabled,
+        scrollTrigger: scrollTriggerObj,
         from: this.parseCssInput(this.ruleForm.get('editingRuleFromJson')?.value),
         to: this.parseCssInput(this.ruleForm.get('editingRuleToJson')?.value),
         styles: this.parseCssInput(this.ruleForm.get('editingRuleStylesJson')?.value),
@@ -1357,14 +1408,30 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     const validProps = [
       'opacity', 'x', 'y', 'xPercent', 'yPercent', 'z', 'zIndex',
       'rotation', 'rotationX', 'rotationY', 'rotationZ',
-      'scale', 'scaleX', 'scaleY',
+      'scale', 'scaleX', 'scaleY', 'scaleZ',
       'skewX', 'skewY',
       'backgroundColor', 'background', 'color', 'borderColor', 'borderWidth', 'borderRadius',
       'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
-      'padding', 'margin', 'top', 'left', 'right', 'bottom',
-      'transform', 'transformOrigin', 'perspective',
-      'filter', 'blur', 'brightness', 'contrast', 'grayscale', 'saturate',
-      'clipPath', 'display', 'visibility', 'overflow'
+      'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+      'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft',
+      'top', 'left', 'right', 'bottom',
+      'transform', 'transformOrigin', 'transformStyle', 'perspective', 'perspectiveOrigin',
+      'backfaceVisibility', 'boxShadow', 'textShadow',
+      'filter', 'blur', 'brightness', 'contrast', 'grayscale', 'hueRotate', 'invert', 'saturate', 'sepia',
+      'backdropFilter', 'clipPath', 'clipRule',
+      'display', 'visibility', 'overflow', 'overflowX', 'overflowY',
+      'autoAlpha', 'force3D',
+      'scrollTop', 'scrollLeft',
+      'svgOrigin', 'attr',
+      'className', 'textContent',
+      'motionPath', 'path', 'align', 'alignOrigin', 'start', 'end', 'autoRotate', 'rotateX', 'rotateY',
+      'morphSVG', 'shapeIndex', 'type',
+      'drawSVG',
+      'cssRule', 'selector',
+      'physics2D', 'velocity', 'angle', 'gravity', 'friction',
+      'physicsProps', 'acceleration', 'accelerationX', 'accelerationY',
+      'scrambleText', 'chars', 'speed', 'revealDelay', 'tweenLength', 'newClass', 'oldClass',
+      'inertia', 'resistance', 'min', 'max', 'bounce', 'overshoot',
     ];
 
     const keys = Object.keys(obj);
@@ -1374,13 +1441,13 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
       }
 
       const value = obj[key];
-      if (typeof value === 'string' && (value.includes('px') || value.includes('%') || value.includes('em') || value.includes('rem'))) {
+      if (typeof value === 'string' && (value.includes('px') || value.includes('%') || value.includes('em') || value.includes('rem') || value.includes('deg') || value.includes('rad') || value.includes('vh') || value.includes('vw') || value.includes('svw') || value.includes('lvw'))) {
         continue;
       }
       if (typeof value === 'number') {
         continue;
       }
-      if (typeof value === 'string' && !value.includes('rgb') && !value.includes('rgba') && !value.includes('#')) {
+      if (typeof value === 'string' && !value.includes('rgb') && !value.includes('rgba') && !value.includes('#') && !value.startsWith('hsl') && !value.startsWith('var(') && !value.startsWith('url(')) {
         console.warn(`Property ${key} may have invalid value: ${value}`);
       }
     }
@@ -1407,7 +1474,384 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
     this.editingRule = this.getDefaultGsapRule();
     this.editingIndex = null;
   }
-  
+
+  //#region JSON Import
+
+  openImportDialog() {
+    this.importJsonText = '';
+    this.importJsonError = '';
+    this.importValidated = false;
+    this.importParsedConfig = null;
+    this.showImportDialog = true;
+  }
+
+  onImportJsonInput(value: string) {
+    this.importJsonText = value;
+    this.importJsonError = '';
+    this.importValidated = false;
+    this.importParsedConfig = null;
+  }
+
+  validateImportJson(): boolean {
+    this.importJsonError = '';
+    this.importValidated = false;
+    this.importParsedConfig = null;
+
+    const raw = this.importJsonText?.trim();
+    if (!raw) {
+      this.importJsonError = 'Please paste JSON data';
+      return false;
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      this.importJsonError = 'Invalid JSON format';
+      return false;
+    }
+
+    if (!parsed || typeof parsed !== 'object') {
+      this.importJsonError = 'JSON must be an object';
+      return false;
+    }
+
+    const xssError = this.checkXssInJson(parsed);
+    if (xssError) {
+      this.importJsonError = xssError;
+      return false;
+    }
+
+    const sanitized = this.sanitizeImportData(parsed);
+    if (!sanitized) {
+      this.importJsonError = 'Import data is empty after sanitization';
+      return false;
+    }
+
+    const gsapCheck = this.checkGsapCompatibility(sanitized);
+    if (!gsapCheck.isValid) {
+      this.importJsonError = gsapCheck.message;
+      return false;
+    }
+
+    this.importParsedConfig = sanitized;
+    this.importValidated = true;
+    return true;
+  }
+
+  private checkXssInJson(obj: any, path = ''): string | null {
+    if (!obj || typeof obj !== 'object') {
+      if (typeof obj === 'string') {
+        const dangerous = [
+          /<script[\s>]/i,
+          /javascript\s*:/i,
+          /on\w+\s*=\s*['"]/i,
+          /eval\s*\(/i,
+          /Function\s*\(/i,
+          /setTimeout\s*\(\s*['"`]/i,
+          /setInterval\s*\(\s*['"`]/i,
+          /document\s*\./i,
+          /window\s*\./i,
+          /localStorage/i,
+          /sessionStorage/i,
+          /new\s+Function/i,
+          /\.innerHTML\s*=/i,
+          /\.outerHTML\s*=/i,
+          /document\.write/i,
+          /fetch\s*\(/i,
+          /XMLHttpRequest/i,
+          /import\s*\(/i,
+          /require\s*\(/i,
+        ];
+        for (const pattern of dangerous) {
+          if (pattern.test(obj)) {
+            return `XSS detected in field "${path || 'root'}": contains dangerous pattern`;
+          }
+        }
+      }
+      return null;
+    }
+
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        const err = this.checkXssInJson(obj[i], `${path}[${i}]`);
+        if (err) return err;
+      }
+    } else {
+      for (const key of Object.keys(obj)) {
+        if (/^on\w+$/i.test(key)) {
+          return `XSS detected: event handler attribute "${path ? path + '.' : ''}${key}" is not allowed`;
+        }
+        const err = this.checkXssInJson(obj[key], path ? `${path}.${key}` : key);
+        if (err) return err;
+      }
+    }
+    return null;
+  }
+
+  private sanitizeImportData(obj: any): any {
+    if (!obj || typeof obj !== 'object') {
+      if (typeof obj === 'string') {
+        return obj
+          .replace(/</g, '\\u003C')
+          .replace(/>/g, '\\u003E');
+      }
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.sanitizeImportData(item)).filter(Boolean);
+    }
+
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (/^on\w+$/i.test(key)) continue;
+      const cleaned = this.sanitizeImportData(value);
+      if (cleaned !== undefined && cleaned !== null) {
+        const cleanKey = key.replace(/[^a-zA-Z0-9_\-$]/g, '_');
+        sanitized[cleanKey] = cleaned;
+      }
+    }
+    return sanitized;
+  }
+
+  private checkGsapCompatibility(obj: any): { isValid: boolean; message: string } {
+    const knownTopLevelKeys = [
+      'global', 'plugins', 'pages', 'rules', 'callbacks', 'configName',
+      'pageId', 'pageKey', 'label', 'name', 'version', 'status',
+      'globalDefaults', 'description', 'gsap', 'id', 'type', 'category',
+      'html', 'css', 'previewUrl', 'createdAt', 'updatedAt',
+    ];
+
+    const knownGlobalKeys = ['pageId', 'defaults', 'registerPlugins', 'autoInit', 'observeDom', 'meta', 'version', 'status'];
+    const knownDefaultKeys = ['defaultsId', 'pageId', 'duration', 'ease', 'stagger', 'delay', 'repeat', 'yoyo'];
+    const knownRuleKeys = [
+      'ruleId', 'pageId', 'ruleKey', 'label', 'selector', 'from', 'to', 'styles',
+      'duration', 'ease', 'stagger', 'delay', 'repeat', 'yoyo', 'yoyoEase', 'repeatDelay',
+      'paused', 'scrollEnabled', 'scrollTrigger', 'status', 'type', 'sortOrder',
+      'version', 'timelineSteps', 'media', 'overwrite', 'immediateRender', 'lazy',
+      'keyframes', 'callbacks',
+    ];
+    const knownGsapProps = [
+      'opacity', 'x', 'y', 'xPercent', 'yPercent', 'z', 'zIndex', 'rotation', 'rotationX',
+      'rotationY', 'rotationZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skewX', 'skewY',
+      'autoAlpha', 'force3D', 'transformOrigin', 'perspective', 'perspectiveOrigin',
+      'backfaceVisibility', 'transformStyle',
+      'backgroundColor', 'color', 'borderColor', 'borderWidth', 'borderRadius',
+      'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight',
+      'padding', 'margin', 'top', 'left', 'right', 'bottom',
+      'filter', 'blur', 'brightness', 'contrast', 'grayscale', 'hueRotate', 'invert', 'saturate', 'sepia',
+      'backdropFilter', 'clipPath', 'boxShadow', 'textShadow',
+      'display', 'visibility', 'overflow', 'overflowX', 'overflowY',
+      'scrollTop', 'scrollLeft', 'className', 'textContent',
+      'svgOrigin', 'attr', 'cssRule',
+      'motionPath', 'path', 'align', 'autoRotate',
+      'morphSVG', 'drawSVG',
+      'scrambleText', 'physics2D', 'inertia',
+    ];
+
+    const checkKeys = (data: any, knownKeys: string[], context: string): string | null => {
+      if (!data || typeof data !== 'object') return null;
+      for (const key of Object.keys(data)) {
+        const lower = key.toLowerCase();
+        if (!knownKeys.includes(key) && !knownKeys.includes(lower) && !key.startsWith('_')) {
+          if (context === 'gsap-props') {
+            if (!knownGsapProps.includes(lower) && !lower.startsWith('border')) {
+              console.warn(`Unknown GSAP property "${key}" in ${context}`);
+            }
+          } else {
+            console.warn(`Unknown key "${key}" in ${context}`);
+          }
+        }
+      }
+      return null;
+    };
+
+    checkKeys(obj, knownTopLevelKeys, 'top-level');
+
+    if (obj.global) {
+      checkKeys(obj.global, knownGlobalKeys, 'global');
+      if (obj.global.defaults) checkKeys(obj.global.defaults, knownDefaultKeys, 'defaults');
+      if (obj.global.registerPlugins) {
+        const plugins = obj.global.registerPlugins;
+        if (Array.isArray(plugins)) {
+          for (const p of plugins) {
+            if (typeof p === 'string' && p.length > 100) {
+              return { isValid: false, message: `Invalid plugin name: "${p.substring(0, 30)}..."` };
+            }
+          }
+        }
+      }
+    }
+
+    if (obj.globalDefaults) {
+      checkKeys(obj.globalDefaults, knownDefaultKeys, 'globalDefaults');
+    }
+
+    const allRules = obj.rules || (obj.gsap?.rules) || [];
+    if (allRules.length > 50) {
+      return { isValid: false, message: `Too many rules (${allRules.length}). Max 50 allowed.` };
+    }
+
+    const validTypes = ['fromTo', 'to', 'from', 'set', 'timeline', 'keyframes', 'tween'];
+    for (let i = 0; i < allRules.length; i++) {
+      const r = allRules[i];
+      if (!r.selector || typeof r.selector !== 'string') {
+        return { isValid: false, message: `Rule #${i + 1}: selector is required and must be a string` };
+      }
+      if (r.type && !validTypes.includes(r.type.toLowerCase())) {
+        return { isValid: false, message: `Rule #${i + 1}: unknown type "${r.type}". Valid: ${validTypes.join(', ')}` };
+      }
+      if (r.duration !== undefined && (typeof r.duration !== 'number' || r.duration < 0)) {
+        return { isValid: false, message: `Rule #${i + 1}: duration must be a positive number` };
+      }
+      checkKeys(r, knownRuleKeys, `rule[${i}]`);
+      if (r.from && typeof r.from === 'object') checkKeys(r.from, knownGsapProps, `rule[${i}].from (gsap-props)`);
+      if (r.to && typeof r.to === 'object') checkKeys(r.to, knownGsapProps, `rule[${i}].to (gsap-props)`);
+      if (r.styles && typeof r.styles === 'object') {
+        for (const sk of Object.keys(r.styles)) {
+          if (sk.includes('<') || sk.includes('>') || sk.includes('script')) {
+            return { isValid: false, message: `Rule #${i + 1}: invalid style key "${sk}"` };
+          }
+        }
+      }
+    }
+
+    return { isValid: true, message: '' };
+  }
+
+  private hasExistingData(): boolean {
+    return !!(
+      (this.config?.rules && this.config.rules.length > 0) ||
+      (this.config?.callbacks && this.config.callbacks.length > 0) ||
+      (this.config?.plugins && this.config.plugins.length > 0)
+    );
+  }
+
+  private ensureImportedPageRef() {
+    const ruleCount = this.config?.rules?.length || 0;
+    if (!this.selectedPage) {
+      this.selectedPage = {
+        PageId: 0,
+        title: 'Imported Config',
+        label: 'Imported Config',
+        pageKey: 'imported-config',
+        description: `Imported ${ruleCount} rule(s)`
+      };
+    }
+  }
+
+  private afterImportApply() {
+    this.ensureImportedPageRef();
+    this.showImportDialog = false;
+    if (this.hasExistingData()) {
+      this.NotificationService.showMessage(
+        'Config imported. Click "Save to DB" to persist changes.',
+        'Import Successful', PopupMessageType.Success
+      );
+    }
+  }
+
+  applyImportReplace() {
+    if (!this.importParsedConfig) return;
+
+    const doReplace = () => {
+      const normalized = this.gsapConfigService.importConfigFromAsset({
+        config: this.importParsedConfig,
+        label: 'Imported Config',
+        fileName: 'import.json',
+      });
+
+      if (!normalized) return;
+
+      const ruleCount = normalized.rules?.length || 0;
+      const cbCount = normalized.callbacks?.length || 0;
+
+      this.config = normalized;
+      this.pageForm.patchValue({
+        duration: this.config.global?.defaults?.duration ?? 1,
+        ease: this.getDropdownValue(this.config.global?.defaults?.ease, this.easeOptions) || 'power2.out',
+        stagger: this.config.global?.defaults?.stagger ?? 0,
+        registerPlugins: this.config.global?.registerPlugins || [],
+        autoInit: this.config.global?.autoInit ?? true
+      });
+
+      this.afterImportApply();
+      this.NotificationService.showMessage(
+        `Replaced config with ${ruleCount} rule(s), ${cbCount} callback(s). Save to DB to persist.`,
+        'Import Applied', PopupMessageType.Success
+      );
+    };
+
+    if (this.hasExistingData()) {
+      this.confirmationService.confirm({
+        key: 'importConfirmDialog',
+        message: `This page already has <b>${this.config.rules?.length || 0} rule(s)</b> and <b>${this.config.callbacks?.length || 0} callback(s)</b>. Replacing will overwrite all existing data. Continue?`,
+        header: 'Existing Data Warning',
+        icon: 'pi pi-exclamation-triangle',
+        accept: doReplace
+      });
+    } else {
+      doReplace();
+    }
+  }
+
+  applyImportMerge() {
+    if (!this.importParsedConfig) return;
+
+    const doMerge = () => {
+      const normalized = this.gsapConfigService.importConfigFromAsset({
+        config: this.importParsedConfig,
+        label: 'Imported Config',
+        fileName: 'import.json',
+      });
+
+      if (!normalized?.rules) return;
+
+      const mergeCount = normalized.rules.length;
+      const beforeCount = this.config.rules?.length || 0;
+
+      this.config.rules = [...(this.config.rules || []), ...normalized.rules];
+
+      if (normalized.callbacks) {
+        this.config.callbacks = [...(this.config.callbacks || []), ...normalized.callbacks];
+      }
+
+      if (normalized.global?.registerPlugins) {
+        const existing = this.config.global?.registerPlugins || [];
+        const merged = [...new Set([...existing, ...normalized.global.registerPlugins])];
+        this.config.global.registerPlugins = merged;
+        this.pageForm.patchValue({ registerPlugins: merged });
+      }
+
+      this.afterImportApply();
+      this.NotificationService.showMessage(
+        `Merged ${mergeCount} rule(s) (was ${beforeCount}, now ${this.config.rules.length}). Save to DB to persist.`,
+        'Merge Successful', PopupMessageType.Success
+      );
+    };
+
+    if (this.hasExistingData()) {
+      this.confirmationService.confirm({
+        key: 'importConfirmDialog',
+        message: `<b>${this.config.rules?.length || 0} rule(s)</b> already exist. Merge will append ${this.getImportRuleCount()} imported rule(s). Continue?`,
+        header: 'Existing Data Warning',
+        icon: 'pi pi-info-circle',
+        accept: doMerge
+      });
+    } else {
+      doMerge();
+    }
+  }
+
+  private getImportRuleCount(): number {
+    if (!this.importParsedConfig) return 0;
+    const data = this.importParsedConfig;
+    return data.rules?.length || data.gsap?.rules?.length || 0;
+  }
+
+  //#endregion JSON Import
+
   private getDefaultGsapConfig(): GsapConfig {
     return {
       global: {

@@ -19,7 +19,7 @@ export interface GsapGlobalMeta {
 export interface GsapGlobal {
   pageId: string;
   defaults: GsapGlobalDefaults;
-  registerPlugins: string[] ;
+  registerPlugins: string[];
   autoInit: boolean;
   observeDom: boolean;
   meta: GsapGlobalMeta;
@@ -32,8 +32,13 @@ export interface GsapFromTo {
   x?: number;
   y?: number;
   scale?: number;
+  scaleX?: number;
+  scaleY?: number;
   rotation?: number;
+  rotationX?: number;
   rotationY?: number;
+  skewX?: number;
+  skewY?: number;
   filter?: string;
   clipPath?: string;
   transformOrigin?: string;
@@ -46,14 +51,30 @@ export interface GsapScrollTrigger {
   trigger?: string;
   start?: string;
   end?: string;
-  scrub?: boolean | number | string;
-  pin?: boolean;
+  scrub?: boolean | number;
+  pin?: boolean | string;
   markers?: boolean;
   toggleActions?: string;
   once?: boolean;
   endPos?: string;
   triggerSelector?: string;
   pinSelector?: string;
+  pinSpacing?: boolean;
+  pinReparent?: boolean;
+  anticipatePin?: number;
+  fastScrollEnd?: boolean | number;
+  preventOverlaps?: boolean | string;
+  snap?: number | number[] | ((value: number) => number);
+  horizontal?: boolean;
+  containerAnimation?: any;
+  invalidateOnRefresh?: boolean;
+  onEnter?: () => void;
+  onLeave?: () => void;
+  onEnterBack?: () => void;
+  onLeaveBack?: () => void;
+  onToggle?: (self: any) => void;
+  onUpdate?: (self: any) => void;
+  scroller?: string | HTMLElement;
 }
 
 export interface GsapRuleProperty {
@@ -79,9 +100,32 @@ export interface GsapMedia {
   url: string;
   id: string;
   selector: string;
+  loop?: boolean;
+  muted?: boolean;
+  autoplay?: boolean;
 }
 
-export type GsapPluginName = 'ScrollTrigger' | 'Draggable' | 'ScrollToPlugin' | 'TextPlugin' | 'CustomEase' | 'Flip' | string;
+export type GsapPluginName =
+  | 'ScrollTrigger'
+  | 'Draggable'
+  | 'ScrollToPlugin'
+  | 'TextPlugin'
+  | 'CustomEase'
+  | 'Flip'
+  | 'MotionPathPlugin'
+  | 'MorphSVGPlugin'
+  | 'DrawSVGPlugin'
+  | 'SplitText'
+  | 'InertiaPlugin'
+  | 'CSSRulePlugin'
+  | 'GSDevTools'
+  | 'Observer'
+  | 'PixiPlugin'
+  | 'EaselPlugin'
+  | 'Physics2DPlugin'
+  | 'PhysicsPropsPlugin'
+  | 'ScrambleTextPlugin'
+  | string;
 
 export interface GsapPlugin {
   pluginId?: number;
@@ -114,10 +158,12 @@ export interface GsapRule {
   to?: CssStyleValue;
   duration?: number;
   ease?: string;
-  stagger?: number | { each: number };
+  stagger?: number | { each: number; from?: string; grid?: string | number[] };
   delay?: number;
   repeat?: number;
   yoyo?: boolean;
+  yoyoEase?: string;
+  repeatDelay?: number;
   paused?: boolean;
   scrollEnabled?: boolean;
   status?: string;
@@ -129,6 +175,10 @@ export interface GsapRule {
   version?: number;
   styles?: CssStyleValue;
   timelineSteps?: GsapTimelineStep[];
+  overwrite?: boolean | string;
+  immediateRender?: boolean;
+  lazy?: boolean;
+  keyframes?: any[];
 }
 
 export interface GsapPage {
@@ -143,6 +193,7 @@ export interface GsapConfig {
   pages?: Record<string, GsapPage>;
   rules?: GsapRule[];
   callbacks?: GsapCallback[];
+  configName?: string;
 }
 
 export interface MGsapConfig {
@@ -207,6 +258,13 @@ export interface MGsapRuleWithDetails {
   callbacks: any[];
 }
 
+export interface GsapAssetConfig {
+  label: string;
+  fileName: string;
+  description?: string;
+  config: any;
+}
+
 export interface PageConfig {
   PageId: Number;
   title: string;
@@ -214,6 +272,12 @@ export interface PageConfig {
   pageKey: string;
   description?: string;
   gsapConfig?: GsapConfig; 
+}
+
+export interface PluginFieldMap {
+  plugin: string;
+  fields: any[];
+  formSections: { key: string; label: string; fields: string[] }[];
 }
 
 export type MediaType = 'image' | 'video' | 'audio' | 'none';

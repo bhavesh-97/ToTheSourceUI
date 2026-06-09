@@ -11,7 +11,7 @@ import { delay, Observable, of, from, map } from 'rxjs';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { GsapConfigLoaderService } from '../../../services/gsap-config-loader.service';
 import { environment } from '../../../../environments/environment';
-import { GsapConfig, GsapPage, GsapRule, CssStyleValue, GsapCallback, MGsapPage } from './gsap-interface';
+import { GsapConfig, GsapPage, GsapRule, CssStyleValue, GsapCallback, MGsapPage, GsapAssetConfig } from './gsap-interface';
 import { ENCRYPTION_CONTEXT } from '../../../interceptors/encryption-interceptor';
 import { JsonResponseModel } from '../../../models/JsonResponseModel';
 
@@ -150,7 +150,248 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
       enabled: true
     };
   }
-  //#endregion Default Configs
+  //#region Asset Config Loading
+
+  getAssetConfigs(): Observable<GsapAssetConfig[]> {
+    return from(this.loadAssetConfigs());
+  }
+
+  private async loadAssetConfigs(): Promise<GsapAssetConfig[]> {
+    const configs: GsapAssetConfig[] = [];
+    const assetFiles = [
+      { label: 'Landing GSAP Master Config', fileName: 'landing-gsap-master-config.json' },
+      { label: 'Landing GSAP Config', fileName: 'landing-gsap-config.json' },
+      { label: 'Landing Config', fileName: 'landing-config.json' },
+      { label: 'Templates', fileName: 'templates.json' },
+    ];
+
+    for (const asset of assetFiles) {
+      try {
+        const res = await fetch(`assets/gsap/${asset.fileName}`);
+        const data = await res.json();
+        configs.push({ ...asset, config: data, description: data.description || data.name || '' });
+      } catch (e) {
+        console.warn(`Failed to load asset ${asset.fileName}:`, e);
+      }
+    }
+    return configs;
+  }
+
+  importConfigFromAsset(assetConfig: any): GsapConfig {
+    const config = assetConfig.config;
+
+    if (config.gsap) {
+      return this.normalizeGsapConfig(config.gsap, config);
+    }
+
+    if (config.global || config.pages) {
+      return this.normalizeGsapConfig(config, config);
+    }
+
+    if (config.configName || config.pageId) {
+      return this.normalizeFlatConfig(config);
+    }
+
+    return this.getDefaultConfig();
+  }
+
+  private normalizeGsapConfig(gsap: any, parent: any): GsapConfig {
+    const defaults = gsap.global?.defaults || {};
+    const pages = gsap.pages || {};
+    const rules = gsap.rules || [];
+    const allRules: GsapRule[] = [];
+    const allCallbacks: GsapCallback[] = [];
+
+    if (gsap.callbacks) {
+      gsap.callbacks.forEach((cb: any) => {
+        allCallbacks.push({
+          name: cb.name || '',
+          script: cb.script || '',
+          eventName: cb.name || '',
+          handlerName: cb.name || '',
+          handlerCode: cb.script || ''
+        });
+      });
+    }
+
+    if (rules.length > 0) {
+      rules.forEach((r: any) => {
+        const rule = this.normalizeRule(r, defaults);
+        allRules.push(rule);
+        if (r.callbacks) {
+          r.callbacks.forEach((cb: any) => {
+            allCallbacks.push({
+              callbackId: cb.callbackId || 0,
+              ruleId: r.id || 0,
+              eventName: cb.name || '',
+              handlerName: cb.name || '',
+              handlerCode: cb.script || '',
+              name: cb.name || '',
+              script: cb.script || ''
+            });
+          });
+        }
+      });
+    }
+
+    if (pages) {
+      Object.keys(pages).forEach(pageKey => {
+        const page = pages[pageKey];
+        if (page.rules) {
+          page.rules.forEach((r: any) => {
+            const rule = this.normalizeRule(r, defaults);
+            allRules.push(rule);
+          });
+        }
+        if (page.callbacks) {
+          page.callbacks.forEach((cb: any) => {
+            allCallbacks.push({
+              callbackId: cb.callbackId || 0,
+              ruleId: 0,
+              eventName: cb.name || '',
+              handlerName: cb.name || '',
+              handlerCode: cb.script || '',
+              name: cb.name || '',
+              script: cb.script || ''
+            });
+          });
+        }
+      });
+    }
+
+    const plugins: any[] = (gsap.global?.registerPlugins || []).map((name: string) => ({
+      pluginId: 0,
+      pageId: 0,
+      pluginName: name,
+      enabled: true
+    }));
+
+    return {
+      global: {
+        pageId: '',
+        defaults: {
+          defaultsId: 0,
+          pageId: 0,
+          duration: defaults.duration || 1,
+          ease: defaults.ease || 'power2.out',
+          stagger: defaults.stagger || 0,
+          delay: defaults.delay || 0,
+          repeat: defaults.repeat || 0,
+          yoyo: defaults.yoyo || false
+        },
+        registerPlugins: gsap.global?.registerPlugins || ['ScrollTrigger'],
+        autoInit: gsap.global?.autoInit ?? true,
+        observeDom: true,
+        meta: { version: gsap.version || '1.0', description: parent.description || '' }
+      },
+      plugins,
+      pages: {},
+      rules: allRules,
+      callbacks: allCallbacks
+    };
+  }
+
+  private normalizeFlatConfig(config: any): GsapConfig {
+    const defaults = config.globalDefaults || {};
+    const plugins = (config.plugins || []).map((p: any) => ({
+      pluginId: p.pluginID || p.pluginId || 0,
+      pageId: p.pageId || 0,
+      plugid: p.plugid || 0,
+      pluginName: p.pluginName || '',
+      enabled: p.enabled ?? true
+    }));
+
+    const rules = (config.rules || []).map((r: any) => this.normalizeRule(r, defaults));
+
+    return {
+      global: {
+        pageId: String(config.pageId || ''),
+        defaults: {
+          defaultsId: 0,
+          pageId: config.pageId || 0,
+          duration: defaults.duration || 1,
+          ease: defaults.ease || 'power2.out',
+          stagger: defaults.stagger || 0,
+          delay: defaults.delay || 0,
+          repeat: defaults.repeat || 0,
+          yoyo: defaults.yoyo || false
+        },
+        registerPlugins: plugins.map((p: any) => p.pluginName || p.plugid).filter(Boolean),
+        autoInit: true,
+        observeDom: true,
+        meta: { version: '1.0', description: '' }
+      },
+      plugins,
+      pages: {},
+      rules,
+      callbacks: config.callbacks || []
+    };
+  }
+
+  private normalizeRule(r: any, defaults?: any): GsapRule {
+    const parseValue = (val: any): any => {
+      if (!val) return val;
+      if (typeof val === 'object') return val;
+      if (typeof val === 'string') {
+        if (val.startsWith('{') || val.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(val.replace(/'/g, '"'));
+            return parsed;
+          } catch (e) {
+            return val.replace(/['"]/g, '').trim();
+          }
+        }
+        return val.replace(/['"]/g, '').trim();
+      }
+      return val;
+    };
+
+    const from = r.from ? parseValue(r.from) : undefined;
+    const to = r.to ? parseValue(r.to) : undefined;
+    const styles = r.styles ? parseValue(r.styles) : undefined;
+
+    let scrollTrigger: any = undefined;
+    if (r.scrollEnabled || r.scrollTrigger) {
+      if (typeof r.scrollTrigger === 'object') {
+        scrollTrigger = r.scrollTrigger;
+      } else if (typeof r.scrollTrigger === 'string') {
+        try {
+          scrollTrigger = JSON.parse(r.scrollTrigger.replace(/'/g, '"'));
+        } catch (e) {
+          scrollTrigger = { trigger: r.selector, start: 'top 85%' };
+        }
+      } else {
+        scrollTrigger = { trigger: r.selector, start: 'top 85%' };
+      }
+    }
+
+    return {
+      ruleId: r.ruleId || r.ruleid || 0,
+      pageId: r.pageId || 0,
+      ruleKey: r.ruleKey || r.id || '',
+      label: r.label || '',
+      selector: r.selector || '',
+      from,
+      to,
+      styles,
+      duration: r.duration ?? defaults?.duration ?? 1,
+      ease: r.ease || defaults?.ease || 'power2.out',
+      stagger: r.stagger ?? defaults?.stagger ?? 0,
+      delay: r.delay ?? defaults?.delay ?? 0,
+      repeat: r.repeat ?? defaults?.repeat ?? 0,
+      yoyo: r.yoyo ?? defaults?.yoyo ?? false,
+      paused: r.paused ?? false,
+      scrollEnabled: r.scrollEnabled ?? !!r.scrollTrigger,
+      status: r.status || 'Published',
+      type: r.type || 'fromTo',
+      sortOrder: r.sortOrder || 0,
+      scrollTrigger,
+      timelineSteps: r.timelineSteps || [],
+      media: r.media || { type: 'none', url: '', id: '', selector: '' },
+    };
+  }
+
+  //#endregion Asset Config Loading
 
   //#region Animation Controls
     
@@ -441,7 +682,7 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
 
   private registerPlugins(plugins: string[]) {
     plugins.forEach((pluginName: string) => {
-      const pluginLower = pluginName.toLowerCase();
+      const pluginLower = pluginName.toLowerCase().replace(/\s+/g, '');
       if (this.registeredPlugins.includes(pluginLower)) return;
 
       try {
@@ -470,6 +711,72 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
             gsap.registerPlugin(Flip);
             this.registeredPlugins.push('flip');
             break;
+          case 'motionpathplugin':
+            try {
+              const MotionPathPlugin = (gsap as any).MotionPathPlugin;
+              if (MotionPathPlugin) gsap.registerPlugin(MotionPathPlugin);
+              this.registeredPlugins.push('motionpathplugin');
+            } catch (e) { console.warn('MotionPathPlugin not available:', e); }
+            break;
+          case 'morphsvgplugin':
+            try {
+              const MorphSVGPlugin = (gsap as any).MorphSVGPlugin;
+              if (MorphSVGPlugin) gsap.registerPlugin(MorphSVGPlugin);
+              this.registeredPlugins.push('morphsvgplugin');
+            } catch (e) { console.warn('MorphSVGPlugin not available:', e); }
+            break;
+          case 'drawsvgplugin':
+            try {
+              const DrawSVGPlugin = (gsap as any).DrawSVGPlugin;
+              if (DrawSVGPlugin) gsap.registerPlugin(DrawSVGPlugin);
+              this.registeredPlugins.push('drawsvgplugin');
+            } catch (e) { console.warn('DrawSVGPlugin not available:', e); }
+            break;
+          case 'splittext':
+            try {
+              const SplitText = (gsap as any).SplitText;
+              if (SplitText) this.registeredPlugins.push('splittext');
+            } catch (e) { console.warn('SplitText not available:', e); }
+            break;
+          case 'inertiaplugin':
+            try {
+              const InertiaPlugin = (gsap as any).InertiaPlugin;
+              if (InertiaPlugin) gsap.registerPlugin(InertiaPlugin);
+              this.registeredPlugins.push('inertiaplugin');
+            } catch (e) { console.warn('InertiaPlugin not available:', e); }
+            break;
+          case 'cssruleplugin':
+            try {
+              const CSSRulePlugin = (gsap as any).CSSRulePlugin;
+              if (CSSRulePlugin) gsap.registerPlugin(CSSRulePlugin);
+              this.registeredPlugins.push('cssruleplugin');
+            } catch (e) { console.warn('CSSRulePlugin not available:', e); }
+            break;
+          case 'observer':
+            try {
+              const Observer = (gsap as any).Observer;
+              if (Observer) gsap.registerPlugin(Observer);
+              this.registeredPlugins.push('observer');
+            } catch (e) { console.warn('Observer not available:', e); }
+            break;
+          case 'physics2dplugin':
+          case 'physicspropsplugin':
+          case 'scrambletextplugin':
+          case 'easelplugin':
+          case 'pixiplugin':
+          case 'gsdevtools':
+            try {
+              const PluginCtr = (gsap as any)[pluginName];
+              if (PluginCtr) gsap.registerPlugin(PluginCtr);
+              this.registeredPlugins.push(pluginLower);
+            } catch (e) { console.warn(`${pluginName} not available:`, e); }
+            break;
+          default:
+            try {
+              const PluginCtr = (gsap as any)[pluginName];
+              if (PluginCtr) gsap.registerPlugin(PluginCtr);
+              this.registeredPlugins.push(pluginLower);
+            } catch (e) { console.warn(`Plugin ${pluginName} not available:`, e); }
         }
       } catch (e) {
         console.warn(`Plugin ${pluginName} not available:`, e);
@@ -493,6 +800,49 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
     }
   }
 
+  private buildScrollTriggerVars(rule: GsapRule, el: HTMLElement, plugins: string[]): any {
+    const hasScrollTrigger = plugins.some(p =>
+      p.toLowerCase().replace(/\s+/g, '') === 'scrolltrigger'
+    );
+    if (!hasScrollTrigger) return null;
+
+    if (rule.scrollTrigger && typeof rule.scrollTrigger === 'object' && Object.keys(rule.scrollTrigger).length > 0) {
+      const st = rule.scrollTrigger as any;
+      return {
+        trigger: st.trigger || el,
+        start: st.start || 'top 85%',
+        end: st.end || 'bottom 20%',
+        scrub: st.scrub ?? false,
+        pin: st.pin ?? false,
+        markers: st.markers ?? false,
+        toggleActions: st.toggleActions || 'play none none reverse',
+        once: st.once ?? false,
+        pinSpacing: st.pinSpacing ?? true,
+        anticipatePin: st.anticipatePin ?? 0,
+        fastScrollEnd: st.fastScrollEnd ?? false,
+        horizontal: st.horizontal ?? false,
+        invalidateOnRefresh: st.invalidateOnRefresh ?? false,
+        ...(st.onEnter ? { onEnter: st.onEnter } : {}),
+        ...(st.onLeave ? { onLeave: st.onLeave } : {}),
+        ...(st.onEnterBack ? { onEnterBack: st.onEnterBack } : {}),
+        ...(st.onLeaveBack ? { onLeaveBack: st.onLeaveBack } : {}),
+        ...(st.snap !== undefined ? { snap: st.snap } : {}),
+      };
+    }
+
+    if (rule.scrollEnabled) {
+      return {
+        trigger: el,
+        start: 'top 85%',
+        end: 'bottom 20%',
+        toggleActions: 'play none none reverse',
+        markers: false
+      };
+    }
+
+    return null;
+  }
+
   private createTweenFromRule(rule: GsapRule, el: HTMLElement, globalDefaults?: any, plugins: string[] = []): any {
     const parsedFrom = this.parseCssStyleValue(rule.from as CssStyleValue);
     const parsedTo = this.parseCssStyleValue(rule.to as CssStyleValue);
@@ -508,40 +858,38 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
       this.applyStylesToElement(el, parsedStyles);
     }
 
+    const pluginLower = (p: string) => p.toLowerCase().replace(/\s+/g, '');
+
     const ruleType = (rule.type || 'fromTo').toLowerCase();
     const duration = rule.duration !== undefined && rule.duration !== null ? rule.duration : defaultDuration;
     const ease = rule.ease || defaultEase;
-    const stagger = rule.stagger !== undefined && rule.stagger !== null
-      ? (typeof rule.stagger === 'number' ? rule.stagger : (rule.stagger as any).each || 0)
-      : (globalDefaults?.stagger || 0);
+    const stagger = rule.stagger !== undefined && rule.stagger !== null ? rule.stagger : (globalDefaults?.stagger || 0);
     const delay = rule.delay !== undefined ? rule.delay : (globalDefaults?.delay || 0);
     const repeat = rule.repeat !== undefined ? rule.repeat : (globalDefaults?.repeat || 0);
     const yoyo = rule.yoyo !== undefined ? rule.yoyo : (globalDefaults?.yoyo || false);
+    const repeatDelay = rule.repeatDelay ?? undefined;
+    const yoyoEase = rule.yoyoEase ?? undefined;
 
     const vars: any = {
       duration,
       ease,
       delay: Number(delay) || 0,
       repeat: Number(repeat) || 0,
-      yoyo: Boolean(yoyo),
-      paused: Boolean(rule.paused)
+      yoyo: Boolean(yoyo) || undefined,
+      paused: Boolean(rule.paused) || undefined,
+      immediateRender: rule.immediateRender ?? undefined,
+      lazy: rule.lazy ?? undefined,
+      overwrite: rule.overwrite ?? undefined,
     };
 
-    if (stagger > 0) {
-      vars.stagger = stagger;
-    }
+    if (repeat > 0 && repeatDelay) vars.repeatDelay = repeatDelay;
+    if (yoyo && yoyoEase) vars.yoyoEase = yoyoEase;
+    if (stagger > 0) vars.stagger = stagger;
 
-    if (rule.scrollEnabled && (plugins.includes('ScrollTrigger') || plugins.includes('scrolltrigger'))) {
-      (vars as any).scrollTrigger = {
-        trigger: el,
-        start: 'top 85%',
-        end: 'bottom 20%',
-        toggleActions: 'play none none reverse',
-        markers: false
-      };
-    }
+    const scrollTriggerVars = this.buildScrollTriggerVars(rule, el, plugins);
+    if (scrollTriggerVars) vars.scrollTrigger = scrollTriggerVars;
 
-    let tween: gsap.core.Tween;
+    let tween: gsap.core.Tween | gsap.core.Timeline;
 
     switch (ruleType) {
       case 'to':
@@ -565,46 +913,54 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
             delay: vars.delay || 0,
             repeat: vars.repeat || 0,
             yoyo: vars.yoyo || false,
-            paused: vars.paused || false
+            paused: vars.paused || false,
+            ...(scrollTriggerVars ? { scrollTrigger: scrollTriggerVars } : {})
           };
+          if (repeatDelay) timelineVars.repeatDelay = repeatDelay;
           const tl = gsap.timeline(timelineVars);
-          rule.timelineSteps.forEach((step, stepIndex) => {
+          let totalTime = 0;
+          rule.timelineSteps.forEach((step) => {
             const stepFrom = this.parseCssStyleValue(step.from as CssStyleValue);
             const stepTo = this.parseCssStyleValue(step.to as CssStyleValue);
             const stepDuration = step.duration || 1;
             const stepEase = step.ease || defaultEase;
             const stepDelay = step.delay || 0;
 
+            const stepVars: any = { duration: stepDuration, ease: stepEase, delay: stepDelay };
+            if (Object.keys(stepFrom).length > 0) stepVars.from = stepFrom;
             if (Object.keys(stepTo).length > 0) {
-              tl.to(el, { ...stepTo, duration: stepDuration, ease: stepEase, delay: stepDelay }, stepIndex * stepDuration);
+              tl.to(el, { ...stepTo, ...stepVars }, totalTime);
+            } else if (Object.keys(stepFrom).length > 0) {
+              tl.from(el, stepVars, totalTime);
             }
+            totalTime += stepDelay + stepDuration;
           });
           return tl as any;
         } else {
           const fromVal = fromHasValues ? parsedFrom : { opacity: 0, y: 30, scale: 0.8 };
           const toVal = toHasValues ? parsedTo : { opacity: 1, y: 0, scale: 1 };
-          tween = gsap.fromTo(el, fromVal, vars);
+          tween = gsap.fromTo(el, fromVal, { ...vars, ...toVal });
         }
         break;
 
       case 'keyframes':
         if (toHasValues && Array.isArray(parsedTo)) {
-          (vars as any).keyframes = parsedTo;
+          vars.keyframes = parsedTo;
           tween = gsap.to(el, vars);
         } else {
           const fromVal = fromHasValues ? parsedFrom : { opacity: 0, y: 30, scale: 0.8 };
           const toVal = toHasValues ? parsedTo : { opacity: 1, y: 0, scale: 1 };
-          tween = gsap.fromTo(el, fromVal, vars);
+          tween = gsap.fromTo(el, fromVal, { ...vars, ...toVal });
         }
         break;
 
       default:
         const fromVal = fromHasValues ? parsedFrom : { opacity: 0, y: 30, scale: 0.8 };
         const toVal = toHasValues ? parsedTo : { opacity: 1, y: 0, scale: 1 };
-        tween = gsap.fromTo(el, fromVal, vars);
+        tween = gsap.fromTo(el, fromVal, { ...vars, ...toVal });
     }
 
-    const tooltipText = `Rule: ${rule.label || 'Untitled'}\nType: ${ruleType}\nDuration: ${duration}s\nEase: ${ease}\nStagger: ${stagger}s\nDelay: ${delay}s`;
+    const tooltipText = `Rule: ${rule.label || 'Untitled'}\nType: ${ruleType}\nDuration: ${duration}s\nEase: ${ease}\nStagger: ${typeof stagger === 'number' ? stagger + 's' : JSON.stringify(stagger)}\nDelay: ${delay}s`;
     el.setAttribute('title', tooltipText);
 
     return tween;
