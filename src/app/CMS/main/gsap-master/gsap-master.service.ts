@@ -845,8 +845,8 @@ async getConfigForPageAsync(pageId: string): Promise<GsapConfig | null> {
   }
 
   DeletePage(pageId: any, encryptPayload = false): Observable<JsonResponseModel> {
-    return this.http.delete<JsonResponseModel>(
-      `${this.baseUrl}/GsapConfig/page/${pageId}`,
+    return this.http.post<JsonResponseModel>(
+      `${this.baseUrl}/GsapConfig/DeletePage/${pageId}`,
       { context: new HttpContext().set(ENCRYPTION_CONTEXT, encryptPayload) }
     );
   }

@@ -371,6 +371,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   deletePage(index: number) {
+    debugger;
     const page = this.pages[index];
     if (!page) return;
     this.confirmationService.confirm({
@@ -391,11 +392,9 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
             this.NotificationService.showMessage(response.strMessage || 'Failed to delete page', 'Error', PopupMessageType.Error);
             return;
           }
-          this.pages.splice(index, 1);
-          if (this.selectedPage === page) {
-            this.selectedPage = null;
-            this.config = this.getDefaultGsapConfig();
-          }
+          
+          await this.loadPages();
+          
           this.NotificationService.showMessage(response.strMessage || 'Page deleted successfully', 'Success', PopupMessageType.Success);
         } catch (err: any) {
           console.error('Failed to delete page:', err);
@@ -416,6 +415,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
 
     if (formValidation.isError) {
       this.NotificationService.showMessage(formValidation.strMessage, formValidation.title, formValidation.type);
+      this.showAddPageDialog = false;
       return;
     }
     const pageTitle = this.newpageForm.get('PageTitle')?.value || '';
@@ -443,14 +443,19 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
           label: pageTitle,
           pageKey: pageKey
         };
+        debugger;
         await this.loadPages();
         this.pages.push(newPage);
-        this.selectPage(newPage);
+        this.selectedPage = this.config;
+        this.selectedPage.rules.pageId = newPage?.PageId;
+        this.selectedPage.rules.label = newPage?.label;
+        // this.selectPage(newPage);
         this.newpageForm.patchValue({ PageId: pageId, PageTitle: pageTitle });
         this.showAddPageDialog = false;
       } catch (err: any) {
         console.error('Failed to save page:', err);
         this.NotificationService.showMessage(err?.error?.strMessage || 'Failed to save page', 'Error', PopupMessageType.Error);
+        this.showAddPageDialog = false;
       }
     }
   }
@@ -894,6 +899,7 @@ export class GsapMaster implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addRule(selectedPage: MGsapPage) {
+    debugger;
     if (!selectedPage || !selectedPage.pageId) {
       this.NotificationService.showMessage('Please select a page first', 'Error', PopupMessageType.Error);
       return;

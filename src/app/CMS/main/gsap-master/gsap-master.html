@@ -21,7 +21,7 @@
                 [loading]="loading"
                 [rows]="5"
                 [rowsPerPageOptions]="[5,10,20]"
-                [globalFilterFields]="['MenuName']" 
+                [globalFilterFields]="['PageTitle']" 
                 [showGridlines]="true"
                 [tableStyle]="{'min-width': '20rem'}"
                 styleClass="p-datatable-sm">
@@ -69,6 +69,7 @@
       <p-dialog [(visible)]="showAddPageDialog" modal="true" header="Add New Page" [style]="{width: '90vw', maxWidth: '30vw'}" [formGroup]="newpageForm" [style]="{ width: '95vw', maxWidth: '800px'}" [breakpoints]="{ '768px': '95vw', '640px': '100vw' }" [contentStyle]="{ overflow: 'auto' }">
         <div class="w-full p-4 md:p-6">
           <div class="mb-2">
+            <input pInputText #inputField formControlName="PageId" hidden/>
             <input pInputText #inputField formControlName="PageId" hidden/>
             <label class="form-label">Title</label>
             <input type="text" #inputField class="form-control" formControlName="PageTitle" placeholder="e.g., Landing Page">
