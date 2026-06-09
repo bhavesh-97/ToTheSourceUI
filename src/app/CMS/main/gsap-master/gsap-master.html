@@ -151,7 +151,7 @@
           <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
               <h5 class="mb-0">Config Editor{{ selectedPage ? ' for ' + selectedPage.label : ' (Imported)' }}</h5>
-              <button pButton label="Save to DB" icon="pi pi-save" class="p-button-success p-button-sm mt-1 mt-md-0" (click)="saveConfig()"></button>
+              <button pButton label="Save to DB" icon="pi pi-save" class="p-button-success p-button-sm mt-1 mt-md-0" (click)="saveConfig()" type="button"></button>
             </div>
             <div class="card-body p-0">
                <p-tabs [(value)]="activeTab">
