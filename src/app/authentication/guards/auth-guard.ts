@@ -15,7 +15,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       'Authentication Required',
       PopupMessageType.Warning
     );
-    router.navigate(['/login']);
+    router.navigate(['/CMS/login']);
     return false;
   }
   
@@ -23,7 +23,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const token = loginService.getToken();
   if (!token) {
     loginService.logout();
-    router.navigate(['/login']);
+    router.navigate(['/CMS/login']);
     return false;
   }
   
@@ -40,7 +40,7 @@ export const authGuard: CanActivateFn = (route, state) => {
         PopupMessageType.Error
       );
       loginService.logout();
-      router.navigate(['/login']);
+      router.navigate(['/CMS/login']);
       return false;
     }
     
@@ -58,7 +58,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       PopupMessageType.Error
     );
     loginService.logout();
-    router.navigate(['/login']);
+    router.navigate(['/CMS/login']);
     return false;
   }
 };

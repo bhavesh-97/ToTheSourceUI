@@ -34,7 +34,7 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
               PopupMessageType.Error
             );
             authService.logout();
-            router.navigate(['/login']);
+            router.navigate(['/CMS/login']);
             break;
             
           case 403: // Forbidden

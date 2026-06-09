@@ -259,7 +259,7 @@ export class LoginService {
         localStorage.removeItem(this.USER_INFO_KEY);
         localStorage.removeItem(this.USER_Menu_INFO_KEY);
         localStorage.clear();
-        this.router.navigate(['login']);
+        this.router.navigate(['/CMS/login']);
       }
     //#endregion
 
