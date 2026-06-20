@@ -244,8 +244,11 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
               }
               
             Object.assign(sec, s);
+            sec.order = s.sortOrder ?? s.order ?? 0;
+            (sec as any).sortOrder = s.sortOrder ?? s.order ?? 0;
             return sec;
           });
+          config.sections.sort((a, b) => ((a as any).sortOrder ?? a.order) - ((b as any).sortOrder ?? b.order));
           this.editingPage.set(config);
           this.clearAllValidation();
           this.editorOpen.set(true);
@@ -268,6 +271,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     const sec = new PageConfigSection();
     sec.title = preset.label;
     sec.order = idx;
+    (sec as any).sortOrder = idx;
     Object.assign(sec, preset.defaults);
     this.editingPage.set({ ...page, sections: [...page.sections, sec] });
     this.expandedSection.set(idx);
@@ -279,6 +283,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     const sec = new PageConfigSection();
     sec.title = `Section ${idx + 1}`;
     sec.order = idx;
+    (sec as any).sortOrder = idx;
     this.editingPage.set({ ...page, sections: [...page.sections, sec] });
     this.expandedSection.set(idx);
   }
@@ -289,7 +294,11 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
 
   removeSection(index: number): void {
     const page = this.editingPage();
-    const updated = page.sections.filter((_, i) => i !== index).map((s, i) => ({ ...s, order: i }));
+    const updated = page.sections.filter((_, i) => i !== index).map((s, i) => {
+      s.order = i;
+      (s as any).sortOrder = i;
+      return s;
+    });
     this.editingPage.set({ ...page, sections: updated });
     if (this.expandedSection() === index) {
       this.expandedSection.set(null);
@@ -302,7 +311,10 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     if (target < 0 || target >= page.sections.length) return;
     const updated = [...page.sections];
     [updated[index], updated[target]] = [updated[target], updated[index]];
-    updated.forEach((s, i) => s.order = i);
+    updated.forEach((s, i) => {
+      s.order = i;
+      (s as any).sortOrder = i;
+    });
     this.editingPage.set({ ...page, sections: updated });
     if (this.expandedSection() === index) {
       this.expandedSection.set(target);
@@ -416,8 +428,15 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const page = this.editingPage();
+    const payload = {
+      ...page,
+      sections: page.sections.map(s => ({
+        ...s,
+        sortOrder: (s as any).sortOrder ?? s.order
+      }))
+    };
     this.saving.set(true);
-    this.pageConfigService.SavePageConfig(page).subscribe({
+    this.pageConfigService.SavePageConfig(payload).subscribe({
       next: (res) => {
         if (!res.isError) {
           this.dynamicPageService.clearCache(page.pageKey);
