@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ENCRYPTION_CONTEXT } from '../../../interceptors/encryption-interceptor';
 import { JsonResponseModel } from '../../../models/JsonResponseModel';
-import { DynamicPageConfig } from '../../../Web/services/dynamic-page.service';
 import { CurrentUser } from '../../../services/CurrentUser';
 import { TemplateListItem } from './PageConfig';
+import { DynamicPageConfig } from '../../../Web/components/dynamic-page/dynamic-page.service';
 
 @Injectable({ providedIn: 'root' })
 export class PageConfigService {

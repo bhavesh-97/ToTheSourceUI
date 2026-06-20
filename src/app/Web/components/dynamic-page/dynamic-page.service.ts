@@ -2,10 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, retry } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { JsonResponseModel } from '../../models/JsonResponseModel';
-import { CodeSanitizer } from '../../shared/utilities/code-sanitizer';
-import { MCommonEntitiesMaster } from '../../models/MCommonEntitiesMaster';
+import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
+import { environment } from '../../../../environments/environment';
+import { JsonResponseModel } from '../../../models/JsonResponseModel';
+import { CodeSanitizer } from '../../../shared/utilities/code-sanitizer';
 
 export interface DynamicPageConfig {
   pageKey: string;

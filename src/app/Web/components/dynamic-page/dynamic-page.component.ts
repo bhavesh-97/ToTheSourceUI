@@ -1,21 +1,14 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component,OnInit,OnDestroy,inject,signal,computed,} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DynamicPageService, DynamicPageConfig, DynamicPageSection } from '../../services/dynamic-page.service';
 import { TemplatePlaceholder } from '../../../shared/template-placeholder/template-placeholder';
 import { WebGsapService } from '../../services/web-gsap.service';
 import { TemplateMasterService } from '../../../CMS/main/template-master/template-master.service';
+import { DynamicPageConfig, DynamicPageSection, DynamicPageService } from './dynamic-page.service';
 
 @Component({
   selector: 'app-dynamic-page',

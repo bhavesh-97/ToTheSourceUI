@@ -1,5 +1,5 @@
-import { DynamicPageConfig, DynamicPageSection } from '../../../Web/services/dynamic-page.service';
 import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
+import { DynamicPageConfig, DynamicPageSection } from '../../../Web/components/dynamic-page/dynamic-page.service';
 
 export class PageConfig implements DynamicPageConfig {
   id: number = 0;

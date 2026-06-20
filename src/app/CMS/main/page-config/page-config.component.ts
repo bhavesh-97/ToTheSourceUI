@@ -17,13 +17,13 @@ import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { PageConfigService } from './page-config.service';
 import { PageConfig, PageConfigSection, TemplateTypeOption, SECTION_PRESETS, SectionPreset, TemplateListItem } from './PageConfig';
-import { DynamicPageService, PageConfigListItem } from '../../../Web/services/dynamic-page.service';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { CodeSanitizer, ValidationResult } from '../../../shared/utilities/code-sanitizer';
 import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
 import { GsapMasterService } from '../gsap-master/gsap-master.service';
 import { MGsapPage } from '../gsap-master/gsap-interface';
+import { DynamicPageService, PageConfigListItem } from '../../../Web/components/dynamic-page/dynamic-page.service';
 
 @Component({
   selector: 'app-page-config',
