@@ -83,7 +83,8 @@ export class DynamicPageService {
       retry(1),
       map(response => {
         if (response && !response.isError && response.result) {
-          const config = this.mapPageConfig(response.result);
+          const pageData = typeof response.result === 'string' ? JSON.parse(response.result) : response.result;
+          const config = this.mapPageConfig(pageData);
           const sanitized = this.sanitizeConfig(config);
           this.cache.set(pageKey, sanitized);
           this.cacheTimestamps.set(pageKey, Date.now());
@@ -164,13 +165,15 @@ export class DynamicPageService {
     return sanitized;
   }
 
-  private mapPageConfig(data: any): DynamicPageConfig {
-    const sections: DynamicPageSection[] = (data.sections || []).map((s: any, idx: number) => ({
-      sectionKey: s.sectionID ?? idx,
+private mapPageConfig(data: any): DynamicPageConfig {
+  const sections: DynamicPageSection[] = (data.sections || []).map(
+    (s: any, idx: number) => ({
+      sectionID: s.sectionID ?? idx,
+      sectionkey: s.sectionkey || '',
       title: s.title || '',
       order: s.sortOrder ?? s.order ?? idx,
       enabled: s.enabled !== false,
-      templateType: s.templateTypeID ?? null,
+      templateTypeID: s.templateTypeID ?? null,
       templateCode: s.templateCode || '',
       content: s.content || '',
       contentHtml: s.contentHtml || '',
@@ -188,38 +191,35 @@ export class DynamicPageService {
       paddingTop: s.paddingTop || '',
       paddingBottom: s.paddingBottom || '',
       animationDelay: s.animationDelay || 0,
-    }));
+      
+    })
+    
+  );
+console.log(data.sections);
+console.log(data);
 
-    sections.sort((a, b) => a.order - b.order);
+  sections.sort((a, b) => a.order - b.order);
 
-    const m = data.mCommonEntitiesMaster;
-    const isActive = m ? m.IsActive !== false : true;
-    const isDeleted = m ? m.IsDeleted === true : false;
-    let status = 'Active';
-    if (isDeleted) status = 'Deleted';
-    else if (!isActive) status = 'Inactive';
-
-    return {
-      pageKey: data.pageKey || '',
-      title: data.title || '',
-      metaTitle: data.metaTitle || '',
-      metaDescription: data.metaDescription || '',
-      metaKeywords: data.metaKeywords || '',
-      ogImage: data.ogImage || '',
-      favicon: data.favicon || '',
-      canonicalUrl: data.canonicalUrl || '',
-      noIndex: data.noIndex || false,
-      status,
-      layoutTemplate: data.layoutTemplate || '',
-      heroTitle: data.heroTitle || '',
-      heroSubtitle: data.heroSubtitle || '',
-      heroMediaUrl: data.heroMediaUrl || '',
-      sections,
-      customStyles: data.customStyles || '',
-      customScripts: data.customScripts || '',
-    };
-  }
-
+  return {
+    pageKey: data.pageKey || '',
+    title: data.title || '',
+    metaTitle: data.metaTitle || '',
+    metaDescription: data.metaDescription || '',
+    metaKeywords: data.metaKeywords || '',
+    ogImage: data.ogImage || '',
+    favicon: data.favicon || '',
+    canonicalUrl: data.canonicalUrl || '',
+    noIndex: data.noIndex || false,
+    status: 'Active',
+    layoutTemplate: data.layoutTemplate || '',
+    heroTitle: data.heroTitle || '',
+    heroSubtitle: data.heroSubtitle || '',
+    heroMediaUrl: data.heroMediaUrl || '',
+    sections,
+    customStyles: data.customStyles || '',
+    customScripts: data.customScripts || '',
+  };
+}
   private mapPageListItem(data: any): PageConfigListItem {
     const m = data.mCommonEntitiesMaster;
     const isActive = m ? m.isActive !== false : true;

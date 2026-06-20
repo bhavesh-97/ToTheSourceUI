@@ -22,7 +22,7 @@ export class TemplatePlaceholder {
   @Input() templateType!: string;
   @Input() templateCode?: string;
   @Input() useCache = true;
-  @Input() fallbackContent = '';
+  @Input() fallbackContent? : string;
   @Input() gsapPageKey = '';
   
   safeContent: SafeHtml = '';

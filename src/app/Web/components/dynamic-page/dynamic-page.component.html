@@ -1,0 +1,76 @@
+@if (isLoading()) {
+  <div class="skeleton-page">
+    <div class="skeleton-hero">
+      <div class="skeleton-container">
+        <div class="skeleton-badge skeleton-pulse"></div>
+        <div class="skeleton-title skeleton-pulse"></div>
+        <div class="skeleton-subtitle skeleton-pulse"></div>
+        <div class="skeleton-buttons">
+          <div class="skeleton-btn skeleton-pulse"></div>
+          <div class="skeleton-btn skeleton-pulse"></div>
+        </div>
+      </div>
+    </div>
+    @for (i of [1, 2, 3]; track i) {
+      <div class="skeleton-section">
+        <div class="skeleton-container">
+          <div class="skeleton-section-header skeleton-pulse"></div>
+          <div class="skeleton-section-subheader skeleton-pulse"></div>
+          <div class="skeleton-grid">
+            @for (j of [1, 2, 3]; track j) {
+              <div class="skeleton-card">
+                <div class="skeleton-card-icon skeleton-pulse"></div>
+                <div class="skeleton-card-title skeleton-pulse"></div>
+                <div class="skeleton-card-text skeleton-pulse"></div>
+                <div class="skeleton-card-text skeleton-pulse short"></div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+} @else if (pageConfig()) {
+  <div class="dynamic-page"
+       [class]="'page-' + pageConfig()!.pageKey"
+       [class.page-loaded]="isReady()">
+
+    @if (sanitizedStyles()) {
+      <style [innerHTML]="sanitizedStyles()"></style>
+    }
+
+    @for (section of enabledSections(); track section.sectionkey; let i = $index) {
+      <section
+        class="dynamic-section"
+        [class]="getSectionClasses(section)"
+        [class.section-visible]="sectionVisible()[i]"
+        [attr.data-section-key]="section.sectionkey"
+        [attr.data-section-type]="section.sectionWidth || 'full'"
+        [style.padding-top]="section.paddingTop || null"
+        [style.padding-bottom]="section.paddingBottom || null"
+        [style.animation-delay]="(section.animationDelay || 0) + 'ms'">
+
+        @if (section.sectionBackground === 'alternate') {
+          <div class="section-bg-alt"></div>
+        }
+
+        <div [class]="getSectionContainerClass(section)">
+          <app-template-placeholder
+            [templateType]="getTemplateTypeName(section.templateTypeID)"
+            [templateCode]="section.templateCode"
+            [fallbackContent]="section.fallbackHtml"
+            [gsapPageKey]="section.gsapPageKey ?? pageConfig()!.pageKey">
+          </app-template-placeholder>
+        </div>
+
+        @if (section.customStyles) {
+          <style [innerHTML]="getSafeSectionStyle(section)"></style>
+        }
+      </section>
+    }
+
+    @if (sanitizedScripts()) {
+      <div [innerHTML]="sanitizedScripts()"></div>
+    }
+  </div>
+}
