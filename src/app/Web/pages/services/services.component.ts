@@ -249,7 +249,7 @@ export class ServicesComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.pageDataService.getServicesContent().subscribe(data => {
       if (data) {
-        const intro = data.sections.find(s => s.sectionKey === 'intro');
+        const intro = data.sections.find(s => s.sectionkey === 'intro');
         if (intro) this.subtitle = intro.content || this.subtitle;
       }
     });

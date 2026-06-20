@@ -93,7 +93,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.pageDataService.getPageContent('home').subscribe(data => {
       if (!data) return;
-      const hero = data.sections.find(s => s.sectionKey === 'hero');
+      const hero = data.sections.find(s => s.sectionkey === 'hero');
       if (hero) {
         this.heroData = {
           ...this.heroData,
@@ -101,7 +101,7 @@ export class HomeComponent implements OnInit {
           desc: hero.content || this.heroData.desc,
         };
       }
-      const services = data.sections.find(s => s.sectionKey === 'services');
+      const services = data.sections.find(s => s.sectionkey === 'services');
       if (services) {
         this.servicesData = { ...this.servicesData, desc: services.content || this.servicesData.desc };
       }

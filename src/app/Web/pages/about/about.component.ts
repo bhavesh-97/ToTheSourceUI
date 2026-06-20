@@ -254,7 +254,7 @@ export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.pageDataService.getAboutContent().subscribe(data => {
       if (data) {
-        const story = data.sections.find(s => s.sectionKey === 'story');
+        const story = data.sections.find(s => s.sectionkey === 'story');
         if (story) this.storyContent = story.content;
       }
     });

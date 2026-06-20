@@ -168,7 +168,7 @@ export class ContactComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.pageDataService.getContactContent().subscribe(data => {
       if (data) {
-        const info = data.sections.find(s => s.sectionKey === 'info');
+        const info = data.sections.find(s => s.sectionkey === 'info');
         if (info) this.infoDesc = info.content || this.infoDesc;
       }
     });

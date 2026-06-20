@@ -22,7 +22,7 @@ export interface PageContent {
 
 export interface PageSection {
   id: string;
-  sectionKey: string;
+  sectionkey: string;
   title?: string;
   content: string;
   contentHtml?: string;
@@ -54,7 +54,7 @@ export class PageDataService {
   private mapPageContent(data: any): PageContent {
     const sections = (data.sections || []).map((s: any) => ({
       id: s.id,
-      sectionKey: s.sectionKey,
+      sectionkey: s.sectionkey,
       title: s.title,
       content: s.content,
       contentHtml: s.contentHtml,

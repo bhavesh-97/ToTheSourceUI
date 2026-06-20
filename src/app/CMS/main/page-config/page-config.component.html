@@ -1,0 +1,493 @@
+<!-- ═══ LIST VIEW ═══ -->
+@if (!editorOpen()) {
+  <div class="page-config-list">
+    <div class="list-header">
+      <div class="list-header-left">
+        <h1 class="list-title">Page Builder</h1>
+        <p class="list-subtitle">Create and manage dynamic CMS-driven pages</p>
+      </div>
+      <div class="list-header-right">
+        <p-iconField iconPosition="left">
+          <p-inputIcon><i class="pi pi-search"></i></p-inputIcon>
+          <input pInputText type="text" [(ngModel)]="searchQuery"
+                 (input)="filterPages()"
+                 placeholder="Search pages..." class="search-input" />
+        </p-iconField>
+        <p-button label="New Page" icon="pi pi-plus" class="p-button-success" (click)="openNew()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="page-grid">
+      @for (page of filteredPages(); track page.pageKey) {
+        <div class="page-card" (click)="openEdit(page.pageKey)">
+          <div class="page-card-header">
+            <div class="page-card-icon">
+              <i class="pi pi-file"></i>
+            </div>
+            <div class="page-card-status">
+              <p-tag [value]="page.mCommonEntitiesMaster?.isActive === false ? 'Inactive' : 'Active'" [severity]="page.mCommonEntitiesMaster?.isActive === true ? 'success' : page.mCommonEntitiesMaster?.isActive === false ? 'warn' : 'danger'" [rounded]="true"></p-tag>
+            </div>
+          </div>
+          <div class="page-card-body">
+            <h3 class="page-card-title">{{ page.title }}</h3>
+            <p class="page-card-slug">/{{ page.pageKey }}</p>
+          </div>
+          <div class="page-card-meta">
+            <span class="meta-item">
+              <i class="pi pi-layer-group"></i>
+              {{ page.sectionCount }} sections
+            </span>
+            <!-- @if (page.updatedAt) {
+              <span class="meta-item">
+                <i class="pi pi-clock"></i>
+                {{ page.updatedAt | date:'short' }}
+              </span>
+            } -->
+          </div>
+          <div class="page-card-actions" (click)="$event.stopPropagation()">
+            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-info"
+                    pTooltip="Edit" (click)="openEdit(page.pageKey)">
+            </button>
+            <button pButton icon="pi pi-clone" class="p-button-rounded p-button-text p-button-secondary"
+                    pTooltip="Duplicate" (click)="duplicatePage(page.pageKey)">
+            </button>
+            <button pButton icon="pi pi-external-link" class="p-button-rounded p-button-text p-button-help"
+                    pTooltip="Preview" [disabled]="page.mCommonEntitiesMaster?.isActive !== true"
+                    (click)="previewPage(page.pageKey)">
+            </button>
+            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
+                    pTooltip="Delete" (click)="confirmDelete(page)">
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="pi pi-inbox"></i>
+          </div>
+          <h3>No pages yet</h3>
+          <p>Create your first dynamic page to get started.</p>
+          <p-button label="Create First Page" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></p-button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ═══ EDITOR VIEW ═══ -->
+@if (editorOpen()) {
+  <div class="editor-layout">
+    <!-- Editor Panel -->
+    <div class="editor-panel" [class.full-width]="!showPreview()">
+      <div class="editor-toolbar">
+        <div class="toolbar-left">
+          <button pButton icon="pi pi-arrow-left" class="p-button-rounded p-button-text"
+                  pTooltip="Back to list" (click)="closeEditor()">
+          </button>
+          <div class="toolbar-title">
+            <h2>{{ isNew() ? 'New Page' : editingPage().title || 'Untitled' }}</h2>
+            @if (!isNew()) {
+              <span class="toolbar-slug">/{{ editingPage().pageKey }}</span>
+            }
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text"
+                  [class.active]="showPreview()" pTooltip="Toggle Preview"
+                  (click)="showPreview.set(!showPreview())">
+          </button>
+          <p-tag [value]="editingPage().mCommonEntitiesMaster.isActive === false ? 'Inactive' : 'Active'" [severity]="editingPage().mCommonEntitiesMaster.isActive === true ? 'success' : editingPage().mCommonEntitiesMaster.isActive === false ? 'warn' : 'danger'" [rounded]="true"></p-tag>
+          <p-button label="Cancel" icon="pi pi-times" class="p-button-text" (click)="closeEditor()">
+          </p-button>
+          <p-button [label]="isNew() ? 'Create Page' : 'Save Changes'" icon="pi pi-check"
+                    [loading]="saving()" class="p-button-success" (click)="savePage()">
+          </p-button>
+        </div>
+      </div>
+
+      <div class="editor-content">
+        <p-tabs>
+          <p-tablist>
+            <p-tab value="0">Basic Info</p-tab>
+            <p-tab value="1">SEO & Meta</p-tab>
+            <p-tab value="2">Page Sections</p-tab>
+            <p-tab value="3">Custom Code</p-tab>
+          </p-tablist>
+          <p-tabpanels>
+            <!-- ─── Basic Info Tab ─── -->
+            <p-tabpanel value="0">
+            <div class="tab-section">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Page Key (slug) <span class="required">*</span></label>
+                  <input pInputText [(ngModel)]="editingPage().pageKey"
+                         [disabled]="!isNew()"
+                         placeholder="e.g. about, services, pricing"
+                         class="w-full"
+                         [class.ng-invalid]="validationErrors()['pageKey']" />
+                  @if (validationErrors()['pageKey']) {
+                    <small class="field-error">{{ validationErrors()['pageKey'] }}</small>
+                  }
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Page Title <span class="required">*</span></label>
+                  <input pInputText [(ngModel)]="editingPage().title"
+                         placeholder="Page title"
+                         class="w-full"
+                         [class.ng-invalid]="validationErrors()['title']" />
+                  @if (validationErrors()['title']) {
+                    <small class="field-error">{{ validationErrors()['title'] }}</small>
+                  }
+                </div>
+              </div>
+
+              <div class="field-row mt-4">
+                <div class="field-group">
+                  <label class="field-label">Status</label>
+                  <p-select [options]="statusOptions" [(ngModel)]="editingPage().status"
+                            optionLabel="label" optionValue="value"
+                            placeholder="Select status" styleClass="w-full">
+                  </p-select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Favicon URL</label>
+                  <input pInputText [(ngModel)]="editingPage().favicon"
+                         placeholder="https://example.com/favicon.ico"
+                         class="w-full" />
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+            <!-- ─── SEO Tab ─── -->
+            <p-tabpanel value="1">
+              <div class="tab-section">
+                <div class="field-group">
+                  <label class="field-label">Meta Title</label>
+                  <input pInputText [(ngModel)]="editingPage().metaTitle"
+                         placeholder="SEO title (defaults to page title)"
+                         class="w-full" />
+                  <small class="field-hint">{{ (editingPage().metaTitle || editingPage().title || '').length }}/60 characters</small>
+                </div>
+
+                <div class="field-group mt-4">
+                  <label class="field-label">Meta Description</label>
+                  <textarea pTextarea [(ngModel)]="editingPage().metaDescription"
+                            rows="3" placeholder="SEO description (recommended: 150-160 chars)"
+                            class="w-full"></textarea>
+                  <small class="field-hint">{{ (editingPage().metaDescription || '').length }}/160 characters</small>
+                </div>
+
+                <div class="field-row mt-4">
+                  <div class="field-group">
+                    <label class="field-label">Meta Keywords</label>
+                    <input pInputText [(ngModel)]="editingPage().metaKeywords"
+                           placeholder="keyword1, keyword2, keyword3"
+                           class="w-full" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">OG Image URL</label>
+                    <input pInputText [(ngModel)]="editingPage().ogImage"
+                           placeholder="https://... (recommended: 1200x630px)"
+                           class="w-full" />
+                  </div>
+                </div>
+
+                <div class="field-row mt-4">
+                  <div class="field-group">
+                    <label class="field-label">Canonical URL</label>
+                    <input pInputText [(ngModel)]="editingPage().canonicalUrl"
+                           placeholder="https://example.com/page"
+                           class="w-full" />
+                  </div>
+                  <div class="field-group">
+                    <div class="toggle-row">
+                      <p-toggleswitch [(ngModel)]="editingPage().noIndex"></p-toggleswitch>
+                      <div>
+                        <label class="field-label" style="margin:0">No Index (hide from search engines)</label>
+                        <small class="field-hint">Adds noindex, nofollow meta tag</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- ─── Sections Tab ─── -->
+            <p-tabpanel value="2">
+              <div class="tab-section">
+                <!-- Section Presets -->
+                <div class="presets-bar">
+                  <span class="presets-label">Quick Add:</span>
+                  <div class="presets-grid">
+                    @for (preset of sectionPresets; track preset.id) {
+                      <button class="preset-btn" (click)="addPresetSection(preset)"
+                              pTooltip="{{ preset.description }}">
+                        <i [class]="preset.icon"></i>
+                        <span>{{ preset.label }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Sections List -->
+                <div class="sections-list">
+                  @for (section of editingPage().sections; track $index; let i = $index; let last = $last) {
+                    <div class="section-item" [class.disabled]="!section.enabled"
+                         [class.expanded]="expandedSection() === i">
+
+                      <!-- Section Header -->
+                      <div class="section-header" (click)="toggleSection(i)">
+                        <div class="section-drag-handle" (click)="$event.stopPropagation()">
+                          <i class="pi pi-bars"></i>
+                        </div>
+                        <div class="section-reorder" (click)="$event.stopPropagation()">
+                          <button pButton icon="pi pi-chevron-up" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
+                                  [disabled]="i === 0" (click)="moveSection(i, -1)" pTooltip="Move up">
+                          </button>
+                          <button pButton icon="pi pi-chevron-down" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
+                                  [disabled]="last" (click)="moveSection(i, 1)" pTooltip="Move down">
+                          </button>
+                        </div>
+                        <p-toggleswitch [(ngModel)]="section.enabled" (click)="$event.stopPropagation()"></p-toggleswitch>
+                        <div class="section-info">
+                          <span class="section-number">#{{ i + 1 }}</span>
+                          <span class="section-label">{{ section.title || 'Section ' + (i + 1) }}</span>
+                          @if (section.templateTypeID) {
+                            <p-tag [value]="getTemplateTypeName(section.templateTypeID)" severity="info" [rounded]="true" styleClass="section-type-tag"></p-tag>
+                          }
+                        </div>
+                        <div class="section-actions" (click)="$event.stopPropagation()">
+                          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                  (click)="removeSection(i)" pTooltip="Remove section">
+                          </button>
+                        </div>
+                        <i class="pi expand-icon" [class.pi-chevron-down]="expandedSection() !== i" [class.pi-chevron-up]="expandedSection() === i"></i>
+                      </div>
+
+                      <!-- Section Body (Expanded) -->
+                      @if (expandedSection() === i && section.enabled) {
+                        <div class="section-body">
+                          <!-- Section Settings -->
+                          <div class="section-settings">
+                            <h4 class="settings-title">Section Settings</h4>
+                            <div class="field-row">
+                              <div class="field-group">
+                                <label class="field-label">Label (internal)</label>
+                                 <input pInputText [(ngModel)]="section.title"
+                                       placeholder="Hero Section"
+                                       class="w-full" />
+                              </div>
+                            </div>
+
+                            <div class="field-row mt-3">
+                              <div class="field-group">
+                                <label class="field-label">Template Type <span class="required">*</span></label>
+                                <p-select [options]="templateTypes()"
+                                          [(ngModel)]="section.templateTypeID"
+                                          optionLabel="templateTypeName"
+                                          optionValue="templateTypeID"
+                                          [showClear]="true"
+                                          placeholder="Select template type"
+                                          (onChange)="onTemplateTypeChange(i, $event)"
+                                          styleClass="w-full">
+                                </p-select>
+                              </div>
+                              <div class="field-group">
+                                <label class="field-label">Template (from Master)</label>
+                                <p-select [options]="availableTemplates()"
+                                          [(ngModel)]="section.templateCode"
+                                          optionLabel="templateName"
+                                          optionValue="templateCode"
+                                          [showClear]="true"
+                                          placeholder="Select specific template"
+                                          [disabled]="!section.templateTypeID"
+                                          styleClass="w-full">
+                                </p-select>
+                              </div>
+                            </div>
+
+                            <div class="field-row mt-3">
+                              <div class="field-group">
+                                <label class="field-label">Layout Width</label>
+                                <p-select [options]="widthOptions" [(ngModel)]="section.sectionWidth"
+                                          optionLabel="label" optionValue="value"
+                                          styleClass="w-full">
+                                </p-select>
+                              </div>
+                              <div class="field-group">
+                                <label class="field-label">Background</label>
+                                <p-select [options]="bgOptions" [(ngModel)]="section.sectionBackground"
+                                          optionLabel="label" optionValue="value"
+                                          styleClass="w-full">
+                                </p-select>
+                              </div>
+                            </div>
+
+                            <div class="field-row mt-3">
+                              <div class="field-group">
+                                <label class="field-label">Custom CSS Class</label>
+                                <input pInputText [(ngModel)]="section.customClass"
+                                       placeholder="my-custom-class"
+                                       class="w-full"
+                                       (blur)="validateSectionClass(i)" />
+                                @if (sectionErrors()[i]?.['customClass']) {
+                                  <small class="field-error">{{ sectionErrors()[i]!['customClass'] }}</small>
+                                }
+                              </div>
+                              <div class="field-group">
+                                <label class="field-label">GSAP Animation Key</label>
+                                <p-select [options]="gsapPageKeys()"
+                                          [(ngModel)]="section.gsapPageKey"
+                                          optionLabel="pageKey"
+                                          optionValue="pageKey"
+                                          [showClear]="false"
+                                          styleClass="w-full">
+                                </p-select>
+                              </div>
+                            </div>
+
+                            <div class="field-row mt-3">
+                              <div class="field-group">
+                                <label class="field-label">Animation Delay (ms)</label>
+                                <input pInputText type="number" [(ngModel)]="section.animationDelay"
+                                       placeholder="0"
+                                       class="w-full" />
+                              </div>
+                              <div class="field-group"></div>
+                            </div>
+                          </div>
+
+                          <!-- Custom Styles -->
+                          <div class="section-styles">
+                            <h4 class="settings-title">Custom CSS</h4>
+                            <p class="settings-desc">Scoped styles for this section only.</p>
+                            <textarea pTextarea [(ngModel)]="section.customStyles"
+                                      rows="4"
+                                      placeholder=".my-section { padding: 4rem 0; }"
+                                      class="w-full code-textarea"
+                                      (blur)="validateSectionCss(i)"></textarea>
+                            @if (sectionErrors()[i]?.['customStyles']) {
+                              <div class="validation-errors">
+                                @for (err of sectionErrors()[i]!['customStyles']; track err) {
+                                  <small class="field-error"><i class="pi pi-exclamation-triangle"></i> {{ err }}</small>
+                                }
+                              </div>
+                            }
+                            @if (sectionWarnings()[i]?.['customStyles']) {
+                              <div class="validation-warnings">
+                                @for (warn of sectionWarnings()[i]!['customStyles']; track warn) {
+                                  <small class="field-warning"><i class="pi pi-info-circle"></i> {{ warn }}</small>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (editingPage().sections.length === 0) {
+                    <div class="empty-sections">
+                      <i class="pi pi-layer-group empty-icon"></i>
+                      <p>No sections yet. Use the quick-add buttons above or click below.</p>
+                      <p-button label="Add First Section" icon="pi pi-plus" class="p-button-success p-button-sm" (click)="addEmptySection()"></p-button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- ─── Custom Code Tab ─── -->
+            <p-tabpanel value="3">
+              <div class="tab-section">
+                <div class="code-editor-group">
+                  <div class="code-header">
+                    <h4 class="settings-title">Page-Level CSS</h4>
+                    <div class="code-status">
+                      @if (globalCssValidation().errors.length > 0) {
+                        <span class="status-error"><i class="pi pi-exclamation-circle"></i> {{ globalCssValidation().errors.length }} error(s)</span>
+                      } @else {
+                        <span class="status-ok"><i class="pi pi-check-circle"></i> Valid</span>
+                      }
+                    </div>
+                  </div>
+                  <textarea pTextarea [(ngModel)]="editingPage().customStyles"
+                            rows="8"
+                            placeholder="/* Page-level styles */&#10;.page-about { background: #0a0a14; }&#10;.page-about .hero { min-height: 60vh; }"
+                            class="w-full code-textarea"
+                            (blur)="validateGlobalCss()"></textarea>
+                  @if (globalCssValidation().errors.length > 0) {
+                    <div class="validation-errors">
+                      @for (err of globalCssValidation().errors; track err) {
+                        <small class="field-error"><i class="pi pi-exclamation-triangle"></i> {{ err }}</small>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="code-editor-group mt-4">
+                  <div class="code-header">
+                    <h4 class="settings-title">Page-Level JavaScript</h4>
+                    <div class="code-status">
+                      @if (globalJsValidation().errors.length > 0) {
+                        <span class="status-error"><i class="pi pi-exclamation-circle"></i> {{ globalJsValidation().errors.length }} error(s)</span>
+                      } @else {
+                        <span class="status-ok"><i class="pi pi-check-circle"></i> Valid</span>
+                      }
+                    </div>
+                  </div>
+                  <textarea pTextarea [(ngModel)]="editingPage().customScripts"
+                            rows="8"
+                            placeholder="<!-- Page-level scripts (will be sanitized) -->&#10;console.log('Page loaded');"
+                            class="w-full code-textarea"
+                            (blur)="validateGlobalJs()"></textarea>
+                  @if (globalJsValidation().errors.length > 0) {
+                    <div class="validation-errors">
+                      @for (err of globalJsValidation().errors; track err) {
+                        <small class="field-error"><i class="pi pi-exclamation-triangle"></i> {{ err }}</small>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </p-tabpanel>
+            </p-tabpanels>
+          </p-tabs>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      @if (showPreview()) {
+        <div class="preview-panel">
+          <div class="preview-header">
+            <i class="pi pi-desktop"></i>
+            <span>Live Preview</span>
+            <div class="preview-device-btns">
+              <button pButton icon="pi pi-desktop" class="p-button-rounded p-button-text p-button-sm"
+                      [class.active]="previewDevice() === 'desktop'"
+                      (click)="previewDevice.set('desktop')">
+              </button>
+              <button pButton icon="pi pi-tablet" class="p-button-rounded p-button-text p-button-sm"
+                      [class.active]="previewDevice() === 'tablet'"
+                      (click)="previewDevice.set('tablet')">
+              </button>
+              <button pButton icon="pi pi-mobile" class="p-button-rounded p-button-text p-button-sm"
+                      [class.active]="previewDevice() === 'mobile'"
+                      (click)="previewDevice.set('mobile')">
+              </button>
+            </div>
+          </div>
+          <div class="preview-frame-wrapper" [class]="previewDevice()">
+            <iframe class="preview-frame"
+                    [src]="previewUrl()"
+                    sandbox="allow-scripts allow-same-origin">
+            </iframe>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <p-confirmDialog [draggable]="false" key="pageConfigDialog"></p-confirmDialog>

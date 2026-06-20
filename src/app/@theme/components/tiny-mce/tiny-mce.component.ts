@@ -36,8 +36,8 @@ import 'tinymce/plugins/help';
 // PASTE is now BUILT-IN → NO IMPORT NEEDED
 
 // Skins (local copy)
-import 'tinymce/skins/ui/oxide/skin.css';
-import 'tinymce/skins/ui/oxide/content.css';
+// import 'tinymce/skins/ui/oxide/skin.css';
+// import 'tinymce/skins/ui/oxide/content.css';
 
 @Component({
   selector: 'ngx-tiny-mce',
