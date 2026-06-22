@@ -371,4 +371,3 @@ FodyWeavers.xsd
 .angular/write/
 .angular/**/write/
 .angular/**/deps/
-/dist

@@ -1,0 +1,290 @@
+{
+  "id": "landing-hero-v2",
+  "name": "Modern Landing Hero",
+  "type": "website",
+  "category": "landing",
+  "thumbnail": "/assets/templates/hero-thumb.jpg",
+  "description": "Animated hero with video background and staggered fade-ups",
+  "status": "published",
+  "version": 2,
+  "createdAt": "2025-11-20",
+  "updatedAt": "2025-12-01",
+
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+
+    "rules": [
+      {
+        "id": "hero-video-bg",
+        "label": "Hero Video Background Fade In",
+        "type": "tween",
+        "selector": ".hero-video",
+        "from": { "opacity": 0, "scale": 1.1 },
+        "to": { "opacity": 1, "scale": 1 },
+        "duration": 2,
+        "scrollTrigger": {
+          "trigger": ".hero-section",
+          "start": "top top",
+          "scrub": true
+        },
+        "media": {
+          "type": "video",
+          "url": "https://motionbgs.com/media/8810/hollow-knight-echo-of-shadows.960x540.mp4",
+          "loop": true,
+          "muted": true,
+          "autoplay": true
+        }
+      },
+      {
+        "id": "title-stagger",
+        "label": "Title & Button Stagger",
+        "type": "tween",
+        "selector": ".hero-title, .hero-subtitle, .hero-cta",
+        "from": { "opacity": 0, "y": 80 },
+        "to": { "opacity": 1, "y": 0 },
+        "stagger": { "each": 0.15, "from": "start" },
+        "scrollTrigger": {
+          "trigger": ".hero-content",
+          "start": "top 80%"
+        }
+      }
+    ],
+
+    "callbacks": [
+      {
+        "name": "onHeroComplete",
+        "script": "console.log('Hero animation finished!'); ga('send', 'event', 'Template', 'hero_loaded');"
+      }
+    ]
+  },
+
+  "html": "<section class=\"hero-section\">...</section>",
+  "css": ".hero-section { min-height: 100vh; }",
+  "previewUrl": "/preview/landing-hero-v2"
+},
+
+{
+  "id": "web-home",
+  "name": "Web Home Page",
+  "type": "website",
+  "category": "web",
+  "status": "published",
+  "version": 1,
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+    "pages": {
+      "home": {
+        "label": "Home",
+        "rules": [
+          {
+            "id": "hero-bg-fade",
+            "selector": ".hero-bg",
+            "type": "tween",
+            "from": { "opacity": 0, "scale": 1.1 },
+            "to": { "opacity": 1, "scale": 1 },
+            "duration": 2
+          },
+          {
+            "id": "hero-title-enter",
+            "selector": ".hero-title",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 60 },
+            "to": { "opacity": 1, "y": 0 },
+            "duration": 1,
+            "delay": 0.3
+          },
+          {
+            "id": "hero-content-stagger",
+            "selector": ".hero-subtitle, .hero-cta",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 40 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15,
+            "delay": 0.6
+          },
+          {
+            "id": "feature-cards-animation",
+            "selector": ".feature-card",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 80 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15,
+            "scrollTrigger": {
+              "trigger": ".features-section",
+              "start": "top 80%"
+            }
+          }
+        ]
+      }
+    }
+  }
+},
+
+{
+  "id": "web-about",
+  "name": "Web About Page",
+  "type": "website",
+  "category": "web",
+  "status": "published",
+  "version": 1,
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+    "pages": {
+      "about": {
+        "label": "About",
+        "rules": [
+          {
+            "id": "about-hero-anim",
+            "selector": ".about-hero h1, .about-hero p",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 40 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15
+          },
+          {
+            "id": "values-anim",
+            "selector": ".value-card",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 60 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15,
+            "scrollTrigger": {
+              "trigger": ".values-section",
+              "start": "top 80%"
+            }
+          },
+          {
+            "id": "team-anim",
+            "selector": ".team-card",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 60 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15,
+            "scrollTrigger": {
+              "trigger": ".team-section",
+              "start": "top 80%"
+            }
+          }
+        ]
+      }
+    }
+  }
+},
+
+{
+  "id": "web-services",
+  "name": "Web Services Page",
+  "type": "website",
+  "category": "web",
+  "status": "published",
+  "version": 1,
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+    "pages": {
+      "services": {
+        "label": "Services",
+        "rules": [
+          {
+            "id": "services-hero-anim",
+            "selector": ".services-hero h1, .services-hero p",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 40 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15
+          },
+          {
+            "id": "process-step-anim",
+            "selector": ".process-step",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 60 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15,
+            "scrollTrigger": {
+              "trigger": ".process-section",
+              "start": "top 80%"
+            }
+          }
+        ]
+      }
+    }
+  }
+},
+
+{
+  "id": "web-contact",
+  "name": "Web Contact Page",
+  "type": "website",
+  "category": "web",
+  "status": "published",
+  "version": 1,
+  "gsap": {
+    "global": {
+      "defaults": {
+        "duration": 1.2,
+        "ease": "power3.out"
+      },
+      "registerPlugins": ["ScrollTrigger"],
+      "autoInit": true
+    },
+    "pages": {
+      "contact": {
+        "label": "Contact",
+        "rules": [
+          {
+            "id": "contact-hero-anim",
+            "selector": ".contact-hero h1, .contact-hero p",
+            "type": "tween",
+            "from": { "opacity": 0, "y": 40 },
+            "to": { "opacity": 1, "y": 0 },
+            "stagger": 0.15
+          },
+          {
+            "id": "contact-info-anim",
+            "selector": ".contact-info",
+            "type": "tween",
+            "from": { "opacity": 0, "x": -50 },
+            "to": { "opacity": 1, "x": 0 },
+            "duration": 1
+          },
+          {
+            "id": "contact-form-anim",
+            "selector": ".contact-form-wrapper",
+            "type": "tween",
+            "from": { "opacity": 0, "x": 50 },
+            "to": { "opacity": 1, "x": 0 },
+            "duration": 1,
+            "delay": 0.3
+          }
+        ]
+      }
+    }
+  }
+}
