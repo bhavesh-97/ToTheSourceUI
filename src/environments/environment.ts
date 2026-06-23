@@ -1,9 +1,12 @@
 import * as CryptoJS from 'crypto-js';
 export const environment = {
   production: false,
-  environmentName: 'Localhost',
-  CMSUrl: 'https://localhost:7242/CMS', 
-  WebUrl: 'https://localhost:7242', 
+  // environmentName: 'Localhost',
+  // CMSUrl: 'https://localhost:7242/CMS', 
+  // WebUrl: 'https://localhost:7242', 
+  environmentName: '100.82.237.11',  
+  CMSUrl: 'http://100.82.237.11:5000/CMS', 
+  WebUrl: 'http://100.82.237.11:5000', 
 };
 
 
