@@ -2,20 +2,18 @@ FROM node:20 AS build
 
 WORKDIR /app
 
-COPY ToTheSourceUI/package*.json ./
+COPY package*.json ./
 
 RUN npm install --legacy-peer-deps
 
-COPY ToTheSourceUI/ .
+COPY . .
 
-RUN npm run build
+RUN npx ng build --configuration production
 
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+COPY --from=build /app/dist/ToTheSourceUI/browser /usr/share/nginx/html
 
-COPY --from=build /app ./
+EXPOSE 80
 
-EXPOSE 4000
-
-CMD ["node", "dist/ToTheSourceUI/server/server.mjs"]
+CMD ["nginx", "-g", "daemon off;"]
