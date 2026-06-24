@@ -148,7 +148,7 @@
         <span class="flex-grow-1">{{ isNew ? 'Create New Template' : 'Edit: ' + templateForm.get('templateName')?.value }}</span>
         <button type="button" pButton icon="pi pi-database" class="p-button-text p-button-sm p-button-rounded"
                 pTooltip="Dynamic Data Source" tooltipPosition="bottom"
-                (click)="dynamicDataDialogVisible = true"></button>
+                (click)="openDataConfig()"></button>
         <button type="button" pButton icon="pi pi-question-circle" class="p-button-text p-button-sm p-button-rounded"
                 pTooltip="Template Guide" tooltipPosition="bottom"
                 (click)="guideDialogVisible = true"></button>
@@ -213,7 +213,12 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label fw-medium mb-1">Template Content</label>
+        <label class="form-label fw-medium mb-1">
+          Template Content
+          <i class="pi pi-info-circle ms-1" style="font-size: 0.8rem; color: #6c757d; cursor: help;"
+             pTooltip="Write HTML here. Use variable syntax to bind data from the Dynamic Data Source panel."
+             tooltipPosition="right"></i>
+        </label>
         <app-text-editor
           #inputField
           formControlName="templateContent"
@@ -227,6 +232,122 @@
           [autoSave]="true">
         </app-text-editor>
       </div>
+
+      <!-- Template Variable Guide -->
+      <div class="template-guide">
+        <div class="guide-toggle" (click)="showTemplateGuide = !showTemplateGuide">
+          <i class="pi pi-book"></i>
+          <span>Template Binding Reference</span>
+          <span class="guide-badge">Data Binding</span>
+          <i class="pi" [class.pi-chevron-down]="!showTemplateGuide" [class.pi-chevron-up]="showTemplateGuide"></i>
+        </div>
+        @if (showTemplateGuide) {
+          <div class="guide-body">
+            <!-- Simple Variable -->
+            <div class="guide-section">
+              <div class="section-title">
+                <i class="pi pi-tag"></i>
+                <h5>Simple Variable</h5>
+              </div>
+              <div class="syntax-block">
+                <code ngNonBindable>{{variableName}}</code>
+              </div>
+              <p>Replaces with the value of <strong>variableName</strong> from your data source. Works in HTML content and attributes.</p>
+              <div class="example-block">
+                <span class="example-label">HTML Content</span>
+                <code ngNonBindable>&lt;h1&gt;{{title}}&lt;/h1&gt;</code>
+                <span class="example-label">Image Attribute</span>
+                <code ngNonBindable>&lt;img src="{{heroImage}}" alt="{{title}}"&gt;</code>
+              </div>
+            </div>
+
+            <!-- Fallback Value -->
+            <div class="guide-section">
+              <div class="section-title">
+                <i class="pi pi-shield"></i>
+                <h5>Fallback Value</h5>
+              </div>
+              <div class="syntax-block">
+                <code ngNonBindable>{{variableName | Default Value}}</code>
+              </div>
+              <p>Uses <strong>"Default Value"</strong> if the field is empty, null, or missing from the data source.</p>
+            </div>
+
+            <!-- Loop -->
+            <div class="guide-section">
+              <div class="section-title">
+                <i class="pi pi-sync"></i>
+                <h5>Array Loop</h5>
+              </div>
+              <div class="syntax-block">
+                <code ngNonBindable>{{#each items}} ... {{/each}}</code>
+              </div>
+              <p>Iterates through an array. Each item's properties are available as variables inside the loop.</p>
+              <div class="example-block">
+                <span class="example-label">Example</span>
+                <code ngNonBindable>&lt;div class="services"&gt;{{#each services}}&lt;div class="card"&gt;&lt;h3&gt;{{name}}&lt;/h3&gt;&lt;p&gt;{{description}}&lt;/p&gt;&lt;/div&gt;{{/each}}&lt;/div&gt;</code>
+              </div>
+            </div>
+
+            <!-- Conditional -->
+            <div class="guide-section">
+              <div class="section-title">
+                <i class="pi pi-code"></i>
+                <h5>Conditional Rendering</h5>
+              </div>
+              <div class="syntax-block">
+                <code ngNonBindable>{{#if condition}} ... {{else}} ... {{/if}}</code>
+              </div>
+              <p>Shows content only if the condition is truthy. Use <strong ngNonBindable>{{else}}</strong> for fallback content.</p>
+              <div class="example-block">
+                <span class="example-label">Example</span>
+                <code ngNonBindable>{{#if showBanner}}&lt;div class="banner"&gt;{{bannerText}}&lt;/div&gt;{{else}}&lt;div class="banner"&gt;Default Banner&lt;/div&gt;{{/if}}</code>
+              </div>
+            </div>
+
+            <!-- Data Source Tips -->
+            <div class="guide-section guide-data-source">
+              <div class="section-title">
+                <i class="pi pi-database"></i>
+                <h5 class="SDM">Data Source Mapping</h5>
+              </div>
+              <div class="data-source-grid">
+                <div class="source-card">
+                  <div class="source-header">
+                    <i class="pi pi-pencil"></i>
+                    <span>Manual Entry</span>
+                  </div>
+                  <p>Add fields in the Dynamic Data Source panel. The <strong>Key</strong> name becomes the variable name.</p>
+                  <code ngNonBindable>Key: "title" → {{title}}</code>
+                </div>
+                <div class="source-card">
+                  <div class="source-header">
+                    <i class="pi pi-cloud"></i>
+                    <span>API Endpoint</span>
+                  </div>
+                  <p>The API response keys become variables. Click <strong>Test Connection</strong> to see available keys.</p>
+                  <code ngNonBindable>Response: name → &#123;&#123;name&#125;&#125;</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="guide-section guide-pro-tips">
+              <div class="section-title">
+                <i class="pi pi-star"></i>
+                <h5 class="protips">Pro Tips</h5>
+              </div>
+              <ul class="tips-list">
+                <li>Use <code ngNonBindable>{{item.title}}</code> for nested object properties</li>
+                <li>Variables work inside HTML attributes: <code ngNonBindable>href="{{linkUrl}}"</code></li>
+                <li>Combine loops with conditionals for dynamic layouts</li>
+                <li>Always set fallback values for optional fields</li>
+                <li>Test your API connection to see the exact response structure</li>
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
     </form>
     <ng-template pTemplate="footer">
       <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="dialogVisible = false">
@@ -239,12 +360,24 @@
 
 <!-- Dynamic Data Source Dialog -->
 <p-dialog [(visible)]="dynamicDataDialogVisible" [draggable]="false" [modal]="true"
-    [style]="{width:'90%', maxWidth:'700px', height:'80vh'}"
-    header="Dynamic Data Source" [baseZIndex]="11000">
+    [style]="{width:'90%', maxWidth:'850px', height:'80vh'}"
+    [baseZIndex]="11000">
+    <ng-template pTemplate="header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="pi pi-database" style="color: #7c3aed;"></i>
+        <span>Dynamic Data Source</span>
+      </div>
+    </ng-template>
   <app-dynamic-data-panel
-    [config]="templateDataConfig"
-    (configChange)="updateTemplateDataConfig($event)">
+    [config]="tempDataConfig"
+    (configChange)="tempDataConfig = $event">
   </app-dynamic-data-panel>
+  <ng-template pTemplate="footer">
+    <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text"
+            (click)="cancelDataConfig()"></button>
+    <button type="button" pButton label="Save" icon="pi pi-check" class="p-button-success"
+            (click)="saveDataConfig()"></button>
+  </ng-template>
 </p-dialog>
 
 <!-- Guide Popup Dialog -->

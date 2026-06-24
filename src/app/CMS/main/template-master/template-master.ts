@@ -59,6 +59,7 @@ export class TemplateMaster implements OnInit {
   dialogVisible = false;
   guideDialogVisible = false;
   dynamicDataDialogVisible = false;
+  showTemplateGuide = false;
   isNew = false;
   loading: boolean = true;
   showImportDialog = false;
@@ -75,6 +76,7 @@ export class TemplateMaster implements OnInit {
   templateTypes: TemplateType[] = [];
   selectedTemplateType: TemplateType | null = null;
   templateDataConfig: DynamicDataConfig = createDefaultDataConfig();
+  tempDataConfig: DynamicDataConfig = createDefaultDataConfig();
 
    private formFields: FormFieldConfig[] = [
        { name: 'templateID', isMandatory: false, events: [] },
@@ -145,6 +147,7 @@ export class TemplateMaster implements OnInit {
       this.isNew = isNew;
       if (isNew) {
         this.templateDataConfig = createDefaultDataConfig();
+        this.tempDataConfig = createDefaultDataConfig();
         this.templateForm.reset( {
           templateID: 0,
           templateTypeID: 0,
@@ -158,6 +161,7 @@ export class TemplateMaster implements OnInit {
       } 
       else if (tpl) {
         this.templateDataConfig = tpl.dynamicDataConfig ? { ...tpl.dynamicDataConfig } : createDefaultDataConfig();
+        this.tempDataConfig = { ...this.templateDataConfig };
         this.templateForm.patchValue({
           templateID: tpl.templateID,
           templateTypeID: tpl.templateTypeID,
@@ -172,8 +176,19 @@ export class TemplateMaster implements OnInit {
       this.dialogVisible = true;
     }
 
-   updateTemplateDataConfig(config: DynamicDataConfig): void {
-     this.templateDataConfig = config;
+   saveDataConfig(): void {
+     this.templateDataConfig = { ...this.tempDataConfig };
+     this.dynamicDataDialogVisible = false;
+   }
+
+   cancelDataConfig(): void {
+     this.tempDataConfig = { ...this.templateDataConfig };
+     this.dynamicDataDialogVisible = false;
+   }
+
+   openDataConfig(): void {
+     this.tempDataConfig = { ...this.templateDataConfig };
+     this.dynamicDataDialogVisible = true;
    }
 
   deletetemplate(temp: Template) {
