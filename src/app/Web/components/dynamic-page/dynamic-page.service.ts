@@ -193,10 +193,7 @@ private mapPageConfig(data: any): DynamicPageConfig {
       animationDelay: s.animationDelay || 0,
       
     })
-    
   );
-console.log(data.sections);
-console.log(data);
 
   sections.sort((a, b) => a.order - b.order);
 

@@ -24,6 +24,7 @@ import { MCommonEntitiesMaster } from '../../../models/MCommonEntitiesMaster';
 import { GsapMasterService } from '../gsap-master/gsap-master.service';
 import { MGsapPage } from '../gsap-master/gsap-interface';
 import { DynamicPageService, PageConfigListItem } from '../../../Web/components/dynamic-page/dynamic-page.service';
+import { GuideTabComponent } from './guide-tab/guide-tab.component';
 
 @Component({
   selector: 'app-page-config',
@@ -32,7 +33,7 @@ import { DynamicPageService, PageConfigListItem } from '../../../Web/components/
     CommonModule, FormsModule, ButtonModule, DialogModule, InputTextModule,
     TableModule, TagModule, TextareaModule, SelectModule, ToggleSwitchModule,
     ConfirmDialogModule, TooltipModule, Tabs, TabList, Tab, TabPanels, TabPanel,
-    IconField, InputIcon
+    IconField, InputIcon, GuideTabComponent
   ],
   templateUrl: './page-config.component.html',
   styleUrls: ['./page-config.component.scss']
@@ -48,6 +49,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
 
   saving = signal(false);
   editorOpen = signal(false);
+  guideDialogVisible = false;
   isNew = signal(false);
   showPreview = signal(false);
   previewDevice = signal<'desktop' | 'tablet' | 'mobile'>('desktop');

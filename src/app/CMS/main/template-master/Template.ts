@@ -1,4 +1,5 @@
 import { MCommonEntitiesMaster } from "../../../models/MCommonEntitiesMaster";
+import { DynamicDataConfig } from "../../../shared/dynamic-data/dynamic-data.model";
 export type TemplateStatus = 'published' | 'draft' | 'warning' | 'success';
 
 export class Template {
@@ -8,6 +9,7 @@ export class Template {
   templateContent: string = "";
   templateTypeID: number = 0;
   templateTypeName: string = "";
+  dynamicDataConfig?: DynamicDataConfig;
   mCommonEntitiesMaster?: MCommonEntitiesMaster;
 }
 export class TemplateType {

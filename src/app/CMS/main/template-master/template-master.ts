@@ -8,6 +8,7 @@ import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { NotificationService } from '../../../services/notification.service';
 import { PopupMessageType } from '../../../models/PopupMessageType';
 import { TextEditorComponent } from '../../../@theme/components/WYSIWYG-Editors/text-editor';
@@ -21,6 +22,9 @@ import { FormUtils } from '../../../shared/utilities/form-utils';
 import { TemplateMasterService } from './template-master.service';
 import { Select } from "primeng/select";
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { DynamicDataPanelComponent } from '../../../shared/dynamic-data/dynamic-data-panel/dynamic-data-panel.component';
+import { DynamicDataConfig, createDefaultDataConfig } from '../../../shared/dynamic-data/dynamic-data.model';
+import { GuideTabComponent } from '../page-config/guide-tab/guide-tab.component';
 
 @Component({
   selector: 'app-template-master',
@@ -36,7 +40,8 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
     TextEditorComponent,
     ConfirmDialogModule,
     ToggleSwitchModule,
-     IconField, InputIcon, Select],
+     IconField, InputIcon, Select, DynamicDataPanelComponent, GuideTabComponent,
+     TooltipModule],
   templateUrl: './template-master.html',
   styleUrl: './template-master.css'
 })
@@ -52,6 +57,8 @@ export class TemplateMaster implements OnInit {
   private renderer = inject(Renderer2);
   
   dialogVisible = false;
+  guideDialogVisible = false;
+  dynamicDataDialogVisible = false;
   isNew = false;
   loading: boolean = true;
   showImportDialog = false;
@@ -67,6 +74,7 @@ export class TemplateMaster implements OnInit {
   templateForm!: FormGroup;   
   templateTypes: TemplateType[] = [];
   selectedTemplateType: TemplateType | null = null;
+  templateDataConfig: DynamicDataConfig = createDefaultDataConfig();
 
    private formFields: FormFieldConfig[] = [
        { name: 'templateID', isMandatory: false, events: [] },
@@ -134,33 +142,40 @@ export class TemplateMaster implements OnInit {
          });
    }
    openDialog(isNew: boolean, tpl?: Template) {
-     this.isNew = isNew;
-     if (isNew) {
-       this.templateForm.reset( {
-         templateID: 0,
-         templateTypeID: 0,
-         templateName: '',
-         templateCode: '',
-         mCommonEntitiesMaster:{
-             isActive: true
-         },
-         templateContent: ''
-       });
-     } 
-     else if (tpl) {
-       this.templateForm.patchValue({
-         templateID: tpl.templateID,
-         templateTypeID: tpl.templateTypeID,
-         templateName: tpl.templateName,
-         templateCode: tpl.templateCode,
-         templateContent: tpl.templateContent,
-         mCommonEntitiesMaster:{
-             isActive: tpl.mCommonEntitiesMaster?.isActive
-         },
-       });
-     }
-     this.dialogVisible = true;
+      this.isNew = isNew;
+      if (isNew) {
+        this.templateDataConfig = createDefaultDataConfig();
+        this.templateForm.reset( {
+          templateID: 0,
+          templateTypeID: 0,
+          templateName: '',
+          templateCode: '',
+          mCommonEntitiesMaster:{
+              isActive: true
+          },
+          templateContent: ''
+        });
+      } 
+      else if (tpl) {
+        this.templateDataConfig = tpl.dynamicDataConfig ? { ...tpl.dynamicDataConfig } : createDefaultDataConfig();
+        this.templateForm.patchValue({
+          templateID: tpl.templateID,
+          templateTypeID: tpl.templateTypeID,
+          templateName: tpl.templateName,
+          templateCode: tpl.templateCode,
+          templateContent: tpl.templateContent,
+          mCommonEntitiesMaster:{
+              isActive: tpl.mCommonEntitiesMaster?.isActive
+          },
+        });
+      }
+      this.dialogVisible = true;
+    }
+
+   updateTemplateDataConfig(config: DynamicDataConfig): void {
+     this.templateDataConfig = config;
    }
+
   deletetemplate(temp: Template) {
     this.confirmationService.confirm({
       key: 'roleDialog',
@@ -224,6 +239,7 @@ export class TemplateMaster implements OnInit {
     // console.log(JSON.stringify(tempModel, null, 2));
 
     const tempModel = this.FormUtils.getAllFormFieldData(this.formFields, this.templateForm, this.inputElements.toArray(), Template);
+    tempModel.dynamicDataConfig = this.templateDataConfig;
     this.saving = true;
     try {
          this.TemplateMasterService.SaveTemplate(tempModel).subscribe({

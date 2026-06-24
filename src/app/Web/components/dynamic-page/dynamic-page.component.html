@@ -58,6 +58,7 @@
           <app-template-placeholder
             [templateType]="getTemplateTypeName(section.templateTypeID)"
             [templateCode]="section.templateCode"
+            [sectionData]="section.customData || null"
             [fallbackContent]="section.fallbackHtml"
             [gsapPageKey]="section.gsapPageKey ?? pageConfig()!.pageKey">
           </app-template-placeholder>

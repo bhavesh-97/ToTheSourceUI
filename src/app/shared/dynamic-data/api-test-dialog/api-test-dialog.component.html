@@ -1,0 +1,51 @@
+<p-dialog [visible]="visible()" [modal]="true" [closable]="true"
+          [style]="{ width: '640px', maxHeight: '80vh' }"
+          [baseZIndex]="12000"
+          header="API Test"
+          (onHide)="onClose()"
+          (visibleChange)="!$event && onClose()">
+  <div class="api-test-content">
+    <div class="test-info">
+      <div class="info-row">
+        <span class="info-label">URL</span>
+        <span class="info-value">{{ config()?.apiUrl || 'No URL set' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Method</span>
+        <p-tag [value]="config()?.apiMethod || 'GET'" [rounded]="true"></p-tag>
+      </div>
+    </div>
+
+    <div class="test-actions">
+      <p-button label="Run Test" icon="pi pi-play" [loading]="testing()"
+                class="p-button-success" (click)="runTest()"
+                [disabled]="!config()?.apiUrl">
+      </p-button>
+    </div>
+
+    @if (hasRun()) {
+      <div class="test-result">
+        @if (error()) {
+          <div class="result-error">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>{{ error() }}</span>
+          </div>
+        } @else if (result() !== null) {
+          <div class="result-success">
+            <div class="result-header">
+              <p-tag value="Success" severity="success" [rounded]="true"></p-tag>
+              <span class="result-duration">{{ duration() }}ms</span>
+            </div>
+            <div class="result-keys">
+              <span class="keys-label">Available keys:</span>
+              @for (key of availableKeys; track key) {
+                <code class="key-chip">{{ '{{' + key + '}}' }}</code>
+              }
+            </div>
+            <pre class="result-json">{{ responsePreview }}</pre>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</p-dialog>

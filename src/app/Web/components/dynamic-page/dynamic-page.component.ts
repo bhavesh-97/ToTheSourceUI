@@ -112,7 +112,6 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
 
     this.dynamicPageService.getPageConfig(pageKey).pipe(takeUntil(this.destroy$)).subscribe({
       next: (config) => {
-        debugger;
         if (config) {
           this.pageConfig.set(config);
           const enabled = config.sections.filter(s => s.enabled);

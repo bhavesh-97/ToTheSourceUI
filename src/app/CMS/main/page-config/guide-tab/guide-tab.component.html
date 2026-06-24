@@ -1,0 +1,188 @@
+<div class="guide-tab">
+  <div class="guide-intro">
+    <i class="pi pi-book"></i>
+    <div>
+      <h3>Page Builder Guide</h3>
+      <p>Learn how to create and configure dynamic pages with template binding.</p>
+    </div>
+  </div>
+
+  <div class="guide-sections">
+    <div class="guide-section" [class.expanded]="expandedSection() === 'sections'">
+      <div class="section-header" (click)="toggleSection('sections')">
+        <i class="pi pi-layer-group"></i>
+        <span>How to Add Sections</span>
+        <i class="pi chevron" [class.pi-chevron-down]="expandedSection() !== 'sections'"
+           [class.pi-chevron-up]="expandedSection() === 'sections'"></i>
+      </div>
+      @if (expandedSection() === 'sections') {
+        <div class="section-body">
+          <ol>
+            <li>
+              <strong>Use Quick Presets</strong> — Click any preset button (Hero Banner, Content Text, Services Grid, etc.) in the "Quick Add" bar. This instantly adds a pre-configured section.
+            </li>
+            <li>
+              <strong>Add Empty Section</strong> — Click "Add Section" to start from scratch with a blank section.
+            </li>
+            <li>
+              <strong>Configure</strong> — Expand any section by clicking it. Set the template type, layout width, background, and custom CSS.
+            </li>
+            <li>
+              <strong>Reorder</strong> — Use the up/down arrows to change section order on the page.
+            </li>
+            <li>
+              <strong>Toggle Visibility</strong> — Use the switch to hide/show a section without deleting it.
+            </li>
+          </ol>
+        </div>
+      }
+    </div>
+
+    <div class="guide-section" [class.expanded]="expandedSection() === 'templates'">
+      <div class="section-header" (click)="toggleSection('templates')">
+        <i class="pi pi-file-edit"></i>
+        <span>Template Types &amp; Templates</span>
+        <i class="pi chevron" [class.pi-chevron-down]="expandedSection() !== 'templates'"
+           [class.pi-chevron-up]="expandedSection() === 'templates'"></i>
+      </div>
+      @if (expandedSection() === 'templates') {
+        <div class="section-body">
+          <p>Each section is rendered using a <strong>template</strong> from the Template Master.</p>
+          <ol>
+            <li>
+              <strong>Template Type</strong> — Select a type (e.g., Hero, Content, CTA). This determines which templates are available.
+            </li>
+            <li>
+              <strong>Template</strong> — Pick a specific template within that type. Each template has its own designed HTML layout.
+            </li>
+            <li>
+              <strong>Dynamic Data</strong> — If a section has data configured (API or manual), the template can bind to it using variable syntax.
+            </li>
+          </ol>
+          <div class="guide-note">
+            <i class="pi pi-info-circle"></i>
+            <span>Templates are managed separately in the <strong>Template Master</strong> section of the CMS.</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="guide-section" [class.expanded]="expandedSection() === 'data'">
+      <div class="section-header" (click)="toggleSection('data')">
+        <i class="pi pi-database"></i>
+        <span>Dynamic Data Sources</span>
+        <i class="pi chevron" [class.pi-chevron-down]="expandedSection() !== 'data'"
+           [class.pi-chevron-up]="expandedSection() === 'data'"></i>
+      </div>
+      @if (expandedSection() === 'data') {
+        <div class="section-body">
+          <p>Sections can pull data from external APIs or use manually entered values.</p>
+          <h4>API Endpoint</h4>
+          <ol>
+            <li>Set source to <strong>API Endpoint</strong></li>
+            <li>Enter the full API URL (e.g., <code>https://api.example.com/services</code>)</li>
+            <li>Choose the HTTP method (GET, POST, PUT, DELETE)</li>
+            <li>Add optional headers (e.g., Authorization tokens)</li>
+            <li>Click <strong>Test Connection</strong> to verify and see available data keys</li>
+            <li>Use the returned keys as <code ngNonBindable>{{key}}</code> in your template</li>
+          </ol>
+          <h4>Manual Entry</h4>
+          <ol>
+            <li>Set source to <strong>Manual Entry</strong></li>
+            <li>Click <strong>Add Field</strong> to create key-value pairs</li>
+            <li>Choose a type for each field (text, number, image, URL, color, boolean, HTML)</li>
+            <li>Enter the value</li>
+            <li>Use the key name as <code ngNonBindable>{{key}}</code> in your template</li>
+          </ol>
+          <div class="guide-note">
+            <i class="pi pi-info-circle"></i>
+            <span>API responses are cached for 5 minutes by default. You can adjust the cache duration in the section settings.</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="guide-section" [class.expanded]="expandedSection() === 'binding'">
+      <div class="section-header" (click)="toggleSection('binding')">
+        <i class="pi pi-code"></i>
+        <span>Template Variable Syntax</span>
+        <i class="pi chevron" [class.pi-chevron-down]="expandedSection() !== 'binding'"
+           [class.pi-chevron-up]="expandedSection() === 'binding'"></i>
+      </div>
+      @if (expandedSection() === 'binding') {
+        <div class="section-body">
+          <p>Use these patterns in your template HTML (in Template Master) to bind dynamic data:</p>
+
+          <div class="syntax-example">
+            <h5>Simple Variable</h5>
+            <code>&lt;h1&gt;&#123;title&#125;&#125;&lt;/h1&gt;</code>
+            <p>Replaces with the value of the "title" field.</p>
+          </div>
+
+          <div class="syntax-example">
+            <h5>With Fallback</h5>
+            <code>&#123;title | Default Title&#125;&#125;</code>
+            <p>Uses "Default Title" if the field is empty or missing.</p>
+          </div>
+
+          <div class="syntax-example">
+            <h5>In Attributes</h5>
+            <code>&lt;img src="&#123;heroImage&#125;&#125;" alt="&#123;title&#125;&#125;"&gt;</code>
+            <p>Works inside HTML attributes too.</p>
+          </div>
+
+          <div class="syntax-example">
+            <h5>Array Loop</h5>
+            <pre ngNonBindable>
+                  #each items 
+                  &lt;div class="card"&gt; 
+                  &lt;h3&gt;{{name}}&lt;/h3&gt;
+                  &lt;p&gt;{{description}}&lt;/p&gt;
+                  &lt;/div&gt;
+                  {{/each}}</pre>
+            <p>Loops through an array. Each item's properties are available as variables.</p>
+          </div>
+
+          <div class="syntax-example">
+            <h5>Conditional</h5>
+            <pre ngNonBindable>{{#if showBanner}}
+                  &lt;div class="banner"&gt;{{bannerText}}&lt;/div&gt;
+                  {{else}}
+                  &lt;div class="banner"&gt;Default Banner&lt;/div&gt;
+                  {{/if}}</pre>
+            <p>Shows content only if the value is truthy.</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="guide-section" [class.expanded]="expandedSection() === 'gsap'">
+      <div class="section-header" (click)="toggleSection('gsap')">
+        <i class="pi pi-star"></i>
+        <span>GSAP Animations</span>
+        <i class="pi chevron" [class.pi-chevron-down]="expandedSection() !== 'gsap'"
+           [class.pi-chevron-up]="expandedSection() === 'gsap'"></i>
+      </div>
+      @if (expandedSection() === 'gsap') {
+        <div class="section-body">
+          <p>Sections support GSAP scroll-triggered animations.</p>
+          <ol>
+            <li>
+              <strong>Animation Key</strong> — Each section can have its own GSAP animation key, or inherit the page-level key.
+            </li>
+            <li>
+              <strong>Animation Delay</strong> — Set a delay (in ms) for staggered reveal effects.
+            </li>
+            <li>
+              <strong>Configure Animations</strong> — Actual animation definitions are managed in the <strong>GSAP Master</strong> section of the CMS.
+            </li>
+          </ol>
+          <div class="guide-note">
+            <i class="pi pi-info-circle"></i>
+            <span>GSAP animations are applied automatically when sections scroll into view. No manual setup needed per section.</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

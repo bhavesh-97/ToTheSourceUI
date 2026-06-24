@@ -75,6 +75,7 @@
   </div>
 }
 
+
 <!-- ═══ EDITOR VIEW ═══ -->
 @if (editorOpen()) {
   <div class="editor-layout">
@@ -93,6 +94,9 @@
           </div>
         </div>
         <div class="toolbar-right">
+          <button pButton icon="pi pi-question-circle" class="p-button-rounded p-button-text"
+                  pTooltip="Page Guide" (click)="guideDialogVisible = true">
+          </button>
           <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text"
                   [class.active]="showPreview()" pTooltip="Toggle Preview"
                   (click)="showPreview.set(!showPreview())">
@@ -487,6 +491,13 @@
         </div>
       }
     </div>
-  }
+}
 
   <p-confirmDialog [draggable]="false" key="pageConfigDialog"></p-confirmDialog>
+
+  <!-- Guide Popup Dialog -->
+  <p-dialog [(visible)]="guideDialogVisible" [draggable]="false" [modal]="true"
+      [style]="{width:'90%', maxWidth:'700px', height:'75vh'}"
+      header="Page Builder Guide" [baseZIndex]="11000">
+    <app-guide-tab></app-guide-tab>
+  </p-dialog>
