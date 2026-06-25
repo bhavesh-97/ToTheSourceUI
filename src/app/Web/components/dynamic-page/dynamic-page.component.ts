@@ -1,6 +1,6 @@
 import { Component,OnInit,OnDestroy,inject,signal,computed,} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
@@ -9,6 +9,8 @@ import { TemplatePlaceholder } from '../../../shared/template-placeholder/templa
 import { WebGsapService } from '../../services/web-gsap.service';
 import { TemplateMasterService } from '../../../CMS/main/template-master/template-master.service';
 import { DynamicPageConfig, DynamicPageSection, DynamicPageService } from './dynamic-page.service';
+import { CMSRoutes } from '../../../CMS/CMS.routes';
+import { WebRoutes } from '../../Web.routes';
 
 @Component({
   selector: 'app-dynamic-page',
@@ -50,6 +52,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
   });
 
   private destroy$ = new Subject<void>();
+  private knownRoutes: Set<string> | null = null;
 
   ngOnInit(): void {
     this.templateMasterService.GetTemplateTypes().pipe(takeUntil(this.destroy$)).subscribe({
@@ -71,7 +74,11 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const slug = params.get('slug') || params.get('pageKey') || params.get('page') || '';
       if (slug) {
-        this.loadPage(slug);
+        if (this.isKnownRoute(slug)) {
+          this.router.navigate([slug]);
+        } else {
+          this.loadPage(slug);
+        }
       } else {
         this.showError('404', 'Page Not Found', 'No page specified in the URL.');
       }
@@ -82,6 +89,36 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.webGsapService.killAll();
+  }
+
+  private buildKnownRoutes(): Set<string> {
+    const knownRoutes = new Set<string>();
+
+    const traverse = (routes: Routes, prefix: string) => {
+      for (const route of routes) {
+        if (route.path !== undefined && !route.path.includes(':') && route.path !== '**') {
+          const routePath = prefix ? `${prefix}/${route.path}` : route.path;
+          knownRoutes.add(routePath);
+          if (route.children) {
+            traverse(route.children, routePath);
+          }
+        }
+      }
+    };
+
+    traverse(WebRoutes, '');
+    traverse(CMSRoutes, 'CMS');
+
+    return knownRoutes;
+  }
+
+  private isKnownRoute(path: string): boolean {
+    if (!this.knownRoutes) {
+      this.knownRoutes = this.buildKnownRoutes();
+    }
+    const segments = path.split('/').filter(s => s);
+    const fullPath = segments.join('/');
+    return this.knownRoutes.has(fullPath);
   }
 
   getTemplateTypeName(templateType: number | null | undefined): string {
