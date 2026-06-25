@@ -86,7 +86,10 @@ export class DynamicDataResolver {
   }
 
   private static processEachBlock(arg: string, content: string, data: Record<string, any>): string {
-    const items = this.resolvePath(data, arg);
+    let items = this.resolvePath(data, arg);
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items); } catch { return ''; }
+    }
     if (!Array.isArray(items) || items.length === 0) return '';
 
     return items.map((item: any, index: number) => {

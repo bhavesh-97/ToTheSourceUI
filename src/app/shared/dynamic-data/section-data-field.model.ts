@@ -58,18 +58,23 @@ export function fieldsToRecord(fields: SectionDataField[]): Record<string, any> 
   const record: Record<string, any> = {};
   for (const f of fields) {
     if (!f.key) continue;
+    const val = f.value;
     switch (f.type) {
       case 'number':
-        record[f.key] = Number(f.value) || 0;
+        record[f.key] = Number(val) || 0;
         break;
       case 'boolean':
-        record[f.key] = f.value === 'true' || f.value === '1';
+        record[f.key] = val === 'true' || val === '1';
         break;
       case 'json':
-        try { record[f.key] = JSON.parse(f.value); } catch { record[f.key] = f.value; }
+        if (typeof val === 'string' && val.trim().startsWith('[') || val.trim().startsWith('{')) {
+          try { record[f.key] = JSON.parse(val); } catch { record[f.key] = val; }
+        } else {
+          record[f.key] = val;
+        }
         break;
       default:
-        record[f.key] = f.value;
+        record[f.key] = val;
     }
   }
   return record;
