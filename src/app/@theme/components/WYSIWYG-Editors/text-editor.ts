@@ -36,6 +36,7 @@ import { MGsapPage } from '../../../CMS/main/gsap-master/gsap-interface';
 import { DynamicDataConfig } from '../../../shared/dynamic-data/dynamic-data.model';
 import { DynamicDataService } from '../../../shared/dynamic-data/dynamic-data.service';
 import { DynamicDataResolver } from '../../../shared/dynamic-data/dynamic-data-resolver';
+import { fieldsToRecord } from '../../../shared/dynamic-data/section-data-field.model';
 import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorConfig, EditorPreset, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, ToolbarPreset, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
 import { AnalyticsService } from '../../../@core/utils';
 import { NotificationService } from '../../../services/notification.service';
@@ -4947,10 +4948,7 @@ public aiImproveWriting() {
         }
       });
     } else if (this.dynamicDataConfig.sourceType === 'manual' && this.dynamicDataConfig.data?.length) {
-      const manualData: Record<string, any> = {};
-      this.dynamicDataConfig.data.forEach(field => {
-        if (field.key) manualData[field.key] = field.value;
-      });
+      const manualData = fieldsToRecord(this.dynamicDataConfig.data);
       this.resolvedPreviewHtml = DynamicDataResolver.resolve(rawHtml, manualData);
       this.updateVariableStatus(manualData);
       this.isResolvingPreview = false;
@@ -4996,7 +4994,15 @@ public aiImproveWriting() {
 
   private updateVariableStatus(data: Record<string, any>): void {
     this.detectedVariables.forEach(v => {
-      const val = this.resolvePath(data, v.name);
+      let val = this.resolvePath(data, v.name);
+      if (val === undefined || val === null || val === '') {
+        for (const key of Object.keys(data)) {
+          if (Array.isArray(data[key]) && data[key].length > 0 && typeof data[key][0] === 'object') {
+            val = this.resolvePath(data[key][0], v.name);
+            if (val !== undefined && val !== null && val !== '') break;
+          }
+        }
+      }
       if (val !== undefined && val !== null && val !== '') {
         v.status = 'resolved';
         v.resolvedValue = typeof val === 'object' ? JSON.stringify(val) : String(val);
@@ -5046,7 +5052,7 @@ public aiImproveWriting() {
   toggleVariableInspector() {
     this.showVariableInspector = !this.showVariableInspector;
     if (this.showVariableInspector) {
-      const html = this.isPreview ? this.resolvedPreviewHtml : this.editor.nativeElement.innerHTML;
+      const html = this.editor.nativeElement.innerHTML;
       this.detectedVariables = this.detectVariables(html);
       if (this.dynamicDataConfig && this.dynamicDataConfig.sourceType === 'api' && this.dynamicDataConfig.apiUrl) {
         this.dynamicDataService.fetchSectionData(this.dynamicDataConfig).subscribe({
@@ -5063,10 +5069,7 @@ public aiImproveWriting() {
           }
         });
       } else if (this.dynamicDataConfig && this.dynamicDataConfig.sourceType === 'manual' && this.dynamicDataConfig.data?.length) {
-        const manualData: Record<string, any> = {};
-        this.dynamicDataConfig.data.forEach(field => {
-          if (field.key) manualData[field.key] = field.value;
-        });
+        const manualData = fieldsToRecord(this.dynamicDataConfig.data);
         this.updateVariableStatus(manualData);
       } else {
         this.updateVariableStatus({});
