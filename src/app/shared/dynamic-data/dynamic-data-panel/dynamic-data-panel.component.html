@@ -180,8 +180,8 @@
               } @else if (field.type === 'json') {
                 <textarea pTextarea [(ngModel)]="field.value"
                           (ngModelChange)="updateDataField(i, { value: $event })"
-                          rows="2" placeholder='{"key": "value"}'
-                          class="w-full code-textarea"></textarea>
+                          rows="4" placeholder='{"key": "value"}'
+                          class="w-full code-textarea json-textarea"></textarea>
               } @else if (field.type === 'date') {
                 <input type="date" [(ngModel)]="field.value"
                        (ngModelChange)="updateDataField(i, { value: $event })"
