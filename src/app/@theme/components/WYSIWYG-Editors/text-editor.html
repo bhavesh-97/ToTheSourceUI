@@ -155,13 +155,31 @@
                    (click)="toggleSource()" [class.active]="isSource" type="button">
              <i class="fa fa-code"></i>
            </button>
-           
+
+           <!-- Data Preview Toggle -->
+           <button *ngIf="enableDataPreview && dynamicDataConfig" class="toolbar-btn"
+                   pTooltip="{{isPreview ? 'Exit Preview' : 'Preview with Data'}} (Ctrl+Shift+D)"
+                   (click)="togglePreview()" [class.active]="isPreview"
+                   [class.resolving]="isResolvingPreview" type="button">
+                   <i class="fa fa-database"></i>
+             <!-- <i class="fa" [class.fa-spinner fa-spin]="isResolvingPreview"
+                [class.fa-eye]="!isResolvingPreview && !isPreview"
+                [class.fa-eye-slash]="!isResolvingPreview && isPreview"></i> -->
+           </button>
+
+           <!-- Variable Inspector Toggle -->
+           <button *ngIf="enableDataPreview && dynamicDataConfig" class="toolbar-btn"
+                   pTooltip="Variable Inspector" (click)="toggleVariableInspector()"
+                   [class.active]="showVariableInspector" type="button">
+             <i class="fa-solid fa-shield-halved"></i>
+           </button>
+                     
            <!-- Split View Toggle -->
            <button class="toolbar-btn desktop-only" pTooltip="Split View" 
                    (click)="toggleSplitView()" [class.active]="isSplitView" type="button">
              <i class="fa fa-columns"></i>
            </button>
-          
+
            <button class="toolbar-btn" pTooltip="Toggle Theme" (click)="toggleTheme()" type="button">
              <i class="fa" [class.fa-moon]="!isDark" [class.fa-sun]="isDark"></i>
            </button>
@@ -260,12 +278,12 @@
     </div> -->
     
     <!-- Editor Area -->
-    <div class="editor-area" [class.split-view]="isSplitView">
+    <div class="editor-area" [class.split-view]="isSplitView" [class.preview-active]="isPreview">
       <!-- WYSIWYG Editor -->
       <div #editor 
            contenteditable="true" 
            class="editor-content" 
-           [style.display]="isSource && !isSplitView ? 'none' : 'block'"
+           [style.display]="(isSource || isPreview) && !isSplitView ? 'none' : 'block'"
            [style.width]="isSplitView ? '50%' : '100%'"
            [class.readonly]="isReadOnly"
            [attr.spellcheck]="spellCheck"
@@ -282,7 +300,7 @@
 <!-- Source Editor -->
        <textarea #sourceEditor
                  class="source-editor"
-                 [style.display]="!isSource && !isSplitView ? 'none' : 'block'"
+                 [style.display]="(!isSource || isPreview) && !isSplitView ? 'none' : 'block'"
                  [style.width]="isSplitView ? '50%' : '100%'"
                  [readonly]="isReadOnly"
                  [placeholder]="placeholder"
@@ -291,8 +309,56 @@
                  (focus)="editorFocus.emit()"
                  style="overflow-y: auto;">
        </textarea>
+
+       <!-- Data Preview -->
+       <div class="preview-data-container" *ngIf="isPreview"
+            [style.width]="isSplitView ? '50%' : '100%'">
+         <div class="preview-data-header">
+           <i class="fa fa-eye"></i>
+           <span>Live Data Preview</span>
+           <span class="preview-badge" *ngIf="dynamicDataConfig?.sourceType === 'api'">API</span>
+           <span class="preview-badge manual" *ngIf="dynamicDataConfig?.sourceType === 'manual'">Manual</span>
+         </div>
+         <div class="preview-data-content" [innerHTML]="resolvedPreviewHtml | safeHtml"></div>
+       </div>
     </div>
-    
+
+    <!-- Variable Inspector Drawer -->
+    <div class="variable-inspector" *ngIf="showVariableInspector"
+         [class.visible]="showVariableInspector">
+      <div class="inspector-header">
+        <div class="inspector-title">
+          <i class="fa fa-code"></i>
+          <span>Variable Inspector</span>
+        </div>
+        <button class="inspector-close" (click)="showVariableInspector = false" type="button">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="inspector-body">
+        <div class="inspector-stats" *ngIf="detectedVariables.length">
+          <span class="stat resolved">{{resolvedCount}} resolved</span>
+          <span class="stat fallback">{{fallbackCount}} fallback</span>
+          <span class="stat missing">{{missingCount}} missing</span>
+        </div>
+        <div class="inspector-empty" *ngIf="!detectedVariables.length">
+          <i class="fa fa-info-circle"></i>
+          <span>No template variables detected in the current content.</span>
+        </div>
+        <div class="inspector-list">
+          <div *ngFor="let v of detectedVariables" class="inspector-var" [class]="v.status">
+            <div class="var-header">
+              <span class="var-name">{{v.name}}</span>
+              <span class="var-status" [class]="v.status">{{v.status}}</span>
+            </div>
+            <div class="var-value" *ngIf="v.resolvedValue">{{v.resolvedValue}}</div>
+            <div class="var-fallback" *ngIf="v.fallback">
+              <i class="fa fa-arrow-right"></i> fallback: {{v.fallback}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Status Bar -->
     <div class="status-bar" *ngIf="showStatusBar">
@@ -323,8 +389,19 @@
         </div>
         <span>{{performanceScore}}%</span>
       </div>
-      <div class="mode-indicator">
+      <div class="mode-indicator" *ngIf="!isPreview">
         <span>{{isSource ? 'Source' : isSplitView ? 'Split' : 'Rich Text'}}</span>
+      </div>
+      <div class="mode-indicator preview-mode" *ngIf="isPreview">
+        <i class="fa fa-eye"></i>
+        <span>Preview</span>
+      </div>
+      <div class="mode-indicator inspector-indicator" *ngIf="enableDataPreview && dynamicDataConfig && detectedVariables.length && !isPreview"
+           (click)="toggleVariableInspector()" style="cursor:pointer;">
+        <span>{{detectedVariables.length}} vars</span>
+        <span class="missing-count" *ngIf="missingCount > 0">
+          ({{missingCount}} missing)
+        </span>
       </div>
     </div>
     

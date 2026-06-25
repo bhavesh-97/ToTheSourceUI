@@ -26,12 +26,16 @@ import { ResizableModule, ResizeEvent } from 'angular-resizable-element';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DrawerModule } from 'primeng/drawer';
 import { FileSizePipe } from "../../pipes/filesize.pipe";
+import { SafeHtmlPipe } from "../../pipes/safe-html.pipe";
 import { TextEditorService } from './text-editor.service';
 import { TextFormattingService } from './text-formatting.service';
 import { TextHistoryService } from './text-history.service';
 import { TextAutosaveService } from './text-autosave.service';
 import { GsapMasterService } from '../../../CMS/main/gsap-master/gsap-master.service';
 import { MGsapPage } from '../../../CMS/main/gsap-master/gsap-interface';
+import { DynamicDataConfig } from '../../../shared/dynamic-data/dynamic-data.model';
+import { DynamicDataService } from '../../../shared/dynamic-data/dynamic-data.service';
+import { DynamicDataResolver } from '../../../shared/dynamic-data/dynamic-data-resolver';
 import { AccessibilityAlert, AccessibilityComponent, AccessibilityController, AccessibilityDashboard, AccessibilityDirective, AccessibilityEntry, AccessibilityGuard, AccessibilityInterceptor, AccessibilityIssue, AccessibilityModule, AccessibilityMonitor, AccessibilityObservable, AccessibilityPipe, AccessibilityPromise, AccessibilityProvider, AccessibilityReport, AccessibilityResolver, AccessibilityService, AccessibilitySubject, AnalyticsAlert, AnalyticsComponent, AnalyticsController, AnalyticsDashboard, AnalyticsDirective, AnalyticsEntry, AnalyticsGuard, AnalyticsInterceptor, AnalyticsModule, AnalyticsMonitor, AnalyticsObservable, AnalyticsPipe, AnalyticsPromise, AnalyticsProvider, AnalyticsReport, AnalyticsResolver, AnalyticsSubject, BackupAlert, BackupComponent, BackupController, BackupDashboard, BackupDirective, BackupEntry, BackupGuard, BackupInterceptor, BackupModule, BackupMonitor, BackupObservable, BackupPipe, BackupPromise, BackupProvider, BackupReport, BackupResolver, BackupService, BackupSubject, CollaborationAlert, CollaborationComponent, CollaborationController, CollaborationDashboard, CollaborationDirective, CollaborationEntry, CollaborationGuard, CollaborationInterceptor, CollaborationModule, CollaborationMonitor, CollaborationObservable, CollaborationPipe, CollaborationPromise, CollaborationProvider, CollaborationReport, CollaborationResolver, CollaborationService, CollaborationSubject, ContentAlert, ContentComponent, ContentController, ContentDashboard, ContentDirective, ContentEntry, ContentGuard, ContentInterceptor, ContentModule, ContentMonitor, ContentObservable, ContentPipe, ContentPromise, ContentProvider, ContentReport, ContentResolver, ContentService, ContentSubject, DevelopmentAlert, DevelopmentComponent, DevelopmentController, DevelopmentDashboard, DevelopmentDirective, DevelopmentEntry, DevelopmentGuard, DevelopmentInterceptor, DevelopmentModule, DevelopmentMonitor, DevelopmentObservable, DevelopmentPipe, DevelopmentPromise, DevelopmentProvider, DevelopmentReport, DevelopmentResolver, DevelopmentService, DevelopmentSubject, EditorConfig, EditorPreset, EditorState, ExportAlert, ExportComponent, ExportController, ExportDashboard, ExportDirective, ExportEntry, ExportGuard, ExportInterceptor, ExportModule, ExportMonitor, ExportObservable, ExportPipe, ExportPromise, ExportProvider, ExportReport, ExportResolver, ExportService, ExportSubject, FormattingState, HelpAlert, HelpComponent, HelpController, HelpDashboard, HelpDirective, HelpEntry, HelpGuard, HelpInterceptor, HelpModule, HelpMonitor, HelpObservable, HelpPipe, HelpPromise, HelpProvider, HelpReport, HelpResolver, HelpService, HelpSubject, HistoryItem, I18nAlert, I18nComponent, I18nController, I18nDashboard, I18nDirective, I18nEntry, I18nGuard, I18nInterceptor, I18nModule, I18nMonitor, I18nObservable, I18nPipe, I18nPromise, I18nProvider, I18nReport, I18nResolver, I18nService, I18nSubject, ImportAlert, ImportComponent, ImportController, ImportDashboard, ImportDirective, ImportEntry, ImportGuard, ImportInterceptor, ImportModule, ImportMonitor, ImportObservable, ImportPipe, ImportPromise, ImportProvider, ImportReport, ImportResolver, ImportService, ImportSubject, IntegrationAlert, IntegrationComponent, IntegrationController, IntegrationDashboard, IntegrationDirective, IntegrationEntry, IntegrationGuard, IntegrationInterceptor, IntegrationModule, IntegrationMonitor, IntegrationObservable, IntegrationPipe, IntegrationPromise, IntegrationProvider, IntegrationReport, IntegrationResolver, IntegrationService, IntegrationSubject, MobileAlert, MobileComponent, MobileController, MobileDashboard, MobileDirective, MobileEntry, MobileGuard, MobileInterceptor, MobileModule, MobileMonitor, MobileObservable, MobilePipe, MobilePromise, MobileProvider, MobileReport, MobileResolver, MobileService, MobileSubject, NotificationAlert, NotificationComponent, NotificationController, NotificationDashboard, NotificationDirective, NotificationEntry, NotificationGuard, NotificationInterceptor, NotificationModule, NotificationMonitor, NotificationObservable, NotificationPipe, NotificationPromise, NotificationProvider, NotificationReport, NotificationResolver, NotificationSubject, PerformanceAlert, PerformanceComponent, PerformanceController, PerformanceDashboard, PerformanceDirective, PerformanceGuard, PerformanceInterceptor, PerformanceModule, PerformanceMonitor, PerformanceObservable, PerformancePipe, PerformancePromise, PerformanceProvider, PerformanceReport, PerformanceResolver, PerformanceService, PerformanceSubject, PrintAlert, PrintComponent, PrintController, PrintDashboard, PrintDirective, PrintEntry, PrintGuard, PrintInterceptor, PrintModule, PrintMonitor, PrintObservable, PrintPipe, PrintPromise, PrintProvider, PrintReport, PrintResolver, PrintService, PrintSubject, SearchAlert, SearchComponent, SearchController, SearchDashboard, SearchDirective, SearchEntry, SearchGuard, SearchInterceptor, SearchModule, SearchMonitor, SearchObservable, SearchPipe, SearchPromise, SearchProvider, SearchReport, SearchResolver, SearchService, SearchSubject, SecurityAlert, SecurityComponent, SecurityController, SecurityDashboard, SecurityDirective, SecurityEntry, SecurityGuard, SecurityInterceptor, SecurityModule, SecurityMonitor, SecurityObservable, SecurityPipe, SecurityPromise, SecurityProvider, SecurityReport, SecurityResolver, SecurityService, SecuritySubject, SEOAlert, SEOComponent, SEOController, SEODashboard, SEODirective, SEOEntry, SEOGuard, SEOInterceptor, SEOModule, SEOMonitor, SEOObservable, SEOPipe, SEOPromise, SEOProvider, SEOReport, SEOResolver, SEOService, SEOSubject, ToolbarPreset, UserManagementAlert, UserManagementComponent, UserManagementController, UserManagementDashboard, UserManagementDirective, UserManagementEntry, UserManagementGuard, UserManagementInterceptor, UserManagementModule, UserManagementMonitor, UserManagementObservable, UserManagementPipe, UserManagementPromise, UserManagementProvider, UserManagementReport, UserManagementResolver, UserManagementService, UserManagementSubject } from './editor-style.interface';
 import { AnalyticsService } from '../../../@core/utils';
 import { NotificationService } from '../../../services/notification.service';
@@ -40,7 +44,7 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
 @Component({
   selector: 'app-text-editor',
   standalone: true,
-  imports: [
+      imports: [
     CommonModule,
     FormsModule,
     ButtonModule,
@@ -62,7 +66,8 @@ import { PopupMessageType } from '../../../models/PopupMessageType';
     RadioButtonModule,
     DrawerModule,
     ToggleSwitchModule,
-    FileSizePipe
+    FileSizePipe,
+    SafeHtmlPipe
 ],
   providers: [
     {
@@ -129,6 +134,8 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       @Input() left: string = 'auto';
       @Input() right: string = 'auto';
       @Input() gsapPageId: number = 0;
+      @Input() enableDataPreview: boolean = false;
+      @Input() dynamicDataConfig: DynamicDataConfig | null = null;
     //#endregion
     //#region Configuration Outputs
       @Output() clickOutside = new EventEmitter<void>();
@@ -159,6 +166,13 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       isFullscreen = false;
       isReadOnly = false;
       isSplitView = false;
+      isPreview = false;
+      isResolvingPreview = false;
+      resolvedPreviewHtml = '';
+      originalSourceHtml = '';
+      showVariableInspector = false;
+      detectedVariables: DetectedVariable[] = [];
+      syntaxWarnings: string[] = [];
       isLoading = false;
       isDirty = false;
       showLink = false;
@@ -2304,6 +2318,7 @@ export class TextEditorComponent implements AfterViewInit, OnDestroy, ControlVal
       private textHistoryService = inject(TextHistoryService);
       private textAutosaveService = inject(TextAutosaveService);
       private gsapMasterService = inject(GsapMasterService);
+      private dynamicDataService = inject(DynamicDataService);
     //#endregion
       constructor( @Inject(DOCUMENT) public doc: Document) {
                 this.initializeFeatureFlags();
@@ -4815,7 +4830,7 @@ public aiImproveWriting() {
     this.messageService.showMessage(`"${template.name}" template applied successfully`, 'Template Applied', PopupMessageType.Success);
   }
 
-  // Enhanced Source Mode
+  // Enhanced Source Mode with Data Preview
   toggleSource() {
     this.isSource = !this.isSource;
     if (this.isSource) {
@@ -4840,6 +4855,40 @@ public aiImproveWriting() {
     this.sync();
   }
 
+  private showResolvedPreview() {
+    this.editor.nativeElement.innerHTML = this.resolvedPreviewHtml;
+    this.editor.nativeElement.style.display = 'block';
+    this.editor.nativeElement.contentEditable = 'false';
+    if (this.sourceEditor) {
+      this.sourceEditor.nativeElement.value = this.resolvedPreviewHtml;
+      this.sourceEditor.nativeElement.style.display = 'none';
+    }
+  }
+
+  private showRawSource(html: string) {
+    if (this.sourceEditor) {
+      this.sourceEditor.nativeElement.value = html;
+    }
+    this.editor.nativeElement.style.display = 'none';
+    if (this.sourceEditor) {
+      this.sourceEditor.nativeElement.style.display = 'block';
+    }
+  }
+
+  private restoreOriginalHtml() {
+    const html = this.originalSourceHtml || this.editor.nativeElement.innerHTML;
+    this.editor.nativeElement.innerHTML = html;
+    this.editor.nativeElement.style.display = 'block';
+    this.editor.nativeElement.contentEditable = 'true';
+    this.isSource = false;
+    this.resolvedPreviewHtml = '';
+    this.detectedVariables = [];
+    this.syntaxWarnings = [];
+    if (this.sourceEditor) {
+      this.sourceEditor.nativeElement.style.display = 'none';
+    }
+  }
+
   // Enhanced Split View
   toggleSplitView() {
     this.isSplitView = !this.isSplitView;
@@ -4858,6 +4907,169 @@ public aiImproveWriting() {
       this.editor.nativeElement.style.display = 'block';
       if (this.sourceEditor) {
         this.sourceEditor.nativeElement.style.display = 'none';
+      }
+    }
+  }
+
+  // Data Preview Mode
+  togglePreview() {
+    debugger
+    if (this.isPreview) {
+      this.isPreview = false;
+      this.resolvedPreviewHtml = '';
+      return;
+    }
+    if (!this.enableDataPreview || !this.dynamicDataConfig) return;
+    const rawHtml = this.editor.nativeElement.innerHTML;
+    this.isResolvingPreview = true;
+    this.detectedVariables = this.detectVariables(rawHtml);
+    if (this.dynamicDataConfig.sourceType === 'api' && this.dynamicDataConfig.apiUrl) {
+      this.dynamicDataService.fetchSectionData(this.dynamicDataConfig).subscribe({
+        next: (data) => {
+          this.isResolvingPreview = false;
+          const resolved = this.normalizeApiData(data);
+          if (resolved) {
+            this.resolvedPreviewHtml = DynamicDataResolver.resolve(rawHtml, resolved);
+            this.updateVariableStatus(resolved);
+          } else {
+            this.resolvedPreviewHtml = rawHtml;
+            this.updateVariableStatus({});
+          }
+          this.isPreview = true;
+          this.cdRef.detectChanges();
+        },
+        error: () => {
+          this.isResolvingPreview = false;
+          this.resolvedPreviewHtml = rawHtml;
+          this.updateVariableStatus({});
+          this.isPreview = true;
+          this.cdRef.detectChanges();
+        }
+      });
+    } else if (this.dynamicDataConfig.sourceType === 'manual' && this.dynamicDataConfig.data?.length) {
+      const manualData: Record<string, any> = {};
+      this.dynamicDataConfig.data.forEach(field => {
+        if (field.key) manualData[field.key] = field.value;
+      });
+      this.resolvedPreviewHtml = DynamicDataResolver.resolve(rawHtml, manualData);
+      this.updateVariableStatus(manualData);
+      this.isResolvingPreview = false;
+      this.isPreview = true;
+      this.cdRef.detectChanges();
+    } else {
+      this.resolvedPreviewHtml = rawHtml;
+      this.isResolvingPreview = false;
+      this.isPreview = true;
+      this.cdRef.detectChanges();
+    }
+  }
+
+  private normalizeApiData(data: any): Record<string, any> | null {
+    if (!data) return null;
+    if (Array.isArray(data)) {
+      if (data.length === 0) return null;
+      const first = data[0];
+      if (typeof first === 'object' && first !== null) {
+        return { ...first, _items: data };
+      }
+      return { value: first, _items: data };
+    }
+    if (typeof data === 'object') return data;
+    return { value: data };
+  }
+
+  private detectVariables(html: string): DetectedVariable[] {
+    const skipPatterns = /^\s*(#|\/|else)/;
+    const regex = /\{\{(\w+(?:\.\w+)*?)(?:\s*\|\s*(.+?))?\}\}/g;
+    const variables: DetectedVariable[] = [];
+    const seen = new Set<string>();
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+      const name = match[1].trim();
+      if (skipPatterns.test(name)) continue;
+      if (seen.has(name)) continue;
+      seen.add(name);
+      variables.push({ name, fallback: match[2]?.trim() || null, status: 'pending', resolvedValue: '' });
+    }
+    return variables;
+  }
+
+  private updateVariableStatus(data: Record<string, any>): void {
+    this.detectedVariables.forEach(v => {
+      const val = this.resolvePath(data, v.name);
+      if (val !== undefined && val !== null && val !== '') {
+        v.status = 'resolved';
+        v.resolvedValue = typeof val === 'object' ? JSON.stringify(val) : String(val);
+      } else if (v.fallback) {
+        v.status = 'fallback';
+        v.resolvedValue = v.fallback;
+      } else {
+        v.status = 'missing';
+        v.resolvedValue = '';
+      }
+    });
+  }
+
+  private resolvePath(obj: Record<string, any>, path: string): any {
+    if (!obj || !path) return undefined;
+    const parts = path.split('.');
+    let current: any = obj;
+    for (const part of parts) {
+      if (current === null || current === undefined) return undefined;
+      current = current[part];
+    }
+    return current;
+  }
+
+  private checkSyntaxWarnings(html: string, data: Record<string, any>): string[] {
+    const warnings: string[] = [];
+    const eachRegex = /\{\{#each\s+(\w+(?:\.\w+)*)\}\}/g;
+    let m;
+    while ((m = eachRegex.exec(html)) !== null) {
+      const val = this.resolvePath(data, m[1]);
+      if (val === undefined || val === null) {
+        warnings.push(`Loop "{{#each ${m[1]}}}" — variable "${m[1]}" not found in data`);
+      } else if (!Array.isArray(val)) {
+        warnings.push(`Loop "{{#each ${m[1]}}}" — "${m[1]}" is not an array (${typeof val})`);
+      }
+    }
+    const ifRegex = /\{\{#if\s+(\w+(?:\.\w+)*)\}\}/g;
+    while ((m = ifRegex.exec(html)) !== null) {
+      const val = this.resolvePath(data, m[1]);
+      if (val === undefined || val === null) {
+        warnings.push(`Conditional "{{#if ${m[1]}}}" — variable "${m[1]}" not found in data`);
+      }
+    }
+    return warnings;
+  }
+
+  toggleVariableInspector() {
+    this.showVariableInspector = !this.showVariableInspector;
+    if (this.showVariableInspector) {
+      const html = this.isPreview ? this.resolvedPreviewHtml : this.editor.nativeElement.innerHTML;
+      this.detectedVariables = this.detectVariables(html);
+      if (this.dynamicDataConfig && this.dynamicDataConfig.sourceType === 'api' && this.dynamicDataConfig.apiUrl) {
+        this.dynamicDataService.fetchSectionData(this.dynamicDataConfig).subscribe({
+          next: (data) => {
+            const resolved = this.normalizeApiData(data);
+            if (resolved) {
+              this.updateVariableStatus(resolved);
+            } else {
+              this.updateVariableStatus({});
+            }
+          },
+          error: () => {
+            this.updateVariableStatus({});
+          }
+        });
+      } else if (this.dynamicDataConfig && this.dynamicDataConfig.sourceType === 'manual' && this.dynamicDataConfig.data?.length) {
+        const manualData: Record<string, any> = {};
+        this.dynamicDataConfig.data.forEach(field => {
+          if (field.key) manualData[field.key] = field.value;
+        });
+        this.updateVariableStatus(manualData);
+      } else {
+        this.updateVariableStatus({});
       }
     }
   }
@@ -5002,6 +5214,11 @@ public aiImproveWriting() {
           if (event.key === 'p' || event.key === 'P') {
             event.preventDefault();
             this.showPreviewDialog = true;
+            break;
+          }
+          if (event.key === 'd' || event.key === 'D') {
+            event.preventDefault();
+            this.togglePreview();
             break;
           }
           break;
@@ -7097,4 +7314,24 @@ async toggleFullscreen() {
       this.showOverflowMenu = false;
     }
   }
+
+  // Variable Inspector getters
+  get resolvedCount(): number {
+    return this.detectedVariables.filter(v => v.status === 'resolved').length;
+  }
+
+  get fallbackCount(): number {
+    return this.detectedVariables.filter(v => v.status === 'fallback').length;
+  }
+
+  get missingCount(): number {
+    return this.detectedVariables.filter(v => v.status === 'missing').length;
+  }
+}
+
+export interface DetectedVariable {
+  name: string;
+  fallback: string | null;
+  status: 'pending' | 'resolved' | 'fallback' | 'missing';
+  resolvedValue: string;
 }
