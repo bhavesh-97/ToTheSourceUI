@@ -13,6 +13,7 @@ RUN npx ng build --configuration production
 FROM nginx:alpine
 
 COPY --from=build /app/dist/ToTheSourceUI/browser /usr/share/nginx/html
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
