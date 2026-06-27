@@ -7,119 +7,19 @@
     </h4>
   </div>
 
-  <div class="field-row">
-    <div class="field-group">
-      <label class="field-label">Data Source</label>
-      <div class="source-toggle">
-        <button class="toggle-btn" [class.active]="config().sourceType === 'manual'"
-                (click)="setSourceType('manual')">
-          <i class="pi pi-pencil"></i> Manual Entry
-        </button>
-        <button class="toggle-btn" [class.active]="config().sourceType === 'api'"
-                (click)="setSourceType('api')">
-          <i class="pi pi-cloud"></i> API Endpoint
-        </button>
-      </div>
-    </div>
+  <div class="data-source-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'manual'"
+            (click)="setActiveTab('manual')">
+      <i class="pi pi-pencil"></i> Manual Data Fields
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'api'"
+            (click)="setActiveTab('api')">
+      <i class="pi pi-cloud"></i> API Endpoint
+    </button>
   </div>
 
-  @if (config().sourceType === 'api') {
-    <div class="api-section">
-      <div class="field-row mt-3">
-        <div class="field-group flex-3">
-          <label class="field-label">
-            API URL
-            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipApiUrl"
-               tooltipPosition="top"></i>
-          </label>
-          <input pInputText [(ngModel)]="config().apiUrl"
-                 (ngModelChange)="updateField('apiUrl', $event)"
-                 placeholder="https://api.example.com/data"
-                 class="w-full apiUrl" />
-        </div>
-        <div class="field-group flex-1">
-          <label class="field-label">Method</label>
-          <p-select [options]="apiMethodOptions" [(ngModel)]="config().apiMethod"
-                    (ngModelChange)="updateField('apiMethod', $event)"
-                    optionLabel="label" optionValue="value"
-                    styleClass="w-full">
-          </p-select>
-        </div>
-      </div>
-
-      <div class="field-row mt-3">
-        <div class="field-group">
-          <label class="field-label">
-            Headers
-            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipHeaders"
-               tooltipPosition="top"></i>
-          </label>
-          <div class="headers-list">
-            @for (key of headerKeys(); track key) {
-              <div class="header-row">
-                <input pInputText [ngModel]="key"
-                       (ngModelChange)="updateHeaderKey(key, $event)"
-                       placeholder="Header name" class="header-key" />
-                <input pInputText [ngModel]="config().apiHeaders[key]"
-                       (ngModelChange)="updateHeaderValue(key, $event)"
-                       placeholder="Value" class="header-value" />
-                <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                        (click)="removeHeader(key)" pTooltip="Remove"></button>
-              </div>
-            }
-            <button pButton label="Add Header" icon="pi pi-plus" class="p-button-text p-button-sm"
-                    (click)="addHeader()"></button>
-          </div>
-        </div>
-      </div>
-
-      @if (config().apiMethod !== 'GET' && config().apiMethod !== 'DELETE') {
-        <div class="field-row mt-3">
-          <div class="field-group">
-            <label class="field-label">
-              Request Body (JSON)
-              <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipBody"
-                 tooltipPosition="top"></i>
-            </label>
-            <textarea pTextarea [(ngModel)]="config().apiBody"
-                      (ngModelChange)="updateField('apiBody', $event)"
-                      rows="4" placeholder="JSON body"
-                      class="w-full code-textarea"></textarea>
-          </div>
-        </div>
-      }
-
-      <div class="field-row mt-3">
-        <div class="field-group">
-          <label class="field-label">
-            Cache Duration (seconds)
-            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipCache"
-               tooltipPosition="top"></i>
-          </label>
-          <p-inputNumber [(ngModel)]="config().cacheSeconds"
-                        (ngModelChange)="updateField('cacheSeconds', $event)"
-                        [min]="0" [max]="86400"
-                        styleClass="w-full">
-          </p-inputNumber>
-        </div>
-      </div>
-
-      <div class="mt-3">
-        <p-button label="Test Connection" icon="pi pi-play" class="p-button-outlined p-button-sm"
-                  (click)="openApiTest()">
-        </p-button>
-      </div>
-    </div>
-  }
-
-  @if (config().sourceType === 'manual') {
+  @if (activeTab() === 'manual') {
     <div class="manual-section">
-      <div class="field-label mt-3">
-        Data Fields
-        <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipDataFields"
-           tooltipPosition="top"></i>
-      </div>
-
       <div class="fields-table">
         <div class="fields-header">
           <span class="col-key">Key</span>
@@ -127,16 +27,16 @@
           <span class="col-value">Value</span>
           <span class="col-actions"></span>
         </div>
-        @for (field of config().data; track $index; let i = $index) {
+        @for (field of manualFields(); track $index; let i = $index) {
           <div class="field-row-item">
             <div class="col-key">
               <input pInputText [(ngModel)]="field.key"
-                     (ngModelChange)="updateDataField(i, { key: $event })"
+                     (ngModelChange)="updateManualField(i, { key: $event })"
                      placeholder="variableName" class="w-full" />
             </div>
             <div class="col-type">
               <p-select [options]="dataTypeOptions" [(ngModel)]="field.type"
-                        (ngModelChange)="updateDataField(i, { type: $event })"
+                        (ngModelChange)="updateManualField(i, { type: $event })"
                         optionLabel="label" optionValue="value"
                         appendTo="body"
                         styleClass="w-full type-dropdown">
@@ -159,102 +59,141 @@
               @if (field.type === 'boolean') {
                 <div class="boolean-toggle">
                   <p-toggleswitch [(ngModel)]="field.value"
-                                 (ngModelChange)="updateDataField(i, { value: $event ? 'true' : 'false' })">
+                                 (ngModelChange)="updateManualField(i, { value: $event ? 'true' : 'false' })">
                   </p-toggleswitch>
                   <span>{{ field.value === 'true' ? 'Yes' : 'No' }}</span>
                 </div>
               } @else if (field.type === 'color') {
                 <div class="color-input-row">
                   <input type="color" [(ngModel)]="field.value"
-                         (ngModelChange)="updateDataField(i, { value: $event })"
+                         (ngModelChange)="updateManualField(i, { value: $event })"
                          class="color-picker" />
                   <input pInputText [(ngModel)]="field.value"
-                         (ngModelChange)="updateDataField(i, { value: $event })"
+                         (ngModelChange)="updateManualField(i, { value: $event })"
                          placeholder="#000000" class="w-full" />
                 </div>
               } @else if (field.type === 'html' || field.type === 'richtext') {
                 <textarea pTextarea [(ngModel)]="field.value"
-                          (ngModelChange)="updateDataField(i, { value: $event })"
+                          (ngModelChange)="updateManualField(i, { value: $event })"
                           rows="2" [placeholder]="field.type === 'richtext' ? '<p>Rich content...</p>' : '<div>...</div>'"
                           class="w-full code-textarea"></textarea>
               } @else if (field.type === 'json') {
                 <textarea pTextarea [(ngModel)]="field.value"
-                          (ngModelChange)="updateDataField(i, { value: $event })"
+                          (ngModelChange)="updateManualField(i, { value: $event })"
                           rows="4" placeholder='{"key": "value"}'
                           class="w-full code-textarea json-textarea"></textarea>
-              } @else if (field.type === 'date') {
-                <input type="date" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       class="w-full specialized-input" />
-              } @else if (field.type === 'datetime') {
-                <input type="datetime-local" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       class="w-full specialized-input" />
-              } @else if (field.type === 'time') {
-                <input type="time" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       class="w-full specialized-input" />
-              } @else if (field.type === 'email') {
-                <input type="email" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       placeholder="user@example.com" class="w-full specialized-input" />
-              } @else if (field.type === 'phone') {
-                <input type="tel" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       placeholder="+1 (555) 123-4567" class="w-full specialized-input" />
-              } @else if (field.type === 'icon') {
-                <div class="icon-input-cell">
-                  <input pInputText [(ngModel)]="field.value"
-                         (ngModelChange)="updateDataField(i, { value: $event })"
-                         placeholder="pi pi-star" class="w-full" />
-                  @if (field.value) {
-                    <i [class]="field.value" class="icon-preview"></i>
-                  }
-                </div>
-              } @else if (field.type === 'image') {
-                <div class="media-input-cell">
-                  <input pInputText [(ngModel)]="field.value"
-                         (ngModelChange)="updateDataField(i, { value: $event })"
-                         placeholder="/uploads/image.jpg" class="w-full" />
-                  @if (field.value) {
-                    <img [src]="field.value" class="media-thumb" (error)="$event.target.style.display='none'" />
-                  }
-                </div>
-              } @else if (field.type === 'video') {
-                <input type="url" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       placeholder="https://example.com/video.mp4" class="w-full specialized-input" />
-              } @else if (field.type === 'file') {
-                <input type="url" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       placeholder="https://example.com/file.pdf" class="w-full specialized-input" />
-              } @else if (field.type === 'number') {
-                <input type="number" [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
-                       placeholder="0" class="w-full specialized-input" />
               } @else {
                 <input pInputText [(ngModel)]="field.value"
-                       (ngModelChange)="updateDataField(i, { value: $event })"
+                       (ngModelChange)="updateManualField(i, { value: $event })"
                        placeholder="Enter value" class="w-full" />
               }
             </div>
             <div class="col-actions">
               <button pButton icon="pi pi-chevron-up" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
-                      [disabled]="i === 0" (click)="moveFieldUp(i)" pTooltip="Move up"></button>
+                      [disabled]="i === 0" (click)="moveManualFieldUp(i)" pTooltip="Move up"></button>
               <button pButton icon="pi pi-chevron-down" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
-                      [disabled]="i === config().data.length - 1" (click)="moveFieldDown(i)" pTooltip="Move down"></button>
+                      [disabled]="i === manualFields().length - 1" (click)="moveManualFieldDown(i)" pTooltip="Move down"></button>
               <button pButton icon="pi pi-copy" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
-                      (click)="duplicateDataField(i)" pTooltip="Duplicate"></button>
+                      (click)="duplicateManualField(i)" pTooltip="Duplicate"></button>
               <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                      (click)="removeDataField(i)" pTooltip="Remove"></button>
+                      (click)="removeManualField(i)" pTooltip="Remove"></button>
             </div>
           </div>
         }
       </div>
 
       <p-button label="Add Field" icon="pi pi-plus" class="p-button-text p-button-sm mt-2"
-                (click)="addDataField()">
+                (click)="addManualField()">
       </p-button>
+    </div>
+  }
+
+  @if (activeTab() === 'api') {
+    <div class="api-section">
+      <div class="field-row">
+        <div class="field-group flex-3">
+          <label class="field-label">
+            API URL
+            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipApiUrl"
+               tooltipPosition="top"></i>
+          </label>
+          <input pInputText [ngModel]="apiConfig()?.apiUrl"
+                 (ngModelChange)="updateApiUrl($event)"
+                 placeholder="https://api.example.com/data"
+                 class="w-full apiUrl" />
+        </div>
+        <div class="field-group flex-1">
+          <label class="field-label">Method</label>
+          <p-select [options]="apiMethodOptions" [ngModel]="apiConfig()?.apiMethod || 'GET'"
+                    (ngModelChange)="updateApiMethod($event)"
+                    optionLabel="label" optionValue="value"
+                    styleClass="w-full">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="field-row mt-2">
+        <div class="field-group">
+          <label class="field-label">
+            Headers
+            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipHeaders"
+               tooltipPosition="top"></i>
+          </label>
+          <div class="headers-list">
+            @for (key of apiHeaderKeys(); track key) {
+              <div class="header-row">
+                <input pInputText [ngModel]="key"
+                       (ngModelChange)="updateApiHeaderKey(key, $event)"
+                       placeholder="Header name" class="header-key" />
+                <input pInputText [ngModel]="getApiHeaderValue(key)"
+                       (ngModelChange)="updateApiHeaderValue(key, $event)"
+                       placeholder="Value" class="header-value" />
+                <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                        (click)="removeApiHeader(key)" pTooltip="Remove"></button>
+              </div>
+            }
+            <button pButton label="Add Header" icon="pi pi-plus" class="p-button-text p-button-sm"
+                    (click)="addApiHeader()"></button>
+          </div>
+        </div>
+      </div>
+
+      @if (apiConfig()?.apiMethod !== 'GET' && apiConfig()?.apiMethod !== 'DELETE') {
+        <div class="field-row mt-2">
+          <div class="field-group">
+            <label class="field-label">
+              Request Body (JSON)
+              <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipBody"
+                 tooltipPosition="top"></i>
+            </label>
+            <textarea pTextarea [ngModel]="apiConfig()?.apiBody"
+                      (ngModelChange)="updateApiBody($event)"
+                      rows="4" placeholder="JSON body"
+                      class="w-full code-textarea"></textarea>
+          </div>
+        </div>
+      }
+
+      <div class="field-row mt-2">
+        <div class="field-group">
+          <label class="field-label">
+            Cache Duration (seconds)
+            <i class="pi pi-info-circle tooltip-icon" [pTooltip]="tipCache"
+               tooltipPosition="top"></i>
+          </label>
+          <p-inputNumber [ngModel]="apiConfig()?.cacheSeconds || 300"
+                        (ngModelChange)="updateApiCache($event)"
+                        [min]="0" [max]="86400"
+                        styleClass="w-full">
+          </p-inputNumber>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <p-button label="Test Connection" icon="pi pi-play" class="p-button-outlined p-button-sm"
+                  (click)="openApiTest()">
+        </p-button>
+      </div>
     </div>
   }
 
@@ -264,5 +203,5 @@
   </div>
 </div>
 
-<app-api-test-dialog [visible]="showApiTest()" [config]="config()" (closeDialog)="closeApiTest()">
+<app-api-test-dialog [visible]="showApiTest()" [config]="testApiConfig()" (closeDialog)="closeApiTest()">
 </app-api-test-dialog>

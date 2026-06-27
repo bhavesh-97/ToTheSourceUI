@@ -371,8 +371,10 @@
       </div>
     </ng-template>
   <app-dynamic-data-panel
-    [config]="tempDataConfig"
-    (configChange)="tempDataConfig = $event">
+    [manualFields]="tempManualFields"
+    (manualFieldsChange)="tempManualFields = $event"
+    [apiConfig]="tempApiConfigData"
+    (apiConfigChange)="tempApiConfigData = $event">
   </app-dynamic-data-panel>
   <ng-template pTemplate="footer">
     <button type="button" pButton label="Cancel" icon="pi pi-times" class="p-button-text"

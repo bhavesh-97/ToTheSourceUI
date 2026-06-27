@@ -88,20 +88,66 @@ export class TemplatePlaceholder {
           return of({ rawHtml: this.fallbackContent || '', config: undefined });
         }
 
+        // Convert SQL field format (FieldKey/FieldType/FieldValue) to SectionDataField (key/type/value)
+        function toSectionField(f: any): any {
+          return {
+            key: f.key ?? f.FieldKey ?? f.fieldKey ?? '',
+            type: f.type ?? f.FieldType ?? f.fieldType ?? 'text',
+            value: f.value ?? f.FieldValue ?? f.fieldValue ?? '',
+            label: f.label ?? f.FieldLabel ?? f.fieldLabel ?? '',
+          };
+        }
+
+        // Extract manual fields and API config from template or response
+        let manualFields: any[] | null = null;
+        let apiConfig: any = null;
+        const src = Array.isArray(response?.result) ? response.result.find((t: any) => t.mCommonEntitiesMaster?.isActive !== false) : response?.result;
+        if (src) {
+          const rawFields = src.manualDataFields ?? src.ManualDataFields ?? null;
+          manualFields = rawFields ? rawFields.map(toSectionField) : null;
+          apiConfig = src.apiDataConfig ?? src.ApiDataConfig ?? null;
+        }
+
+        // If new model data exists, use it directly
+        if (apiConfig?.apiUrl || manualFields?.length) {
+          if (apiConfig?.apiUrl) {
+            return this.dynamicDataService.fetchFromApiConfig(apiConfig).pipe(
+              switchMap((apiData) => {
+                let mergedData: Record<string, any> = {};
+                if (manualFields?.length) {
+                  mergedData = fieldsToRecord(manualFields);
+                }
+                if (apiData && typeof apiData === 'object') {
+                  mergedData = { ...mergedData, ...apiData };
+                }
+                return of({ rawHtml: templateContent, data: mergedData });
+              })
+            );
+          }
+          let mergedData: Record<string, any> = {};
+          if (manualFields?.length) {
+            mergedData = fieldsToRecord(manualFields);
+          }
+          return of({ rawHtml: templateContent, data: mergedData });
+        }
+
+        // Fall back to old DynamicDataConfig model
         const config = this.dynamicDataConfig || templateConfig;
         if (config) {
-          return this.dynamicDataService.fetchSectionData(config).pipe(
-            switchMap((data) => {
-              let mergedData: Record<string, any> = {};
-              if (config!.sourceType === 'manual' && config!.data?.length) {
-                mergedData = fieldsToRecord(config!.data);
-              }
-              if (data && typeof data === 'object') {
-                mergedData = { ...mergedData, ...data };
-              }
-              return of({ rawHtml: templateContent, data: mergedData });
-            })
-          );
+          if (config.sourceType === 'api' && config.apiUrl) {
+            return this.dynamicDataService.fetchSectionData(config).pipe(
+              switchMap((data) => {
+                let mergedData: Record<string, any> = {};
+                if (data && typeof data === 'object') {
+                  mergedData = { ...mergedData, ...data };
+                }
+                return of({ rawHtml: templateContent, data: mergedData });
+              })
+            );
+          }
+          if (config.data?.length) {
+            return of({ rawHtml: templateContent, data: fieldsToRecord(config.data) });
+          }
         }
 
         return of({ rawHtml: templateContent, data: null });

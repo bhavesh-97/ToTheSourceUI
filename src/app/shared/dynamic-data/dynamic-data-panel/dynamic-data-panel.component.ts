@@ -9,9 +9,9 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { DynamicDataConfig, createDefaultDataConfig } from '../dynamic-data.model';
-import { SectionDataField, DATA_TYPE_OPTIONS, DATA_TYPE_GROUPS, createEmptyField, duplicateField, SectionDataType } from '../section-data-field.model';
+import { SectionDataField, DATA_TYPE_OPTIONS, DATA_TYPE_GROUPS, createEmptyField, duplicateField, SectionDataType, fieldsToRecord } from '../section-data-field.model';
 import { ApiTestDialogComponent } from '../api-test-dialog/api-test-dialog.component';
+import { ApiDataConfigModel } from '../api-data-config.model';
 
 @Component({
   selector: 'app-dynamic-data-panel',
@@ -25,9 +25,12 @@ import { ApiTestDialogComponent } from '../api-test-dialog/api-test-dialog.compo
   styleUrls: ['./dynamic-data-panel.component.scss'],
 })
 export class DynamicDataPanelComponent {
-  config = input<DynamicDataConfig>(createDefaultDataConfig());
-  configChange = output<DynamicDataConfig>();
+  manualFields = input<SectionDataField[]>([]);
+  manualFieldsChange = output<SectionDataField[]>();
+  apiConfig = input<ApiDataConfigModel | null>(null);
+  apiConfigChange = output<ApiDataConfigModel | null>();
 
+  activeTab = signal<'manual' | 'api'>('manual');
   showApiTest = signal(false);
   dataTypeOptions = DATA_TYPE_OPTIONS;
   dataTypeGroups = DATA_TYPE_GROUPS;
@@ -40,10 +43,7 @@ export class DynamicDataPanelComponent {
     { label: 'DELETE', value: 'DELETE' },
   ];
 
-  sourceTypeOptions = [
-    { label: 'API Endpoint', value: 'api' },
-    { label: 'Manual Data', value: 'manual' },
-  ];
+
 
   iconOptions = [
     'pi pi-star', 'pi pi-heart', 'pi pi-check', 'pi pi-times', 'pi pi-plus', 'pi pi-minus',
@@ -73,109 +73,219 @@ export class DynamicDataPanelComponent {
   tipDataFields = 'Add key-value pairs. Use the key name in your template HTML to display these values.';
   tipSyntax = '<span>Use <code>{' + '{' + 'variableName' + '}' + '}</code> in your template HTML to bind these values. Supports nested: <code>{' + '{' + 'item.title' + '}' + '}</code></span>';
 
-  headerKeys = computed(() => {
-    const cfg = this.config();
-    return cfg?.apiHeaders ? Object.keys(cfg.apiHeaders) : [];
+  // --- Sanitization ---
+
+  private sanitizeFieldKey(key: string): string {
+    return key.replace(/[^a-zA-Z0-9_]/g, '').substring(0, 255);
+  }
+
+  private sanitizeFieldValue(value: string, type: string): string {
+    if (!value) return value;
+    if (type === 'html' || type === 'richtext') {
+      return value
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+        .replace(/javascript\s*:/gi, '')
+        .replace(/data\s*:\s*text\/html/gi, '')
+        .substring(0, 50000);
+    }
+    return value
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .substring(0, 50000);
+  }
+
+  private sanitizeFieldLabel(label: string): string {
+    if (!label) return label;
+    return label.replace(/<[^>]*>/g, '').substring(0, 255);
+  }
+
+  setActiveTab(tab: 'manual' | 'api'): void {
+    this.activeTab.set(tab);
+  }
+
+  // --- Manual Field Methods ---
+
+  addManualField(): void {
+    const fields = [...this.manualFields(), createEmptyField()];
+    this.manualFieldsChange.emit(fields);
+  }
+
+  duplicateManualField(index: number): void {
+    const fields = [...this.manualFields()];
+    fields.splice(index + 1, 0, duplicateField(this.manualFields()[index]));
+    this.manualFieldsChange.emit(fields);
+  }
+
+  removeManualField(index: number): void {
+    const fields = this.manualFields().filter((_, i) => i !== index);
+    this.manualFieldsChange.emit(fields);
+  }
+
+  updateManualField(index: number, patch: Partial<SectionDataField>): void {
+    const fields = [...this.manualFields()];
+    const sanitized = { ...patch };
+    if (sanitized.key !== undefined) sanitized.key = this.sanitizeFieldKey(sanitized.key);
+    if (sanitized.value !== undefined) sanitized.value = this.sanitizeFieldValue(sanitized.value, fields[index].type);
+    if (sanitized.label !== undefined) sanitized.label = this.sanitizeFieldLabel(sanitized.label);
+    fields[index] = { ...fields[index], ...sanitized };
+    this.manualFieldsChange.emit(fields);
+  }
+
+  moveManualFieldUp(index: number): void {
+    if (index === 0) return;
+    const fields = [...this.manualFields()];
+    [fields[index - 1], fields[index]] = [fields[index], fields[index - 1]];
+    this.manualFieldsChange.emit(fields);
+  }
+
+  moveManualFieldDown(index: number): void {
+    const fields = this.manualFields();
+    if (index >= fields.length - 1) return;
+    const arr = [...fields];
+    [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+    this.manualFieldsChange.emit(arr);
+  }
+
+  // --- API Config Methods ---
+
+  apiHeaderKeys = computed(() => {
+    const cfg = this.apiConfig();
+    if (!cfg?.apiHeaders) return [];
+    try {
+      return Object.keys(JSON.parse(cfg.apiHeaders));
+    } catch {
+      return [];
+    }
   });
 
-  getGroupedTypes() {
-    const grouped: Record<string, typeof DATA_TYPE_OPTIONS> = {};
-    for (const group of this.dataTypeGroups) {
-      grouped[group] = this.dataTypeOptions.filter(o => o.group === group);
+  getApiHeaderValue(key: string): string {
+    const cfg = this.apiConfig();
+    if (!cfg?.apiHeaders) return '';
+    try {
+      const headers = JSON.parse(cfg.apiHeaders);
+      return headers[key] || '';
+    } catch {
+      return '';
     }
-    return grouped;
   }
 
-  getTypeInfo(type: SectionDataType) {
-    return this.dataTypeOptions.find(o => o.value === type) || this.dataTypeOptions[0];
+  private updateApiConfig(patch: Partial<ApiDataConfigModel>): void {
+    const current = this.apiConfig();
+    const updated: ApiDataConfigModel = {
+      apiConfigID: current?.apiConfigID || 0,
+      templateID: current?.templateID || 0,
+      apiUrl: current?.apiUrl || '',
+      apiMethod: current?.apiMethod || 'GET',
+      apiHeaders: current?.apiHeaders || null,
+      apiBody: current?.apiBody || null,
+      cacheSeconds: current?.cacheSeconds ?? 300,
+      ...current,
+      ...patch
+    };
+    this.apiConfigChange.emit(updated);
   }
 
-  updateField<K extends keyof DynamicDataConfig>(key: K, value: DynamicDataConfig[K]): void {
-    this.configChange.emit({ ...this.config(), [key]: value });
+  private sanitizeApiUrl(url: string): string {
+    if (!url) return url;
+    const sanitized = url.replace(/[<>"']/g, '').substring(0, 2000);
+    try {
+      const parsed = new URL(sanitized);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      return sanitized;
+    } catch {
+      return '';
+    }
   }
 
-  setSourceType(type: string): void {
-    this.updateField('sourceType', type as any);
+  private sanitizeJsonContent(json: string | null): string | null {
+    if (!json) return json;
+    try {
+      const parsed = JSON.parse(json);
+      return JSON.stringify(parsed).substring(0, 50000);
+    } catch {
+      return json.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                 .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+                 .substring(0, 50000);
+    }
   }
 
-  addDataField(): void {
-    const cfg = this.config();
-    const fields = [...cfg.data, createEmptyField()];
-    this.updateField('data', fields);
+  updateApiUrl(url: string): void {
+    this.updateApiConfig({ apiUrl: this.sanitizeApiUrl(url) });
   }
 
-  duplicateDataField(index: number): void {
-    const cfg = this.config();
-    const fields = [...cfg.data];
-    fields.splice(index + 1, 0, duplicateField(cfg.data[index]));
-    this.updateField('data', fields);
+  updateApiMethod(method: string): void {
+    const valid = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+    if (valid.includes(method.toUpperCase())) {
+      this.updateApiConfig({ apiMethod: method.toUpperCase() });
+    }
   }
 
-  removeDataField(index: number): void {
-    const cfg = this.config();
-    const fields = cfg.data.filter((_, i) => i !== index);
-    this.updateField('data', fields);
+  updateApiBody(body: string): void {
+    this.updateApiConfig({ apiBody: this.sanitizeJsonContent(body) });
   }
 
-  updateDataField(index: number, patch: Partial<SectionDataField>): void {
-    const cfg = this.config();
-    const fields = [...cfg.data];
-    fields[index] = { ...fields[index], ...patch };
-    this.updateField('data', fields);
+  updateApiCache(seconds: number): void {
+    const clamped = Math.max(0, Math.min(86400, seconds || 0));
+    this.updateApiConfig({ cacheSeconds: clamped });
   }
 
-  moveFieldUp(index: number): void {
-    if (index === 0) return;
-    const cfg = this.config();
-    const fields = [...cfg.data];
-    [fields[index - 1], fields[index]] = [fields[index], fields[index - 1]];
-    this.updateField('data', fields);
-  }
-
-  moveFieldDown(index: number): void {
-    const cfg = this.config();
-    if (index >= cfg.data.length - 1) return;
-    const fields = [...cfg.data];
-    [fields[index], fields[index + 1]] = [fields[index + 1], fields[index]];
-    this.updateField('data', fields);
-  }
-
-  toggleExpandField(index: number): void {
-    this.expandedField.set(this.expandedField() === index ? null : index);
-  }
-
-  addHeader(): void {
-    const cfg = this.config();
-    const headers = { ...cfg.apiHeaders, '': '' };
-    this.updateField('apiHeaders', headers);
-  }
-
-  updateHeaderKey(oldKey: string, newKey: string): void {
-    const cfg = this.config();
+  addApiHeader(): void {
+    const cfg = this.apiConfig();
     const headers: Record<string, string> = {};
-    for (const [k, v] of Object.entries(cfg.apiHeaders)) {
-      if (k === oldKey) {
-        headers[newKey] = v;
-      } else {
-        headers[k] = v;
-      }
+    if (cfg?.apiHeaders) {
+      try { Object.assign(headers, JSON.parse(cfg.apiHeaders)); } catch {}
     }
-    this.updateField('apiHeaders', headers);
+    headers[''] = '';
+    this.updateApiConfig({ apiHeaders: JSON.stringify(headers) });
   }
 
-  updateHeaderValue(key: string, value: string): void {
-    const cfg = this.config();
-    this.updateField('apiHeaders', { ...cfg.apiHeaders, [key]: value });
-  }
-
-  removeHeader(key: string): void {
-    const cfg = this.config();
+  updateApiHeaderKey(oldKey: string, newKey: string): void {
+    const cfg = this.apiConfig();
     const headers: Record<string, string> = {};
-    for (const [k, v] of Object.entries(cfg.apiHeaders)) {
-      if (k !== key) headers[k] = v;
+    if (cfg?.apiHeaders) {
+      try { Object.assign(headers, JSON.parse(cfg.apiHeaders)); } catch {}
     }
-    this.updateField('apiHeaders', headers);
+    if (oldKey in headers) {
+      const sanitizedKey = newKey.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 255);
+      headers[sanitizedKey] = headers[oldKey];
+      if (oldKey !== sanitizedKey) delete headers[oldKey];
+    }
+    this.updateApiConfig({ apiHeaders: JSON.stringify(headers) });
   }
+
+  updateApiHeaderValue(key: string, value: string): void {
+    const cfg = this.apiConfig();
+    const headers: Record<string, string> = {};
+    if (cfg?.apiHeaders) {
+      try { Object.assign(headers, JSON.parse(cfg.apiHeaders)); } catch {}
+    }
+    headers[key] = value.replace(/[<>]/g, '').substring(0, 2000);
+    this.updateApiConfig({ apiHeaders: JSON.stringify(headers) });
+  }
+
+  removeApiHeader(key: string): void {
+    const cfg = this.apiConfig();
+    const headers: Record<string, string> = {};
+    if (cfg?.apiHeaders) {
+      try { Object.assign(headers, JSON.parse(cfg.apiHeaders)); } catch {}
+    }
+    delete headers[key];
+    this.updateApiConfig({ apiHeaders: JSON.stringify(headers) });
+  }
+
+  testApiConfig = computed(() => {
+    const cfg = this.apiConfig();
+    return {
+      sourceType: 'api' as const,
+      apiUrl: cfg?.apiUrl || '',
+      apiMethod: (cfg?.apiMethod || 'GET') as any,
+      apiHeaders: {} as Record<string, string>,
+      apiBody: cfg?.apiBody || '',
+      data: [],
+      cacheSeconds: 0
+    };
+  });
 
   openApiTest(): void {
     this.showApiTest.set(true);
@@ -183,5 +293,9 @@ export class DynamicDataPanelComponent {
 
   closeApiTest(): void {
     this.showApiTest.set(false);
+  }
+
+  toggleExpandField(index: number): void {
+    this.expandedField.set(this.expandedField() === index ? null : index);
   }
 }

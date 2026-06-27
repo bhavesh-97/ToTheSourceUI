@@ -24,6 +24,8 @@ import { Select } from "primeng/select";
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { DynamicDataPanelComponent } from '../../../shared/dynamic-data/dynamic-data-panel/dynamic-data-panel.component';
 import { DynamicDataConfig, createDefaultDataConfig } from '../../../shared/dynamic-data/dynamic-data.model';
+import { SectionDataField } from '../../../shared/dynamic-data/section-data-field.model';
+import { ApiDataConfigModel } from '../../../shared/dynamic-data/api-data-config.model';
 import { GuideTabComponent } from '../page-config/guide-tab/guide-tab.component';
 
 @Component({
@@ -77,6 +79,11 @@ export class TemplateMaster implements OnInit {
   selectedTemplateType: TemplateType | null = null;
   templateDataConfig: DynamicDataConfig = createDefaultDataConfig();
   tempDataConfig: DynamicDataConfig = createDefaultDataConfig();
+  manualFields: SectionDataField[] = [];
+  tempManualFields: SectionDataField[] = [];
+  apiConfigData: ApiDataConfigModel | null = null;
+  tempApiConfigData: ApiDataConfigModel | null = null;
+  currentTemplateId: number = 0;
 
    private formFields: FormFieldConfig[] = [
        { name: 'templateID', isMandatory: false, events: [] },
@@ -98,29 +105,29 @@ export class TemplateMaster implements OnInit {
       this.FormUtils.registerFormFieldEventListeners(this.formFields, this.inputElements.toArray(), this.renderer,this.templateForm);
   }
    loadData() {
-        this.loading = true;
-        this.TemplateMasterService.GetAllTemplateDetails().subscribe({
-           next: (res) => {
-             if (!res.isError) {
-               var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
-               this.loading = false;
-               this.templetelist = response;
-               // console.log("templetelist",this.templetelist);
-               this.totalRecords = this.templetelist.length;
-               // this.messageService.showMessage(res.strMessage, res.title, res.type);
-             } else {
-               this.messageService.showMessage(res.strMessage, res.title, res.type);
-             }
-           },
-           error: () => {
-             this.loading = false;
-             this.messageService.showMessage(
-               'Something went wrong while connecting to the server.',
-               'Error',
-               PopupMessageType.Error
-             );
-           }
-         });
+         this.loading = true;
+         this.TemplateMasterService.GetAllTemplateDetails().subscribe({
+            next: (res) => {
+              if (!res.isError) {
+                var response = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
+                this.loading = false;
+                this.templetelist = response;
+                // console.log("templetelist",this.templetelist);
+                this.totalRecords = this.templetelist.length;
+                // this.messageService.showMessage(res.strMessage, res.title, res.type);
+              } else {
+                this.messageService.showMessage(res.strMessage, res.title, res.type);
+              }
+            },
+            error: () => {
+              this.loading = false;
+              this.messageService.showMessage(
+                'Something went wrong while connecting to the server.',
+                'Error',
+                PopupMessageType.Error
+              );
+            }
+          });
    }
 
    loadTemplateTypes() {
@@ -135,6 +142,7 @@ export class TemplateMaster implements OnInit {
              }
            },
            error: () => {
+             this.loading = false;
              this.messageService.showMessage(
                'Something went wrong while connecting to the server.',
                'Error',
@@ -148,6 +156,11 @@ export class TemplateMaster implements OnInit {
       if (isNew) {
         this.templateDataConfig = createDefaultDataConfig();
         this.tempDataConfig = createDefaultDataConfig();
+        this.manualFields = [];
+        this.tempManualFields = [];
+        this.apiConfigData = null;
+        this.tempApiConfigData = null;
+        this.currentTemplateId = 0;
         this.templateForm.reset( {
           templateID: 0,
           templateTypeID: 0,
@@ -160,6 +173,7 @@ export class TemplateMaster implements OnInit {
         });
       } 
       else if (tpl) {
+        this.currentTemplateId = tpl.templateID;
         this.templateDataConfig = tpl.dynamicDataConfig ? { ...tpl.dynamicDataConfig } : createDefaultDataConfig();
         this.tempDataConfig = { ...this.templateDataConfig };
         this.templateForm.patchValue({
@@ -172,22 +186,39 @@ export class TemplateMaster implements OnInit {
               isActive: tpl.mCommonEntitiesMaster?.isActive
           },
         });
+        const tplAny = tpl as any;
+        const rawFields = tplAny.manualDataFields ?? tplAny.ManualDataFields ?? [];
+        this.manualFields = rawFields.map((f: any) => ({
+          key: f.key ?? f.FieldKey ?? f.fieldKey ?? '',
+          type: f.type ?? f.FieldType ?? f.fieldType ?? 'text',
+          value: f.value ?? f.FieldValue ?? f.fieldValue ?? '',
+          label: f.label ?? f.FieldLabel ?? f.fieldLabel ?? '',
+        }));
+        this.tempManualFields = [...this.manualFields];
+        this.apiConfigData = tplAny.apiDataConfig ?? tplAny.ApiDataConfig ?? null;
+        this.tempApiConfigData = this.apiConfigData ? { ...this.apiConfigData } : null;
       }
       this.dialogVisible = true;
     }
 
    saveDataConfig(): void {
      this.templateDataConfig = { ...this.tempDataConfig };
+     this.manualFields = [...this.tempManualFields];
+     this.apiConfigData = this.tempApiConfigData ? { ...this.tempApiConfigData } : null;
      this.dynamicDataDialogVisible = false;
    }
 
    cancelDataConfig(): void {
      this.tempDataConfig = { ...this.templateDataConfig };
+     this.tempManualFields = [...this.manualFields];
+     this.tempApiConfigData = this.apiConfigData ? { ...this.apiConfigData } : null;
      this.dynamicDataDialogVisible = false;
    }
 
    openDataConfig(): void {
      this.tempDataConfig = { ...this.templateDataConfig };
+     this.tempManualFields = [...this.manualFields];
+     this.tempApiConfigData = this.apiConfigData ? { ...this.apiConfigData } : null;
      this.dynamicDataDialogVisible = true;
    }
 
@@ -255,13 +286,38 @@ export class TemplateMaster implements OnInit {
 
     const tempModel = this.FormUtils.getAllFormFieldData(this.formFields, this.templateForm, this.inputElements.toArray(), Template);
     tempModel.dynamicDataConfig = this.templateDataConfig;
+    (tempModel as any).manualDataFields = this.manualFields.map(f => ({
+      fieldID: 0,
+      templateID: 0,
+      fieldKey: f.key,
+      fieldType: f.type,
+      fieldValue: f.value,
+      fieldLabel: f.label || '',
+      sortOrder: 0,
+      mCommonEntitiesMaster: {
+        isActive: true,
+        createdBy: 0,
+        updatedBy: 0
+      }
+    }));
+    (tempModel as any).apiDataConfig = this.apiConfigData ? {
+      ...this.apiConfigData,
+      templateID: 0,
+      apiConfigID: this.apiConfigData.apiConfigID || 0,
+      mCommonEntitiesMaster: {
+        isActive: true,
+        createdBy: 0,
+        createdDate: undefined,
+        updatedBy: 0,
+        updatedDate: undefined,
+        isDeleted: false
+      }
+    } : null;
     this.saving = true;
     try {
          this.TemplateMasterService.SaveTemplate(tempModel).subscribe({
             next: (res) => {
                 if (!res.isError) {
-                  // var response = JSON.parse(res.result);
-                  const response = res.result;
                   this.templateForm.reset();
                   this.loadData();
                   this.messageService.showMessage(res.strMessage, res.title, res.type);
