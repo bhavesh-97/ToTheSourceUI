@@ -294,13 +294,13 @@
                                           optionValue="templateTypeID"
                                           [showClear]="true"
                                           placeholder="Select template type"
-                                          (onChange)="onTemplateTypeChange(i, $event)"
+                                          (onChange)="onTemplateTypeChange(section)"
                                           styleClass="w-full">
                                 </p-select>
                               </div>
                               <div class="field-group">
                                 <label class="field-label">Template (from Master)</label>
-                                <p-select [options]="availableTemplates()"
+                                <p-select [options]="getTemplatesForSection(section)"
                                           [(ngModel)]="section.templateCode"
                                           optionLabel="templateName"
                                           optionValue="templateCode"

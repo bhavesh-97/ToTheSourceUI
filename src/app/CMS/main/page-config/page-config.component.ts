@@ -60,7 +60,12 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredPages = signal<PageConfigListItem[]>([]);
   editingPage = signal<PageConfig>(new PageConfig());
   templateTypes = signal<TemplateTypeOption[]>([]);
-  availableTemplates = signal<TemplateListItem[]>([]);
+  private templateCache = signal<Map<number, TemplateListItem[]>>(new Map());
+
+  getTemplatesForSection(section: PageConfigSection): TemplateListItem[] {
+    if (!section.templateTypeID) return [];
+    return this.templateCache().get(Number(section.templateTypeID)) || [];
+  }
   gsapPageKeys = signal<MGsapPage[]>([]);
 
   sectionErrors = signal<Record<number, Record<string, string[]>>>({});
@@ -192,22 +197,25 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  loadTemplatesForType(typeName: string): void {
-    if (!typeName) {
-      this.availableTemplates.set([]);
-      return;
-    }
-    this.pageConfigService.GetTemplatesByType(typeName).subscribe({
+  loadTemplatesForType(typeId: number): void {
+    const id = Number(typeId);
+    if (!id) return;
+    const cache = this.templateCache();
+    if (cache.has(id)) return;
+    const tt = this.templateTypes().find(t => Number(t.templateTypeID) === id);
+    if (!tt) return;
+    this.pageConfigService.GetTemplatesByType(tt.templateTypeName).subscribe({
       next: (res) => {
         if (!res.isError && res.result) {
           const data = typeof res.result === 'string' ? JSON.parse(res.result) : res.result;
           const templates = Array.isArray(data) ? data : (data?.result || []);
-          this.availableTemplates.set(Array.isArray(templates) ? templates : []);
+          const currentCache = this.templateCache();
+          const updated = new Map(currentCache);
+          updated.set(id, Array.isArray(templates) ? templates : []);
+          this.templateCache.set(updated);
         }
       },
-      error: () => {
-        this.availableTemplates.set([]);
-      }
+      error: () => {}
     });
   }
 
@@ -238,22 +246,19 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
           config.status = this.computeStatus(data.mCommonEntitiesMaster);
           config.sections = (data.sections || []).map((s: any) => {
             const sec = new PageConfigSection();
-              if (s.templateTypeID) {
-                  const tt = this.templateTypes().find(t => t.templateTypeID === s.templateTypeID);
-                  if (tt) {
-                        this.loadTemplatesForType(tt.templateTypeName);
-                      }
-              }
-              
             Object.assign(sec, s);
+            sec.templateTypeID = s.templateTypeID ? Number(s.templateTypeID) : null;
             sec.order = s.sortOrder ?? s.order ?? 0;
             (sec as any).sortOrder = s.sortOrder ?? s.order ?? 0;
             return sec;
           });
+          debugger;
           config.sections.sort((a, b) => ((a as any).sortOrder ?? a.order) - ((b as any).sortOrder ?? b.order));
           this.editingPage.set(config);
           this.clearAllValidation();
           this.editorOpen.set(true);
+          const typeIds = new Set(config.sections.map(s => s.templateTypeID).filter(Boolean));
+          typeIds.forEach(id => this.loadTemplatesForType(id!));
         }
       },
       error: () => {
@@ -267,7 +272,20 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showPreview.set(false);
   }
 
+  private generateSectionKey(section: PageConfigSection): string {
+    const parts: string[] = ['section'];
+    if (section.sectionID) parts.push(`id${section.sectionID}`);
+    if (section.templateTypeID) parts.push(`type${section.templateTypeID}`);
+    if (section.templateCode) parts.push(section.templateCode);
+    if (section.title) parts.push(section.title.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9-]/g, ''));
+    const now = new Date();
+    parts.push(now.toISOString().slice(0, 10).replace(/-/g, ''));
+    parts.push(now.toTimeString().slice(0, 8).replace(/:/g, ''));
+    return parts.join('-');
+  }
+
   addPresetSection(preset: SectionPreset): void {
+    debugger
     const page = this.editingPage();
     const idx = page.sections.length;
     const sec = new PageConfigSection();
@@ -275,6 +293,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     sec.order = idx;
     (sec as any).sortOrder = idx;
     Object.assign(sec, preset.defaults);
+    sec.sectionkey = this.generateSectionKey(sec);
     this.editingPage.set({ ...page, sections: [...page.sections, sec] });
     this.expandedSection.set(idx);
   }
@@ -286,6 +305,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     sec.title = `Section ${idx + 1}`;
     sec.order = idx;
     (sec as any).sortOrder = idx;
+    sec.sectionkey = this.generateSectionKey(sec);
     this.editingPage.set({ ...page, sections: [...page.sections, sec] });
     this.expandedSection.set(idx);
   }
@@ -325,14 +345,10 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onTemplateTypeChange(index: number, event: any): void {
-    const page = this.editingPage();
-    const section = page.sections[index];
+  onTemplateTypeChange(section: PageConfigSection): void {
     if (section.templateTypeID) {
-      const tt = this.templateTypes().find(t => t.templateTypeID === section.templateTypeID);
-      if (tt) {
-        this.loadTemplatesForType(tt.templateTypeName);
-      }
+      section.templateCode = '';
+      this.loadTemplatesForType(section.templateTypeID);
     }
   }
 
@@ -428,7 +444,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
       this.notification.showMessage('Please fix validation errors', 'Validation Error', PopupMessageType.Warning);
       return;
     }
-
+   debugger
     const page = this.editingPage();
     const payload = {
       ...page,
