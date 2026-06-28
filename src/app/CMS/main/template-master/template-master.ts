@@ -174,8 +174,26 @@ export class TemplateMaster implements OnInit {
       } 
       else if (tpl) {
         this.currentTemplateId = tpl.templateID;
-        this.templateDataConfig = tpl.dynamicDataConfig ? { ...tpl.dynamicDataConfig } : createDefaultDataConfig();
-        this.tempDataConfig = { ...this.templateDataConfig };
+        const tplAny = tpl as any;
+        const rawConfig = tplAny.dynamicDataConfig ?? tplAny.DynamicDataConfig ?? null;
+        if (rawConfig) {
+          this.templateDataConfig = {
+            sourceType: rawConfig.sourceType ?? rawConfig.SourceType ?? 'manual',
+            apiUrl: rawConfig.apiUrl ?? rawConfig.ApiUrl ?? '',
+            apiMethod: rawConfig.apiMethod ?? rawConfig.ApiMethod ?? 'GET',
+            apiHeaders: rawConfig.apiHeaders ?? rawConfig.ApiHeaders ?? {},
+            apiBody: rawConfig.apiBody ?? rawConfig.ApiBody ?? '',
+            data: (rawConfig.data ?? rawConfig.Data ?? []).map((f: any) => ({
+              key: f.key ?? f.FieldKey ?? f.fieldKey ?? '',
+              type: (f.type ?? f.FieldType ?? f.fieldType ?? 'text').toLowerCase(),
+              value: f.value ?? f.FieldValue ?? f.fieldValue ?? '',
+              label: f.label ?? f.FieldLabel ?? f.fieldLabel ?? '',
+            })),
+            cacheSeconds: rawConfig.cacheSeconds ?? rawConfig.CacheSeconds ?? 300,
+          };
+        } else {
+          this.templateDataConfig = createDefaultDataConfig();
+        }
         this.templateForm.patchValue({
           templateID: tpl.templateID,
           templateTypeID: tpl.templateTypeID,
@@ -186,17 +204,35 @@ export class TemplateMaster implements OnInit {
               isActive: tpl.mCommonEntitiesMaster?.isActive
           },
         });
-        const tplAny = tpl as any;
         const rawFields = tplAny.manualDataFields ?? tplAny.ManualDataFields ?? [];
         this.manualFields = rawFields.map((f: any) => ({
           key: f.key ?? f.FieldKey ?? f.fieldKey ?? '',
-          type: f.type ?? f.FieldType ?? f.fieldType ?? 'text',
+          type: (f.type ?? f.FieldType ?? f.fieldType ?? 'text').toLowerCase(),
           value: f.value ?? f.FieldValue ?? f.fieldValue ?? '',
           label: f.label ?? f.FieldLabel ?? f.fieldLabel ?? '',
         }));
         this.tempManualFields = [...this.manualFields];
         this.apiConfigData = tplAny.apiDataConfig ?? tplAny.ApiDataConfig ?? null;
         this.tempApiConfigData = this.apiConfigData ? { ...this.apiConfigData } : null;
+
+        // Sync manual fields into dynamicDataConfig.data for preview
+        if (!this.templateDataConfig.data?.length && this.manualFields.length) {
+          this.templateDataConfig.data = this.manualFields;
+        }
+
+        // Sync API config into dynamicDataConfig for preview
+        if (!this.templateDataConfig.apiUrl && this.apiConfigData?.apiUrl) {
+          this.templateDataConfig.sourceType = 'api';
+          this.templateDataConfig.apiUrl = this.apiConfigData.apiUrl;
+          this.templateDataConfig.apiMethod = (this.apiConfigData.apiMethod || 'GET') as any;
+          this.templateDataConfig.apiHeaders = typeof this.apiConfigData.apiHeaders === 'string'
+            ? JSON.parse(this.apiConfigData.apiHeaders)
+            : (this.apiConfigData.apiHeaders || {}) as Record<string, string>;
+          this.templateDataConfig.apiBody = this.apiConfigData.apiBody || '';
+          this.templateDataConfig.cacheSeconds = this.apiConfigData.cacheSeconds || 300;
+        }
+
+        this.tempDataConfig = { ...this.templateDataConfig };
       }
       this.dialogVisible = true;
     }
@@ -205,6 +241,10 @@ export class TemplateMaster implements OnInit {
      this.templateDataConfig = { ...this.tempDataConfig };
      this.manualFields = [...this.tempManualFields];
      this.apiConfigData = this.tempApiConfigData ? { ...this.tempApiConfigData } : null;
+     // Keep dynamicDataConfig.data in sync with manual fields
+     if ((!this.templateDataConfig.data?.length || this.templateDataConfig.sourceType === 'manual') && this.manualFields.length) {
+       this.templateDataConfig.data = this.manualFields;
+     }
      this.dynamicDataDialogVisible = false;
    }
 
