@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -42,6 +43,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('previewIframe') previewIframe!: ElementRef<HTMLIFrameElement>;
 
   private pageConfigService = inject(PageConfigService);
+  private sanitizer = inject(DomSanitizer);
   private dynamicPageService = inject(DynamicPageService);
   private gsapMasterService = inject(GsapMasterService);
   private notification = inject(NotificationService);
@@ -75,11 +77,11 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   globalCssValidation = signal<ValidationResult>({ valid: true, errors: [], sanitized: '' });
   globalJsValidation = signal<ValidationResult>({ valid: true, errors: [], sanitized: '' });
 
-  previewUrl = computed(() => {
+  previewUrl = computed<SafeResourceUrl>(() => {
     const key = this.editingPage().pageKey;
     if (!key) return '';
     const base = window.location.origin;
-    return `${base}/${key}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`${base}/${key}`);
   });
 
   // gsapKeyOptions = computed(() => {
