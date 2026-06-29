@@ -17,6 +17,7 @@ export const WebRoutes: Routes = [
       { path: 'stats', loadComponent: () => import('./pages/stats/stats.component').then(m => m.StatsComponent) },
       { path: 'animations', loadComponent: () => import('./pages/animations/animations.component').then(m => m.AnimationsComponent) },
       { path: 'templates', loadComponent: () => import('./pages/templates/templates.component').then(m => m.TemplatesComponent) },
+      { path: 'career', loadComponent: () => import('./pages/career/career.component').then(m => m.CareerComponent) },
       { path: 'not-found', loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent) },
       { path: ':slug', loadComponent: () => import('./components/dynamic-page/dynamic-page.component').then(m => m.DynamicPageComponent) },
     ]

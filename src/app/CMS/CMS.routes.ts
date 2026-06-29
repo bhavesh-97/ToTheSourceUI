@@ -73,6 +73,12 @@ export const CMSRoutes: Routes = [
                   resolve: { gsapConfig: gsapAnimationResolver }
               },
               {
+                  path: 'careermaster',
+                  loadComponent: () => import('./main/career-master/career-master').then(m => m.CareerMaster),
+                  canActivate: [authGuard],
+                  resolve: { gsapConfig: gsapAnimationResolver }
+              },
+              {
                   path: 'pageconfig',
                   loadComponent: () => import('./main/page-config/page-config.component').then(m => m.PageConfigComponent),
                   canActivate: [authGuard],

@@ -1,0 +1,44 @@
+@import '../../../shared/styles/datatable.scss';
+
+.remote-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+:host ::ng-deep .p-select {
+  min-width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber {
+  width: 100%;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.table-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.search-row {
+  display: flex;
+  margin-top: 0.75rem;
+}
