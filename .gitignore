@@ -372,3 +372,4 @@ FodyWeavers.xsd
 .angular/**/write/
 .angular/**/deps/
 /dist/ToTheSourceUI/browser
+/dist/ToTheSourceUI/browser
