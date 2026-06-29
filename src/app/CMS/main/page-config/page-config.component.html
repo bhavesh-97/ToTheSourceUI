@@ -56,6 +56,7 @@
                     pTooltip="Preview" [disabled]="page.mCommonEntitiesMaster?.isActive !== true"
                     (click)="previewPage(page.pageKey)">
             </button>
+            {{page.mCommonEntitiesMaster?.isActive | json}}
             <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
                     pTooltip="Delete" (click)="confirmDelete(page)">
             </button>
@@ -461,9 +462,14 @@
         </div>
       </div>
 
+      <!-- Resizer Handle -->
+      @if (showPreview()) {
+        <div class="preview-resizer" (mousedown)="onResizerMouseDown($event)"></div>
+      }
+
       <!-- Preview Panel -->
       @if (showPreview()) {
-        <div class="preview-panel">
+        <div class="preview-panel" [style.width.px]="previewWidth()">
           <div class="preview-header">
             <i class="pi pi-desktop"></i>
             <span>Live Preview</span>

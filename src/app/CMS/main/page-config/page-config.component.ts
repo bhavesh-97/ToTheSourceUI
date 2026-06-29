@@ -55,6 +55,7 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   isNew = signal(false);
   showPreview = signal(false);
   previewDevice = signal<'desktop' | 'tablet' | 'mobile'>('desktop');
+  previewWidth = signal(420);
   expandedSection = signal<number | null>(null);
 
   searchQuery = '';
@@ -272,6 +273,31 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   closeEditor(): void {
     this.editorOpen.set(false);
     this.showPreview.set(false);
+  }
+
+  private resizing = false;
+
+  onResizerMouseDown(event: MouseEvent): void {
+    this.resizing = true;
+    event.preventDefault();
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const startX = event.clientX;
+    const startWidth = this.previewWidth();
+    const onMouseMove = (e: MouseEvent) => {
+      if (!this.resizing) return;
+      const newWidth = startWidth - (e.clientX - startX);
+      this.previewWidth.set(Math.max(300, Math.min(800, newWidth)));
+    };
+    const onMouseUp = () => {
+      this.resizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }
 
   private generateSectionKey(section: PageConfigSection): string {
@@ -520,6 +546,6 @@ export class PageConfigComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   previewPage(pageKey: string): void {
-    window.open(`/${pageKey}`, '_blank');
+    window.location.href = `/${pageKey}`;
   }
 }
